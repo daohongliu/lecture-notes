@@ -1,0 +1,130 @@
+{
+"nodes": [
+[
+"mix",
+"Mixed strategy",
+"r4-1",
+1
+],
+[
+"nash",
+"Nash’s theorem",
+"r4-2",
+1
+],
+[
+"supp",
+"Support",
+"r4-3",
+0
+],
+[
+"ind2",
+"Indifference 2×2",
+"r4-4",
+1
+],
+[
+"ind",
+"General indifference",
+"r4-6",
+0
+],
+[
+"sep",
+"Support enumeration",
+"alg4-8",
+0
+],
+[
+"brf",
+"BR functions, fixed points",
+"r4-10",
+0
+],
+[
+"pic",
+"2×2 picture",
+"r4-11",
+0
+],
+[
+"brou",
+"Brouwer",
+"r4-12",
+0
+],
+[
+"kak",
+"Kakutani",
+"r4-14",
+0
+]
+],
+"edges": [
+[
+"mix",
+"nash",
+"always exists"
+],
+[
+"mix",
+"supp",
+"where mass is"
+],
+[
+"supp",
+"ind2",
+"mix only if indifferent"
+],
+[
+"ind2",
+"ind",
+"generalise"
+],
+[
+"ind",
+"sep",
+"guess supports"
+],
+[
+"mix",
+"brf",
+"BR(μ) ∋ μ"
+],
+[
+"brf",
+"pic",
+"plot"
+],
+[
+"brou",
+"kak",
+"set-valued"
+],
+[
+"kak",
+"nash",
+"proof"
+],
+[
+"pic",
+"nash",
+"2×2 case"
+]
+],
+"ext": [
+[
+"c6",
+"LP for zero-sum",
+"r6-7"
+]
+],
+"extedges": [
+[
+"sep",
+"c6",
+"poly time if zero-sum"
+]
+]
+}

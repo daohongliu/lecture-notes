@@ -1,0 +1,190 @@
+{
+"nodes": [
+[
+"efg",
+"Extensive form game",
+"r5-1",
+1
+],
+[
+"strat",
+"Strategy = complete plan",
+"r5-2",
+0
+],
+[
+"bi",
+"Backward induction",
+"alg5-4",
+1
+],
+[
+"spne",
+"Subgame perfection",
+"r5-8",
+1
+],
+[
+"cent",
+"Centipede",
+"r5-10",
+0
+],
+[
+"info",
+"Information sets",
+"r5-11",
+0
+],
+[
+"kuhn",
+"Mixed vs behavioural, Kuhn",
+"r5-14",
+0
+],
+[
+"drv",
+"Forgetful driver",
+"r5-15",
+0
+],
+[
+"frep",
+"Finite repetition unravels",
+"r5-16",
+0
+],
+[
+"fsm",
+"Automaton strategies",
+"r5-18",
+0
+],
+[
+"folk",
+"Folk theorem",
+"r5-21",
+1
+],
+[
+"rv",
+"Rational verification",
+"r5-26",
+0
+],
+[
+"axel",
+"Tit-for-tat",
+"r5-30",
+0
+],
+[
+"rep",
+"Replicator dynamics",
+"r5-33",
+0
+],
+[
+"ess",
+"ESS",
+"r5-34",
+0
+]
+],
+"edges": [
+[
+"efg",
+"strat",
+"players choose"
+],
+[
+"efg",
+"bi",
+"solve"
+],
+[
+"bi",
+"spne",
+"computes"
+],
+[
+"spne",
+"cent",
+"odd outcome"
+],
+[
+"efg",
+"info",
+"hide moves"
+],
+[
+"info",
+"kuhn",
+"randomise"
+],
+[
+"kuhn",
+"drv",
+"fails without recall"
+],
+[
+"bi",
+"frep",
+"by rounds"
+],
+[
+"frep",
+"fsm",
+"infinite play"
+],
+[
+"fsm",
+"folk",
+"GRIM punishes"
+],
+[
+"fsm",
+"rv",
+"LTL goals"
+],
+[
+"fsm",
+"axel",
+"tournament"
+],
+[
+"axel",
+"rep",
+"as fitness"
+],
+[
+"rep",
+"ess",
+"stable points"
+]
+],
+"ext": [
+[
+"c7",
+"Win-lose games",
+"r7-4"
+],
+[
+"c3",
+"Prisoner’s Dilemma",
+"r3-15"
+]
+],
+"extedges": [
+[
+"bi",
+"c7",
+"determinacy"
+],
+[
+"frep",
+"c3",
+"stage game"
+]
+]
+}

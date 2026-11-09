@@ -19,7 +19,8 @@ import re, sys, json, html, pathlib
 REPO = pathlib.Path(__file__).resolve().parent.parent
 TPL = REPO / 'build' / 'templates'
 OUT = REPO / 'dist' / 'index.html'
-COURSES = ['pmm', 'clt', 'it']
+PGLABEL = 'p.'
+COURSES = ['pmm', 'clt', 'it', 'gt']
 ROOT = None  # current course directory
 P = ''       # current course id prefix
 
@@ -93,7 +94,7 @@ def heading(line):
     slug = re.sub(r'[^a-z0-9]+', '-', re.sub(r'<[^>]+>|\\\(.*?\\\)', '', rest).lower()).strip('-')[:40]
     hid = ('s' + num.replace('.', '-')) if num else f'h{CHNUM}-{slug}'.replace('hs', 'h9')
     sec = f'<span class="sec">{num}</span>' if num else ''
-    pgs = f'<span class="pg">p. {pg}</span>' if pg else ''
+    pgs = f'<span class="pg">{PGLABEL} {pg}</span>' if pg else ''
     return f'<h{lvl} id="{hid}"{di}>{sec}{rest}{pgs}</h{lvl}>'
 
 def blocks_to_html(s):
@@ -123,7 +124,7 @@ def blocks_to_html(s):
         if cur.strip(): out.append('<p>' + cur.strip() + '</p>')
     return '\n'.join(out)
 
-CONT = re.compile(r'<(thm|pf|pause|bg|sheet|qn|role)\b([^>]*)>(.*?)</\1>', re.S)
+CONT = re.compile(r'<(thm|pf|pause|bg|sheet|qn|role|pm)\b([^>]*)>(.*?)</\1>', re.S)
 
 def first_p_insert(body_html, ins):
     if body_html.startswith('<p>'): return '<p>' + ins + body_html[3:]
@@ -137,6 +138,54 @@ ROLE_TIPS = {'question': 'Sets up the problem this part answers.', 'idea': 'The 
              'recap': 'Pulls together what came before.', 'aside': 'Context you can skip.', 'history': 'Where the idea came from.', 'setup': 'Fixes notation or assumptions for what follows.',
              'payoff': 'What we get out of the work just done.'}
 
+def _num(v):
+    try: return float(v.replace('−', '-').strip())
+    except ValueError: return None
+def _show(v):
+    v = v.strip()
+    return v.replace('-', '−') if _num(v) is not None else v
+def payoff_matrix(a, cap):
+    rl = [x.strip() for x in a.get('r', '').split(',')]; cl = [x.strip() for x in a.get('c', '').split(',')]
+    P1 = [[x.strip() for x in row.split(',')] for row in a.get('p1', '').split(';')]
+    P2 = [[x.strip() for x in row.split(',')] for row in a.get('p2', '').split(';')] if a.get('p2') else None
+    zs = P2 is None
+    n1, n2 = a.get('n1', '1'), a.get('n2', '2')
+    N1 = [[_num(x) for x in r] for r in P1]; N2 = [[_num(x) for x in r] for r in P2] if P2 else None
+    numeric = all(v is not None for r in N1 for v in r) and (zs or all(v is not None for r in N2 for v in r))
+    br1 = br2 = None
+    if numeric and ('br' in a or 'ne' in a):
+        if zs:
+            br1 = [[N1[i][j] == max(N1[k][j] for k in range(len(rl))) for j in range(len(cl))] for i in range(len(rl))]
+            br2 = [[N1[i][j] == min(N1[i]) for j in range(len(cl))] for i in range(len(rl))]
+        else:
+            br1 = [[N1[i][j] == max(N1[k][j] for k in range(len(rl))) for j in range(len(cl))] for i in range(len(rl))]
+            br2 = [[N2[i][j] == max(N2[i]) for j in range(len(cl))] for i in range(len(rl))]
+    marks = set()
+    for cell in a.get('mark', '').split('|'):
+        if cell.strip():
+            i, j = cell.split(','); marks.add((int(i), int(j)))
+    out = [f'<div class="pmw"><table class="pm{" zs" if zs else ""}">']
+    out.append(f'<thead><tr><th class="pm-c"><span class="pl2">{n2}</span><span class="pl1">{n1}</span></th>' + ''.join(f'<th class="pm-h2">{c}</th>' for c in cl) + ('<th class="pm-x">row min</th>' if zs and 'mm' in a else '') + '</tr></thead><tbody>')
+    for i, r in enumerate(rl):
+        out.append(f'<tr><th class="pm-h1">{r}</th>')
+        for j in range(len(cl)):
+            ne = br1 is not None and 'ne' in a and br1[i][j] and br2[i][j]
+            cls = ' '.join(x for x in [('ne' if ne else ''), ('mk' if (i, j) in marks else '')] if x)
+            b1 = ' br' if br1 is not None and 'br' in a and br1[i][j] else ''
+            b2 = ' br' if br2 is not None and 'br' in a and br2[i][j] and not zs else ''
+            if zs:
+                out.append(f'<td class="{cls}"><span class="u0{b1}">{_show(P1[i][j])}</span></td>')
+            else:
+                out.append(f'<td class="{cls}"><span class="u2{b2}">{_show(P2[i][j])}</span><span class="u1{b1}">{_show(P1[i][j])}</span></td>')
+        if zs and 'mm' in a: out.append(f'<td class="pm-x">{_show(str(min(N1[i])).rstrip("0").rstrip(".") if numeric else "")}</td>')
+        out.append('</tr>')
+    if zs and 'mm' in a and numeric:
+        out.append('<tr class="pm-xr"><th class="pm-x">col max</th>' + ''.join(f'<td class="pm-x">{_show(("%g" % max(N1[k][j] for k in range(len(rl)))))}</td>' for j in range(len(cl))) + '<td class="pm-x"></td></tr>')
+    out.append('</tbody></table>')
+    if cap.strip(): out.append(f'<div class="pm-cap">{cap.replace("<p>", "").replace("</p>", " ").strip()}</div>')
+    out.append('</div>')
+    return ''.join(out)
+
 def process(s):
     def repl(m):
         tag, a, inner = m.group(1), attrs(m.group(2)), m.group(3)
@@ -146,7 +195,7 @@ def process(s):
             mm = re.search(r'(\d+)\.(\d+)$', k)
             tid = a.get('id') or (f'r{mm.group(1)}-{mm.group(2)}' if mm else '')
             head = f'<span class="head">{k}' + (f' <span class="nm">({nm})</span>' if nm else '') + '.</span>'
-            if pg: head += f'<span class="pg">p. {pg}</span>'
+            if pg: head += f'<span class="pg">{PGLABEL} {pg}</span>'
             body = first_p_insert(body, head + ' ')
             kw = k.split()[0].lower()
             kind = 'def' if kw.startswith('definition') else 'ex' if kw.startswith(('example', 'remark', 'claim', 'fact')) else 'thm'
@@ -184,6 +233,8 @@ def process(s):
             n = a.get('n', '')
             t = a.get('t', '')
             return ph(f'<div class="sq" id="SHEETID-{n.lower()}" data-label="Question {n}" data-name="{t}"><div class="sq-n">{n}</div><div class="sq-b">' + (f'<p class="sq-t">{t}</p>' if t else '') + f'{body}</div></div>')
+        if tag == 'pm':
+            return ph(payoff_matrix(a, body))
         if tag == 'bg':
             lead = a.get('lead', 'Background')
             bid = a.get('id', '')
@@ -329,6 +380,8 @@ MAPS = []
 FIGID = {}
 
 def build_course(cid, conf):
+    global PGLABEL
+    PGLABEL = conf.get('pagelabel', 'p.')
     global ROOT, P, CHNUM
     ROOT = REPO / 'courses' / cid; P = conf['prefix']
     chapters, sheets = [], []
@@ -386,7 +439,7 @@ def build_course(cid, conf):
         nav += (f'<a href="#{next_[0]}" style="text-align:right">Chapter&#160;{next_[1]["num"]} →<span>{next_[1]["title"]}</span></a>' if next_ else f'<a href="#{cid}" style="text-align:right">Contents →<span>{conf["short"]}</span></a>')
         nav += '</nav>'
         cm = f'≈ {mins(tot["w"], tot["f"])} min · {tot["s"]} sections · {tot["r"]} results · {tot["f"]} figures · {tot["x"]} exercises' + gauges(tot)
-        header = (f'<header class="runhead"><span>{conf["code"]} · {cname}</span><span>Chapter&#160;{meta["num"]} · notes pp. {meta.get("pages", "")}</span></header>'
+        header = (f'<header class="runhead"><span>{conf["code"]} · {cname}</span><span>Chapter&#160;{meta["num"]} · {conf.get("pageslabel", "notes pp.")} {meta.get("pages", "")}</span></header>'
                   f'<header class="ch-head"><p class="eyebrow">Chapter&#160;{meta["num"]}</p><h1>{meta.get("titlehtml", meta["title"])}</h1><p class="dek">{meta.get("dek", "")}</p>'
                   f'<p class="ch-meta" data-tip="Estimated reading time and amount of content for the whole chapter.">{cm}</p></header>')
         mp = ROOT / 'maps' / (name[len(P):] + '.json')

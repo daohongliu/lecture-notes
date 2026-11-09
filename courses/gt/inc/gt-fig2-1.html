@@ -1,0 +1,12 @@
+<figure class="wide" id="fig2-1">
+  <div class="fig-body">
+    <svg id="gt-mon-svg" class="pt" viewBox="0 0 720 316" role="img" aria-label="A utility of money curve with a fifty-fifty gamble, its expected value and its certainty equivalent."></svg>
+    <div class="controls">
+      <span class="btn-row" role="group" aria-label="shape of the utility function"><button data-shape="concave" aria-pressed="true">concave</button><button data-shape="linear" aria-pressed="false">linear</button><button data-shape="convex" aria-pressed="false">convex</button></span>
+      <label class="grow" for="gt-mon-a">low prize £ <input type="range" id="gt-mon-a" min="0" max="100" step="1" value="0"> <output id="gt-mon-av"></output></label>
+      <label class="grow" for="gt-mon-b">high prize £ <input type="range" id="gt-mon-b" min="0" max="100" step="1" value="100"> <output id="gt-mon-bv"></output></label>
+    </div>
+    <div class="readout" id="gt-mon-out" aria-live="polite"></div>
+  </div>
+  <figcaption><span class="figtag">Figure 2.1</span>A fifty-fifty gamble between two prizes. Its expected utility is the midpoint of the chord (the dot); the money amount with that utility is the <b>certainty equivalent</b>. With a concave utility the certainty equivalent is below the expected money: the agent would accept less than \(\mathbb E[\text{money}]\) for certain rather than gamble. That is risk aversion (Example 2.16).</figcaption>
+</figure>

@@ -1,0 +1,206 @@
+@num 7
+@title Win-Lose Games and Complexity
+@titlehtml <em>Win-lose</em> games and complexity
+@pages 397–427
+@dek Two players, one wins, one loses. Backward induction solves such games, but when the game is described compactly the tree explodes, and the difficulty of deciding who wins climbs the complexity hierarchy from P through PSPACE and EXPTIME to EXPSPACE.
+---
+## 7.1 Extensive form win-lose games {398} [d1 i3]
+<role r="setup" a="the simplest strictly competitive games">
+
+We now focus on two-player, strictly competitive extensive form games, with players called $E$ and $A$ (think "there <b>E</b>xists a move" and "for <b>A</b>ll moves"). Every leaf is labelled $1$ or $-1$, the payoff to $E$:
+
+<ul><li>payoff $1$ means "$E$ wins";</li><li>payoff $-1$ means "$E$ loses", that is, $A$ wins.</li></ul>
+
+As in any zero-sum game, we list only one player's payoff.
+</role>
+
+<role r="idea" a="forcing a win">
+
+The key question is whether the game is **determined**: whether some player can **force a win**. You force a win if you have a strategy such that every outcome consistent with it is a win for you:
+$$\text{there is a move for you such that for all replies there is a move for you such that for all replies}\ \cdots\ \text{you win.}$$
+Such a strategy is a **winning strategy**.
+</role>
+
+<thm k="Definition 7.1" nm="α-ability" pg="400">
+Player 1 has a **winning strategy**, or is **$\alpha$-able** to win, if
+$$\exists\sigma_1\in\Sigma_1\ \ \forall\sigma_2\in\Sigma_2:\quad u_1(\sigma_1,\sigma_2)=1.$$
+</thm>
+<role r="reading" a="Definition 7.1">
+
+Player 1 commits to $\sigma_1$ without needing to know anything about player 2's strategy.
+</role>
+
+<thm k="Definition 7.2" nm="β-ability" pg="401">
+Player 1 is **$\beta$-able** to win if
+$$\forall\sigma_2\in\Sigma_2\ \ \exists\sigma_1\in\Sigma_1:\quad u_1(\sigma_1,\sigma_2)=1.$$
+</thm>
+<role r="reading" a="Definition 7.2">
+
+Look at the order of the quantifiers. $\beta$-ability says player 1 can always win **if she knows** player 2's strategy. $\alpha$-ability implies $\beta$-ability (use the same $\sigma_1$ for every $\sigma_2$), but not conversely: in Matching Pennies, read as a win-lose game, player 1 is $\beta$-able (match whatever player 2 shows) but not $\alpha$-able.
+</role>
+
+<thm k="Example 7.3" d="Who can force a win?" pg="402">
+$E$ chooses $L$ or $R$; then $A$ chooses $l$ or $r$. The leaves are $(L,l)\mapsto1$, $(L,r)\mapsto1$, $(R,l)\mapsto1$, $(R,r)\mapsto-1$. Backward induction: after $L$, both of $A$'s moves lose for $A$, so the node is worth $1$; after $R$, $A$ plays $r$, so it is worth $-1$. $E$ forces a win by choosing $L$.
+</thm>
+
+<thm k="Theorem 7.4" d="Backward induction solves win-lose games" pg="404" it>
+In extensive form win-lose games, backward induction determines which player can force a win, and the strategies it computes are optimal for both players; in particular they include a winning strategy for the winner. Winning strategies can be computed in time polynomial in the size of the tree. Consequently, finite extensive form win-lose games are **determined**: one of the players can force a win.
+</thm>
+<role r="reading" a="Theorem 7.4">
+
+Backward induction labels every node $1$ or $-1$. A node owned by $E$ is labelled $1$ iff **some** child is labelled $1$; a node owned by $A$ is labelled $1$ iff **every** child is. If the root gets $1$, $E$'s choices form a winning strategy; if $-1$, $A$'s do. There is no third option: that is determinacy. (Zermelo's 1913 theorem on chess is the same statement: either White can force a win, or Black can, or both can force a draw.)
+</role>
+
+## 7.2 Compact games and complexity {405} [d2 i2]
+<role r="why" a="decision problems as games">
+
+Two-player win-lose games have a special role in computer science, though game-theoretically they are simple. Many decision problems can be phrased as a game:
+$$x\text{ is a positive instance of problem }\Pi\iff\text{player 1 can force a win in the game }G_{(\Pi,x)}.$$
+Different kinds of game then characterise different complexity classes.
+</role>
+
+<role r="caution" a="the catch is the input size">
+
+Backward induction is polynomial **in the size of the tree**, but that assumes the whole tree is the input. In practice games are given **compactly**: the rules of chess fit on a page, while its tree has more nodes than there are atoms in the universe. With compact representations we should expect the complexity to rise, and it does.
+</role>
+
+<thm k="Theorem 7.5" d="The complexity ladder" pg="407" it>
+Typically, deciding who can force a win is
+
+<ol><li>**P-complete** for explicitly represented games (the game tree, or game graph, is the input);</li><li>**PSPACE-complete** for compact games guaranteed to end after a polynomial number of moves;</li><li>**EXPTIME-complete** for compact games that can go on for exponentially many moves;</li><li>**EXPSPACE-complete** for games that can go on for a long time and require memory of the history;</li><li>of even higher complexity for games that go on for ever (recall LTL synthesis, 2EXPTIME-complete, in Section 5.6).</li></ol>
+</thm>
+<role r="roadmap" a="one example per rung">
+
+The rest of the chapter gives a representative for each rung: graph games for P, the formula game and Geography for PSPACE, and PEEK-G4 and its no-repetition variant for EXPTIME and EXPSPACE.
+</role>
+
+<bg id="bg-classes" t="P, PSPACE, EXPTIME, EXPSPACE" lead="From Part A Computational Complexity">
+<b>P</b> is the class of decision problems solvable in time polynomial in the input size; **PSPACE**, solvable using polynomial space (any amount of time); **EXPTIME**, solvable in time $2^{\text{poly}(n)}$; **EXPSPACE**, in space $2^{\text{poly}(n)}$. Known: $\mathrm P\subseteq\mathrm{NP}\subseteq\mathrm{PSPACE}\subseteq\mathrm{EXPTIME}\subseteq\mathrm{EXPSPACE}$, with $\mathrm P\ne\mathrm{EXPTIME}$ and $\mathrm{PSPACE}\ne\mathrm{EXPSPACE}$. A problem is **complete** for a class if it is in the class and every problem in the class reduces to it (for P-completeness, with logarithmic-space reductions). The canonical PSPACE-complete problem is **QBF**: is a fully quantified Boolean formula $\exists x_1\forall y_1\exists x_2\cdots\varphi$ true?
+</bg>
+
+## 7.3 Simple graph games {408} [d2 i3]
+
+<thm k="Definition 7.6" nm="Simple graph game" pg="408">
+A **simple graph game** is played on a finite directed graph $(V,E,v_0)$ with $E\subseteq V\times V$, whose vertices are split between the players: $V_1$ for player 1, $V_2$ for player 2, with $v_0\in V_1$ (player 1 moves first), and every edge going from one player's vertex to the other's. A set $W_0\subseteq V$ of **winning positions** for player 1 is given. Player 1 picks an edge out of $v_0$, then player 2 an edge out of the new vertex, and so on. Player 1 wins if the play reaches a position in $W_0$.
+</thm>
+<role r="reading" a="Definition 7.6">
+
+GRAPH GAME is the problem: given such a game, can player 1 force a win? Unlike a tree, the graph can have cycles, so the play could go on forever, in which case player 1 hasn't reached $W_0$ and loses.
+</role>
+
+<role r="technique" a="unfolding versus working on the graph">
+
+One approach: unfold the graph into a game tree and apply backward induction. That shows simple graph games are determined, modulo some fiddly technicalities (cycles make the unfolding infinite, so it must be cut off). But we can apply the idea of backward induction **directly to the graph**.
+</role>
+
+<thm k="Definition 7.7" nm="Winning positions" pg="411">
+Let $W\subseteq V$ be the **smallest** set such that
+
+<ol><li>$W_0\subseteq W$ (the initial winning positions are winning);</li><li>if $v\in V_1$ and some edge $(v,v')\in E$ has $v'\in W$, then $v\in W$ (player 1 can move into $W$);</li><li>if $v\in V_2$ and every edge $(v,v')\in E$ has $v'\in W$, then $v\in W$ (player 2 can't avoid moving into $W$).</li></ol>
+</thm>
+
+<thm k="Theorem 7.8" d="Winning positions decide the game" pg="412" it>
+Player 1 can force a win in the simple graph game iff $v_0\in W$.
+</thm>
+
+<pf h="Proof sketch (added here).">
+Build $W$ in rounds, as the algorithm below does, and give each vertex its **rank**: the round in which it was added ($0$ for $W_0$).
+
+**If $v_0\in W$, player 1 wins.** At a vertex of $V_1$ in $W$ of rank $k>0$, rule 2 put it there because of an edge into $W$ of smaller rank; player 1 follows such an edge. At a vertex of $V_2$ in $W$ of rank $k>0$, every edge leads into $W$ to rank smaller than $k$. So along the play the rank strictly decreases until it reaches $0$, a position in $W_0$.
+
+**If $v_0\notin W$, player 2 can stop her.** At $v\in V_1\setminus W$, rule 2 failed, so every edge leads outside $W$. At $v\in V_2\setminus W$, rule 3 failed, so some edge leads outside $W$, and player 2 takes it. The play never enters $W\supseteq W_0$, so player 1 never wins.
+</pf>
+
+<div class="algo" id="alg7-9" data-label="Algorithm 7.9" data-name="Backward induction for simple graph games"><div class="algo-h"><span class="algo-k">Algorithm 7.9</span> Backward induction for simple graph games</div><ol class="algo-l"><li>$W\gets W_0$; $\ \mathit{old}\gets\emptyset$</li><li><b>while</b> $\mathit{old}\ne W$:</li><li class="in1">$\mathit{old}\gets W$</li><li class="in1"><b>for</b> $v\in V\setminus W$:</li><li class="in2"><b>if</b> $v\in V_1$ and some $(v,v')\in E$ has $v'\in W$: $W\gets W\cup\{v\}$</li><li class="in2"><b>else if</b> $v\in V_2$ and every $(v,v')\in E$ has $v'\in W$: $W\gets W\cup\{v\}$</li><li><b>if</b> $v_0\in W$: <b>return</b> "player 1 can force a win" <b>else return</b> "player 2 can force a win"</li></ol></div>
+
+<role r="reading" a="Algorithm 7.9">
+
+Each pass of the while loop adds at least one vertex or stops, so there are at most $|V|$ passes, each taking polynomial time: the whole thing is polynomial. (With some care, linear in $|V|+|E|$.) Figure 7.1 runs it. In fact GRAPH GAME is **P-complete** (Greenlaw, Hoover and Ruzzo, *Limits to Parallel Computation*, 1995): it is as hard as anything in P, so probably can't be solved fast in parallel. As a corollary of Theorem 7.8, simple graph games are determined.
+</role>
+
+@@gt-fig7-1@@
+
+## 7.4 The formula game and Geography {414} [d2 i3]
+<role r="setup" a="games with few moves">
+
+The second rung: games given compactly, but guaranteed to end after a small (polynomial) number of moves.
+</role>
+
+<thm k="Definition 7.10" nm="The formula game" pg="415">
+The **formula game** is given by variables $x=x_1,\dots,x_k$ and $y=y_1,\dots,y_k$ and a propositional formula $\varphi(x,y)$. Player 1 picks a value ($\top$ or $\bot$) for $x_1$, then player 2 for $y_1$, then player 1 for $x_2$, and so on, until every variable has a value. Player 1 wins if $\varphi$ is true under the resulting valuation.
+</thm>
+<role r="reading" a="Definition 7.10">
+
+It is a compactly specified extensive form game with only $k$ moves per player. We could unfold it into a tree and apply backward induction, but the tree has $2^{2k}$ leaves: exponential in the number of variables.
+</role>
+
+<thm k="Example 7.11" d="A small formula game" pg="416">
+Two moves, $x_1$ for player 1 and then $x_2$ for player 2 (the slides name both variables $x$), with goal $x_2\to x_1$. If player 1 sets $x_1=\top$, the goal is true whatever player 2 does: a win. If she sets $x_1=\bot$, player 2 sets $x_2=\top$ and the goal is false. So player 1 wins by choosing $x_1=\top$.
+</thm>
+
+<thm k="Theorem 7.12" d="The formula game is QBF" pg="417" it>
+Player 1 can force a win in the formula game iff the quantified Boolean formula
+$$\exists x_1\,\forall y_1\,\exists x_2\,\forall y_2\cdots\exists x_k\,\forall y_k\ \ \varphi(x,y)$$
+is true. So deciding whether player 1 can force a win is **PSPACE-complete**.
+</thm>
+<role r="reading" a="Theorem 7.12">
+
+"There is a move for me such that for all your replies there is a move for me such that…" is just the quantifier prefix. The good news: formula games are determined, and winning strategies can be found by unfolding and backward induction. The bad news: the tree is exponentially large compared with the formula. Unfolding isn't practical: use a **QBF solver** instead.
+</role>
+
+<thm k="Example 7.13" nm="Geography" pg="419">
+The cities are Peoria, Austin, Nashville, Albany, Amherst, Tucson, Oakland, Tokyo and Oxford.[[The slides spell it "Tuscon".]] The game starts at Peoria. Then the players take turns, player 1 first, to name a city whose name starts with the **last letter** of the previous city; no city may be named twice. A player who can't move loses.
+</thm>
+<role r="reading" a="Example 7.13">
+
+Peoria ends in $a$, so player 1 can say Austin, Albany or Amherst. Albany ends in $y$, and no city starts with $y$, so it wins at once: player 2 is stuck. Austin lets player 2 reply Nashville, which ends in $e$, a dead end for player 1. Amherst ($t$) leaves player 2 the choice of Tucson or Tokyo; after Tucson, player 1 says Nashville and wins; after Tokyo ($o$), player 1 says Oakland or Oxford, both ending in the dead letter $d$, and wins. So player 1 can force a win, with Albany or Amherst. Unfolding the tree and applying backward induction settles any such game, at the cost of another exponential blowup. Figure 7.2 lets you play it against a perfect opponent.
+</role>
+
+@@gt-fig7-2@@
+
+<thm k="Theorem 7.14" d="Geography is PSPACE-complete" pg="421" it>
+Deciding whether player 1 can force a win in (generalised) Geography, played on an arbitrary directed graph, is PSPACE-complete.
+</thm>
+
+<thm k="Theorem 7.15" d="When a game is in PSPACE" pg="422" it>
+Suppose a compactly specified win-lose game satisfies
+
+<ol><li>the length of every legal sequence of moves is bounded by a polynomial in the size of the input; and</li><li>given a position, there is a polynomial space algorithm that lists all next moves and positions, or decides who has won.</li></ol>
+
+Then who wins can be decided in polynomial space.
+</thm>
+
+<pf h="Proof sketch (added here).">
+Run backward induction as a depth-first search of the game tree, keeping only the current path in memory. The path has polynomial length, and each position on it takes polynomial space, so the stack is polynomial. Each node's value is computed from its children one at a time (an "or" over children for player 1, an "and" for player 2) and the children's subtrees are discarded once evaluated. The time is exponential, but the space is polynomial.
+</pf>
+
+## 7.5 Games with exponentially many moves {423} [d3 i2]
+
+<thm k="Definition 7.16" nm="PEEK-G4" pg="424">
+An instance of PEEK-G4 is $\langle\Phi_1,\Phi_2,\Phi_3,\gamma\rangle$, where
+
+<ul><li>$\Phi_1$ and $\Phi_2$ are disjoint finite sets of Boolean variables, controlled by players 1 and 2;</li><li>$\Phi_3\subseteq\Phi_1\cup\Phi_2$ is the set of variables true in the initial state;</li><li>$\gamma$ is a propositional formula over $\Phi_1\cup\Phi_2$, the winning condition.</li></ul>
+
+Starting from the valuation $\Phi_3$, the players alternate (player 1 first), each move setting the value of **one** of their own variables (passing is allowed). A player wins if her move makes $\gamma$ true.
+</thm>
+
+<thm k="Theorem 7.17" d="PEEK-G4 is EXPTIME-complete" pg="424" it>
+Deciding whether a given player has a winning strategy in an instance of PEEK-G4 is EXPTIME-complete.
+</thm>
+
+<pause n="Why exponentially many moves?" q="If a player can win at PEEK-G4, why can she do so in $O(2^{|\Phi|})$ moves?">
+A position is a valuation of the $|\Phi|$ variables plus whose turn it is: $2^{|\Phi|+1}$ positions. The game is determined by the position (the history doesn't matter), so a winning strategy never needs to pass through the same position twice: if it did, cut out the loop and the strategy still wins, sooner. So some winning play visits each position at most once, and takes at most $2^{|\Phi|+1}$ moves.
+</pause>
+
+<role r="technique" a="unfold the states, not the tree">
+
+First idea: unfold into a game tree and apply backward induction. That doesn't work: a tree with branching factor $b$ and depth $d$ has $b^d$ leaves; here $b$ is about $|\Phi_i|$ and $d$ about $2^{|\Phi|}$, so the tree has around $|\Phi_i|^{2^{|\Phi|}}$ nodes, and we get a **2EXPTIME** algorithm. With care, backward induction still gives a "merely" exponential algorithm. Define a **state** as a valuation of $\Phi$ together with whose turn it is: $2^{|\Phi|+1}$ states. Make these the vertices of a simple graph game, with an edge for each legal move, and $W_0$ the states reached by a move making $\gamma$ true (for the player in question). Then run Algorithm 7.9, which is polynomial in the size of this exponentially large graph: exponential time overall.
+</role>
+
+<thm k="Theorem 7.18" d="No repetition costs EXPSPACE" pg="427" it>
+PEEK-G4 in which no valuation of the variables may be repeated is EXPSPACE-complete.
+</thm>
+<role r="reading" a="Theorem 7.18">
+
+Forbidding repetition means the position now includes **every previous configuration**: you have to remember them all, and there are no shortcuts. The state-graph trick no longer works, because the "state" is the whole history. That is the fourth rung of the ladder.
+</role>

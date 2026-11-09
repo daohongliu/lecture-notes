@@ -37,8 +37,8 @@ function loadThree() {
   return threeP;
 }
 
-const COURSE_NAME = { pmm: 'Probability, Measure and Martingales', clt: 'Computational Learning Theory', it: 'Information Theory' };
-const COURSE_SHORT = { pmm: 'PMM', clt: 'Learning Theory', it: 'Information Theory' };
+const COURSE_NAME = { pmm: 'Probability, Measure and Martingales', clt: 'Computational Learning Theory', it: 'Information Theory', gt: 'Computational Game Theory' };
+const COURSE_SHORT = { pmm: 'PMM', clt: 'Learning Theory', it: 'Information Theory', gt: 'Game Theory' };
 /* ---------- header strips: random walks for PMM, labelled points for CLT ---------- */
 function drawStrip(c) {
   const dpr = Math.min(2, window.devicePixelRatio || 1), W = c.clientWidth || 600, H = 120;
@@ -46,6 +46,25 @@ function drawStrip(c) {
   const cs = getComputedStyle(document.body);
   const col = n => cs.getPropertyValue(n).trim();
   const R = rng(c.dataset.motif === 'points' ? 11 : c.dataset.motif === 'bits' ? 5 : 7);
+  if (c.dataset.motif === 'matrices') {
+    /* a row of little 2×2 games, each player's best responses bold; where both meet there is a pure equilibrium */
+    let x = 8; g.lineWidth = 1; g.textBaseline = 'middle'; g.textAlign = 'center';
+    while (x < W - 60) {
+      const u1 = [0, 1, 2, 3].map(() => Math.floor(R() * 5)), u2 = [0, 1, 2, 3].map(() => Math.floor(R() * 5));
+      const cw = 26, chh = 22, y0 = 18 + R() * 50;
+      for (let r = 0; r < 2; r++) for (let c = 0; c < 2; c++) {
+        const k = 2 * r + c, cx = x + c * cw, cy = y0 + r * chh;
+        g.globalAlpha = .45; g.strokeStyle = col('--ink-soft'); g.strokeRect(cx, cy, cw, chh);
+        const br1 = u1[k] >= u1[2 * (1 - r) + c], br2 = u2[k] >= u2[2 * r + (1 - c)];
+        if (br1 && br2) { g.globalAlpha = .22; g.fillStyle = col('--ochre'); g.fillRect(cx + 1, cy + 1, cw - 2, chh - 2); }
+        g.font = '10px ' + (cs.getPropertyValue('--mono') || 'monospace');
+        g.globalAlpha = br1 ? .95 : .4; g.fillStyle = col('--blue'); g.fillText(u1[k], cx + 8, cy + chh - 7);
+        g.globalAlpha = br2 ? .95 : .4; g.fillStyle = col('--red'); g.fillText(u2[k], cx + cw - 8, cy + 7);
+      }
+      x += 2 * cw + 26 + R() * 30;
+    }
+    g.globalAlpha = 1; g.textAlign = 'start'; return;
+  }
   if (c.dataset.motif === 'bits') {
     /* a stream of source symbols above, its prefix-code bits below: frequent symbols get short codewords */
     const syms = ['e', 't', 'a', 'o', 'n', 's', 'h', 'r', 'd', 'l', 'u', '_'], code = ['00', '010', '011', '100', '1010', '1011', '1100', '1101', '11100', '11101', '11110', '11111'];
@@ -379,7 +398,7 @@ const cmapBody = h('div', 'cmap-b'); cmap.appendChild(cmapHead); cmap.appendChil
 const cmapBtn = h('button', 'cmap-btn', 'map'); cmapBtn.type = 'button'; cmapBtn.title = 'Map of the chapter'; cmapBtn.hidden = true;
 document.body.appendChild(cmap); document.body.appendChild(cmapBtn);
 let CM = null, cmOpen = false;
-function chNum(id) { const m = /(?:^|-)(?:r|s|h|fig|alg|ch|eq)(\d+)/.exec(id.replace(/^(clt|it)-/, '')); return m ? +m[1] : null; }
+function chNum(id) { const m = /(?:^|-)(?:r|s|h|fig|alg|ch|eq)(\d+)/.exec(id.replace(/^(clt|it|gt)-/, '')); return m ? +m[1] : null; }
 function wrapText(t, w, px) { const words = t.split(' '), lines = []; let cur = ''; const cw = px * .5; words.forEach(x => { const nx = cur ? cur + ' ' + x : x; if (nx.length * cw > w && cur) { lines.push(cur); cur = x; } else cur = nx; }); if (cur) lines.push(cur); return lines; }
 function placeCmap() {
   const v = currentView && document.getElementById(currentView);
@@ -521,7 +540,7 @@ function buildIndex() {
   SRCH.idx = idx;
 }
 const sbox = h('div', 'search-box'); sbox.hidden = true; sbox.setAttribute('role', 'dialog'); sbox.setAttribute('aria-label', 'Search');
-sbox.innerHTML = '<div class="sb-in"><input type="search" placeholder="Search every course: a result, a word, “Fatou”, “VC dimension”, “4.9”…" aria-label="Search" autocomplete="off" spellcheck="false"><div class="sb-filt" role="group"><button type="button" data-sf="" aria-pressed="true">all</button><button type="button" data-sf="pmm" aria-pressed="false">PMM</button><button type="button" data-sf="clt" aria-pressed="false">CLT</button><button type=\"button\" data-sf=\"it\" aria-pressed=\"false\">IT</button></div></div><div class="sb-res" role="listbox"></div><div class="sb-foot">↑↓ to move · enter to go · esc to close</div>';
+sbox.innerHTML = '<div class="sb-in"><input type="search" placeholder="Search every course: a result, a word, “Fatou”, “VC dimension”, “4.9”…" aria-label="Search" autocomplete="off" spellcheck="false"><div class="sb-filt" role="group"><button type="button" data-sf="" aria-pressed="true">all</button><button type="button" data-sf="pmm" aria-pressed="false">PMM</button><button type="button" data-sf="clt" aria-pressed="false">CLT</button><button type="button" data-sf="it" aria-pressed="false">IT</button><button type="button" data-sf="gt" aria-pressed="false">GT</button><button type=\"button\" data-sf=\"it\" aria-pressed=\"false\">IT</button></div></div><div class="sb-res" role="listbox"></div><div class="sb-foot">↑↓ to move · enter to go · esc to close</div>';
 const sback = h('div', 'search-back'); sback.hidden = true;
 document.body.appendChild(sback); document.body.appendChild(sbox);
 const sin = $('input', sbox), sres = $('.sb-res', sbox); let sel = 0, hits = [], sfilt = '';

@@ -1,0 +1,130 @@
+{
+"nodes": [
+[
+"zs",
+"Zero-sum: one number",
+"s6-1",
+1
+],
+[
+"mx",
+"Maximin v̲",
+"r6-1",
+1
+],
+[
+"mn",
+"Minimax v̄",
+"r6-2",
+0
+],
+[
+"le",
+"v̲ ≤ v̄",
+"r6-3",
+0
+],
+[
+"sad",
+"Saddle point = pure NE",
+"r6-4",
+0
+],
+[
+"pmt",
+"Pure minimax theorem",
+"r6-5",
+0
+],
+[
+"vn",
+"von Neumann’s theorem",
+"r6-6",
+1
+],
+[
+"lp1",
+"Maximin LP",
+"r6-7",
+0
+],
+[
+"lp2",
+"Minimax LP (dual)",
+"r6-8",
+0
+],
+[
+"ex",
+"Worked example: 42/47",
+"r6-9",
+0
+]
+],
+"edges": [
+[
+"zs",
+"mx",
+"row moves first"
+],
+[
+"zs",
+"mn",
+"column moves first"
+],
+[
+"mx",
+"le",
+""
+],
+[
+"mn",
+"le",
+""
+],
+[
+"le",
+"sad",
+"equality"
+],
+[
+"sad",
+"pmt",
+""
+],
+[
+"pmt",
+"vn",
+"with mixing"
+],
+[
+"vn",
+"lp1",
+"compute"
+],
+[
+"lp1",
+"lp2",
+"duality"
+],
+[
+"lp1",
+"ex",
+"solve"
+]
+],
+"ext": [
+[
+"c4",
+"Nash’s theorem",
+"r4-2"
+]
+],
+"extedges": [
+[
+"vn",
+"c4",
+"special case of"
+]
+]
+}

@@ -1,0 +1,51 @@
+@num 2
+@title Strategic form games and mixed strategies
+@source Tutorial 2 · MT26
+@dek True-or-false statements about solution and welfare concepts, the indifference principle proved in both directions, the Tragedy of the Commons, and two firms deciding whether to buy data. Needs Chapters 3 and 4.
+---
+## Solution concepts and welfare
+
+<qn n="1" t="Prove or disprove">
+Prove or disprove each statement, in the context of $2\times2$ games. (Disproving is usually best done with a counterexample.)
+
+<ol class="parts"><li>If player $i$ has a dominant strategy, then in every Nash equilibrium player $i$ plays a dominant strategy.</li><li>If a game has a dominant strategy equilibrium, it is the only dominant strategy equilibrium.</li><li>Every dominant strategy equilibrium is a Nash equilibrium.</li><li>Every Nash equilibrium is a dominant strategy equilibrium.</li><li>If $\omega$ maximises utilitarian social welfare, then $\omega$ is Pareto efficient.</li><li>If $\omega$ is Pareto efficient, then it maximises utilitarian social welfare.</li><li>If all utilities are positive, any outcome maximising the product of the players' utilities is Pareto efficient.</li><li>If all utilities are positive, every Pareto efficient outcome maximises the product of the utilities.</li></ol>
+
+<details class="hint"><summary>hint</summary>Under the first (default) notion of Definition 3.6, a player can have two dominant strategies that tie everywhere; parts 1 and 2 turn on this. For the welfare parts, a strict improvement for one player and no loss for others raises both the sum and (with positive utilities) the product. For the converses, try a game with outcomes $(1,1)$, $(3,0)$, or similar.</details>
+
+<p class="uses">Uses Definitions 3.6–3.8, 3.11, 3.12 and Theorem 3.14.</p>
+</qn>
+
+## Mixed strategies
+
+<qn n="2" t="The indifference principle, both ways">
+For the generic $2\times2$ game of Section 4.2 (rows $T,B$, columns $L,R$), prove that $(p,q)\in(0,1)^2$ is a fully mixed Nash equilibrium **if and only if**
+$$EU_1(T,q)=EU_1(B,q)\qquad\text{and}\qquad EU_2(L,p)=EU_2(R,p).$$
+
+<details class="hint"><summary>hint</summary>One direction is Theorem 4.4. For the other, write $EU_1(p',q)=p'\,EU_1(T,q)+(1-p')\,EU_1(B,q)$ and observe what equality of the two terms says about every $p'\in[0,1]$.</details>
+
+<p class="uses">Uses Theorem 4.4 and Definition 4.1.</p>
+</qn>
+
+## Applications
+
+<qn n="3" t="The Tragedy of the Commons">
+Ten families herd goats on one square mile of common land. A goat that grazes a fraction $0<a\le1$ of the land produces
+$$b=e^{1-\frac1{10a}}$$
+buckets of milk a day. (A goat with $\frac1{10}$ of the land gives $1$ bucket; less land, less milk; more land gives diminishing returns.)
+
+<ol class="parts"><li>If $N$ goats graze, each on $\frac1N$ of the land, find the total milk production $M(N)$.</li><li>The village leader wants to maximise total milk. How many goats should graze in total?</li><li>You are a villager deciding how many goats to graze, and each of the other nine is grazing ten goats, $90$ in all. How many should you graze to maximise your own milk? Argue that the result is a Nash equilibrium. Why is it a tragedy?</li><li>Argue further that the outcome of part 3 is a dominant strategy equilibrium.</li></ol>
+
+<details class="hint"><summary>hint</summary>Treat $N$ as a real number and differentiate $M(N)=Ne^{1-N/10}$. In part 3 your milk is $k\,e^{1-(90+k)/10}$ for $k$ goats; maximise over $k$, and notice the answer doesn't depend on how many goats the others graze.</details>
+
+<p class="uses">Compare utilitarian welfare (Definition 3.12) with the Nash equilibrium (Definition 3.8), as in the Prisoner's Dilemma.</p>
+</qn>
+
+<qn n="4" t="Two firms buying data">
+Firms $X$ and $Y$ sell a machine learning service. Each firm's market share is proportional to its data: if $X$ has $x$ data points and $Y$ has $y$, the profits are $\frac x{x+y}M$ and $\frac y{x+y}M$, where $M$ is the value of the market. Initially $X$ has $1$ million data points and $Y$ has $2$ million. Both may buy a new corpus of $n$ million points ($n>0$) at price $P>0$. If both want to buy, each gets $\frac n2$ and pays $\frac P2$.
+
+<ol class="parts"><li>Describe this as a two-player game with actions Buy and NotBuy. Take $M=1$ from now on.</li><li>For fixed $n$, when is Buy a weakly dominant strategy for $X$? For $Y$? (Weakly dominant: always at least as good, and strictly better in at least one case.)</li><li>For fixed $n$, for which $P$ is (Buy, Buy) a Nash equilibrium?</li><li>For which $P$ is (NotBuy, NotBuy) a Nash equilibrium?</li><li>Are there values of $P$ for which (Buy, NotBuy) or (NotBuy, Buy) is a Nash equilibrium?</li></ol>
+
+<details class="hint"><summary>hint</summary>Write the four cells first: e.g. if only $X$ buys, $X$ gets $\frac{1+n}{3+n}-P$. Each equilibrium condition is a comparison of two cells, which becomes an inequality "$P\le$ something in $n$". Then compare the thresholds.</details>
+
+<p class="uses">Uses Definitions 3.6 and 3.8, and weak dominance as in part 2 of Definition 3.6.</p>
+</qn>

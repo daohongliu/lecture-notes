@@ -1,0 +1,415 @@
+@num 3
+@title Normal Form Games
+@titlehtml Normal form games and <em>Nash equilibrium</em>
+@pages 115–201
+@dek Several players choose at once, and each one's payoff depends on everybody's choice. Best responses, dominant strategies and Nash equilibrium say what rational play looks like; social welfare says whether it is any good; and a gallery of famous games shows how often the two disagree.
+---
+## 3.1 Game forms and games {116} [d1 i3]
+<role r="setup" a="simultaneous, independent choices">
+
+This chapter studies **strategic form** (or **normal form**) non-cooperative games, the best-known class of games. Each player makes one choice, all at the same time, and players act alone: joint decisions are not possible.
+</role>
+
+<thm k="Definition 3.1" nm="Game form" pg="118">
+Let $N=\{1,\dots,n\}$ be the set of players. Each player $i$ simultaneously chooses a **pure strategy** from a set $\Sigma_i$. The combination of choices produces an outcome in $\Omega$, given by an **outcome function**
+$$g:\Sigma_1\times\dots\times\Sigma_n\to\Omega.$$
+A **game form** is the structure $\langle N,\Omega,\Sigma_1,\dots,\Sigma_n,g\rangle$.
+</thm>
+<role r="setup" a="dropping the outcomes">
+
+Now give each player $i$ a utility function. It is convenient to skip the outcomes and put utilities directly on combinations of choices: instead of $u_i:\Omega\to\R$ we write
+$$u_i:\Sigma_1\times\dots\times\Sigma_n\to\R,$$
+with $u_i(\sigma_1,\dots,\sigma_n)$ short for $u_i(g(\sigma_1,\dots,\sigma_n))$.
+</role>
+
+<thm k="Definition 3.2" nm="Normal form game" pg="120">
+A **normal form game** is a structure $\langle N,\Sigma_1,\dots,\Sigma_n,u_1,\dots,u_n\rangle$, where $N=\{1,\dots,n\}$ is the set of players, $\Sigma_i$ is the set of pure strategies of player $i$, and $u_i:\Sigma_1\times\dots\times\Sigma_n\to\R$ is player $i$'s utility function.
+</thm>
+<role r="reading" a="Definition 3.2">
+
+The utility player $i$ gets depends not only on her own choice but on everybody else's, and the same goes for every other player. That interdependence is the whole subject.
+</role>
+
+<role r="setup" a="payoff matrices">
+
+A two-player game fits in a **payoff matrix** (two-player games are also called **bimatrix games**). Player 1, the **row player**, chooses a row; player 2, the **column player**, chooses a column. Each cell holds both players' utilities for that pair of choices. On these pages the row player's utility sits at the bottom left of the cell, in brick red, and the column player's at the top right, in slate blue.
+</role>
+
+<thm k="Example 3.3" d="The running example" pg="122">
+Take $N=\{1,2\}$, $\Sigma_1=\{T,B\}$, $\Sigma_2=\{l,r\}$ and
+$$u_1(T,l)=u_1(T,r)=1,\quad u_1(B,l)=u_1(B,r)=0,\qquad u_2(T,l)=u_2(B,r)=1,\quad u_2(T,r)=u_2(B,l)=0.$$
+As a payoff matrix:
+<pm r="T,B" c="l,r" p1="1,1;0,0" p2="1,0;0,1"></pm>
+If you were player 1, what would you do?
+</thm>
+
+## 3.2 Best responses and dominance {123} [d2 i3]
+<role r="question" a="what is rational when outcomes depend on others?">
+
+If players act rationally, what will happen? Solution concepts answer this; for strategic games the main ones are **dominant strategies**, **Nash equilibrium** and **iterated elimination of dominated strategies**. All of them are built from one idea, the **best response**.
+</role>
+
+<thm k="Definition 3.4" nm="Strategy profile" pg="125">
+A **strategy profile** is a tuple $\sigma=(\sigma_1,\dots,\sigma_n)\in\Sigma_1\times\dots\times\Sigma_n$, one strategy for each player. Write $(\sigma_{-i},\sigma_i')$ for the profile obtained from $\sigma$ by replacing player $i$'s strategy with $\sigma_i'$:
+$$(\sigma_{-i},\sigma_i')=(\sigma_1,\dots,\sigma_{i-1},\sigma_i',\sigma_{i+1},\dots,\sigma_n),$$
+and $\Sigma_{-i}$ for the set of choices of all players except $i$.
+</thm>
+
+<thm k="Definition 3.5" nm="Best response" pg="127">
+Player $i$'s **best response function** $BR_i:\Sigma_1\times\dots\times\Sigma_n\to2^{\Sigma_i}$ is
+$$BR_i(\sigma)=\arg\max_{\sigma_i'\in\Sigma_i}u_i(\sigma_{-i},\sigma_i'),$$
+the set of choices that would give $i$ the highest utility if the others kept to $\sigma$. The game's best response function is $BR(\sigma)=BR_1(\sigma)\times\dots\times BR_n(\sigma)$.
+</thm>
+<role r="reading" a="Definition 3.5">
+
+$BR_i(\sigma)$ ignores $\sigma_i$ itself; it only looks at the others. It is never empty (for finite $\Sigma_i$), but it can have several elements when there are ties. In the running example, $BR_1(l)=BR_1(r)=\{T\}$, $BR_2(T)=\{l\}$ and $BR_2(B)=\{r\}$.
+</role>
+<role r="technique" a="boxing best responses">
+
+A convention that will pay off: **in each column, box the row player's best responses; in each row, box the column player's best responses.** Here is the running example boxed:
+<pm r="T,B" c="l,r" p1="1,1;0,0" p2="1,0;0,1" br></pm>
+</role>
+
+<role r="why" a="a strategy that is always a best response">
+
+Suppose one of your strategies has the property that, whatever the others choose, it is a best response. Then choosing it is never a mistake. That is a very compelling argument for choosing it.
+</role>
+
+<thm k="Definition 3.6" nm="Dominant strategies" pg="131">
+A strategy $\sigma_i\in\Sigma_i$ is
+
+<ol><li>**dominant** if for every profile $\sigma$ and every $\sigma_i'\in\Sigma_i$, $u_i(\sigma_{-i},\sigma_i)\ge u_i(\sigma_{-i},\sigma_i')$;</li><li>**weakly dominant** if it is dominant and, for every other $\sigma_i'\neq\sigma_i$, there is some profile $\sigma$ with $u_i(\sigma_{-i},\sigma_i)>u_i(\sigma_{-i},\sigma_i')$;</li><li>**strictly dominant** if for every profile $\sigma$ and every $\sigma_i'\neq\sigma_i$, $u_i(\sigma_{-i},\sigma_i)>u_i(\sigma_{-i},\sigma_i')$.</li></ol>
+</thm>
+<role r="caution" a="three definitions in the literature">
+
+Computer science books tend to use the first definition, often vaguely; traditional game theory books use the second. Unless stated otherwise, "dominant" means the first. With a weakly dominant strategy you are never worse off and sometimes strictly better off than with any other; with a strictly dominant one you are always strictly better off. (The slides state the weak version with "for some $\sigma$, $u_i(\sigma_{-i},\sigma_i)>u_i(\sigma_{-i},\sigma_i')$ for all $\sigma_i'$"; the standard version above lets the profile depend on the alternative $\sigma_i'$.)
+</role>
+<role r="example" a="the running example">
+
+In the running example, $T$ is strictly dominant for player 1: it is boxed in every column. Player 2 has no dominant strategy: against $T$ the best response is $l$, against $B$ it is $r$.
+</role>
+
+<thm k="Definition 3.7" nm="Dominant strategy equilibrium" pg="136">
+A **dominant strategy equilibrium** is a strategy profile in which every player plays a dominant strategy.
+</thm>
+<role r="reading" a="Definition 3.7">
+
+A very strong solution concept, but most games have no dominant strategy equilibrium, because most players have no dominant strategy.
+</role>
+
+## 3.3 Nash equilibrium {137} [d2 i3]
+<role r="why" a="relax the requirement">
+
+A dominant strategy must be a best response to *everything* the others might do. Nash equilibrium asks only that each strategy be a best response to what the others *actually* do.
+</role>
+
+<thm k="Definition 3.8" nm="Pure strategy Nash equilibrium" pg="137">
+A strategy profile $\sigma$ is a **(pure strategy) Nash equilibrium** if no player $i\in N$ has a strategy $\sigma_i'\in\Sigma_i$ with
+$$u_i(\sigma_{-i},\sigma_i')>u_i(\sigma).$$
+Write $NE(G)$ for the set of Nash equilibria of $G$.
+</thm>
+<role r="reading" a="Definition 3.8">
+
+Nobody can benefit by deviating alone from a Nash equilibrium, assuming everyone else sticks to it. In a payoff matrix, the pure Nash equilibria are exactly the cells where **both** payoffs are boxed. In the running example $(T,l)$ is the unique Nash equilibrium (shaded below); from every other cell someone has a beneficial deviation, for instance from $(B,r)$ player 1 would switch to $T$.
+<pm r="T,B" c="l,r" p1="1,1;0,0" p2="1,0;0,1" br ne></pm>
+</role>
+<role r="caution" a="three problems">
+
+Nash equilibrium has three problems, which much of the course is about.
+
+<ul><li>Not every game has a pure Nash equilibrium (Matching Pennies, Section 3.5). Chapter 4 fixes this with mixed strategies.</li><li>Some games have several, which raises the **equilibrium selection problem**.</li><li>Some Nash equilibria are bad: they have undesirable social properties (the Prisoner's Dilemma).</li></ul>
+</role>
+
+<thm k="Lemma 3.9" d="Nash equilibria are fixed points of the best response function" pg="140" it>
+$\sigma\in NE(G)$ if and only if $\sigma\in BR(\sigma)$. In other words,
+$$NE(G)=\{\sigma\in\Sigma_1\times\dots\times\Sigma_n:\sigma\in BR(\sigma)\}.$$
+</thm>
+<role r="reading" a="Lemma 3.9">
+
+For a function $f:S\to S$, a **fixed point** is an $s$ with $f(s)=s$; for a set-valued $f:S\to2^S$ it is an $s$ with $s\in f(s)$. So the lemma says the Nash equilibria are the fixed points of the game's best response function. That turns out to be very important: Chapter 4 proves Nash's theorem by applying a fixed point theorem to $BR$.
+</role>
+
+<pf>
+$\sigma\in BR(\sigma)$ means $\sigma_i\in BR_i(\sigma)$ for every $i$, that is, $u_i(\sigma)=\max_{\sigma_i'}u_i(\sigma_{-i},\sigma_i')$ for every $i$. That says no player has a strictly better deviation, which is Definition 3.8.
+</pf>
+
+<thm k="Lemma 3.10" d="Dominant means a best response to everything" pg="141" it>
+$\sigma_i\in\Sigma_i$ is a dominant strategy for player $i$ if and only if
+$$\sigma_i\in\bigcap_{\sigma\in\Sigma}BR_i(\sigma).$$
+</thm>
+
+<pf>
+Being in $BR_i(\sigma)$ for every profile $\sigma$ means $u_i(\sigma_{-i},\sigma_i)\ge u_i(\sigma_{-i},\sigma_i')$ for every $\sigma$ and every $\sigma_i'$, which is Definition 3.6.
+</pf>
+
+## 3.4 Social welfare {142} [d2 i2]
+<role r="question" a="what would a benevolent god choose?">
+
+Suppose an omniscient, impartial, benevolent outsider could pick the outcome. Which would they choose? Intuitively, the one that is best for society. This is the realm of **social welfare**, and the answer is not obvious, because interpersonal comparisons of utility are so difficult. There are three standard answers.
+</role>
+
+<thm k="Definition 3.11" nm="Pareto optimality" pg="144">
+A strategy profile $\sigma$ is **Pareto optimal** (or Pareto efficient) if there is no profile $\sigma'$ with $u_i(\sigma')\ge u_i(\sigma)$ for every player $i$ and $u_j(\sigma')>u_j(\sigma)$ for some player $j$.
+</thm>
+<role r="reading" a="Definition 3.11">
+
+In words: no other outcome makes someone better off without making anyone worse off. If $\sigma$ is Pareto optimal, at least one player would object to moving away from it. If it is not, it is **inefficient**, "wasting" utility, and there is a **Pareto improvement** that nobody would object to. Pareto optimality is probably the least contentious notion of social welfare. Plot each outcome as the point $(u_1(\sigma),u_2(\sigma))$; the Pareto optimal outcomes are those with no other outcome to their upper right, the **Pareto frontier** (Figure 3.1).
+</role>
+
+<thm k="Definition 3.12" nm="Utilitarian social welfare" pg="146">
+The **utilitarian social welfare** of $\sigma$ is $\sum_{i\in N}u_i(\sigma)$. An outcome maximising it satisfies
+$$\sigma^*\in\arg\max_\sigma\sum_{i\in N}u_i(\sigma).$$
+</thm>
+<role r="caution" a="Definition 3.12">
+
+Intuitively this is "the total wealth that $\sigma$ creates". But it ignores how utility is distributed, and the players' utilities may not be on the same scale (like adding temperatures in Celsius and Fahrenheit). It is appropriate when the whole system has a single owner, so the total benefit is what matters, not individuals.
+</role>
+
+<thm k="Definition 3.13" nm="Egalitarian social welfare" pg="147">
+The **egalitarian social welfare** of $\sigma$ is $\min_{i\in N}u_i(\sigma)$, the utility of the worst-off player. An outcome maximising it satisfies
+$$\sigma^*\in\arg\max_{\sigma}\min\{u_i(\sigma):i\in N\}.$$
+</thm>
+<role r="reading" a="Definition 3.13">
+
+Make the worst-off member of society as well off as possible. The justification usually given is John Rawls's **veil of ignorance** (*A Theory of Justice*, 1971): if you could choose a society without knowing where in it you would be placed, Rawls argued, you would choose the one that maximises egalitarian welfare.
+</role>
+
+@@gt-fig3-1@@
+
+<thm k="Theorem 3.14" d="How the solution and welfare concepts relate" pg="149" it>
+<ol><li>Every dominant strategy equilibrium is a Nash equilibrium, but not conversely.</li><li>Nash equilibria and dominant strategy equilibria need not be Pareto efficient, nor maximise utilitarian or egalitarian welfare.</li><li>Every outcome that maximises utilitarian social welfare is Pareto efficient, but not conversely.</li></ol>
+</thm>
+
+<pf h="Proof (added here).">
+**Part 1.** In a dominant strategy equilibrium each $\sigma_i$ is a best response to everything (Lemma 3.10), so in particular to $\sigma_{-i}$; by Lemma 3.9 $\sigma$ is a Nash equilibrium. The converse fails in the coordination game of Section 3.5: $(A,a)$ is a Nash equilibrium, but nobody has a dominant strategy.
+
+**Part 2.** In the Prisoner's Dilemma of Section 3.5, $(D,d)$ is a dominant strategy equilibrium, yet $(C,c)$ is better for both players.
+
+**Part 3.** If $\sigma$ were not Pareto efficient, a Pareto improvement $\sigma'$ would have $u_i(\sigma')\ge u_i(\sigma)$ for all $i$ with one inequality strict, so $\sum_iu_i(\sigma')>\sum_iu_i(\sigma)$, and $\sigma$ would not maximise the sum. Conversely, in the Prisoner's Dilemma $(D,c)$ is Pareto efficient (player 1 can't do better than $0$), but its total $-3$ is less than the $-2$ of $(C,c)$.
+</pf>
+
+<role r="example" a="the running example">
+
+In the running example, $(T,l)$ maximises both utilitarian and egalitarian welfare, and it is the only Pareto efficient outcome. Here equilibrium and welfare agree. The next section is mostly about games where they don't.
+</role>
+
+## 3.5 Some important games {150} [d1 i3]
+<role r="roadmap" a="a gallery">
+
+A small number of $2\times2$ games capture most of the strategic situations people talk about. Figure 3.2 lets you load each of them, see the best responses and equilibria, and edit the payoffs.
+</role>
+
+@@gt-fig3-2@@
+
+<thm k="Example 3.15" nm="The Prisoner’s Dilemma" pg="151">
+Two people are charged with a crime and held in separate cells, with no way of communicating. If one confesses and the other doesn't, the confessor is freed and the other jailed for three years. If both confess, each gets two years. If neither confesses, each gets one year. They only care about time in prison. Confessing is **defection** ($D$), keeping quiet is **cooperation** ($C$), and utility is minus the years in jail:
+<pm r="D,C" c="d,c" p1="-2,0;-3,-1" p2="-2,-3;0,-1" br ne></pm>
+Mutual defection gives both the punishment of two years. If one defects and the other cooperates, the cooperator gets the **sucker's payoff** of three years. Mutual cooperation is rewarded with one year each.
+</thm>
+<role r="reading" a="analysing the Prisoner’s Dilemma">
+
+Consider player 1. If player 2 defects, my best response is to defect. If player 2 cooperates, my best response is still to defect. So defection is a **dominant strategy** for player 1, and by symmetry for player 2. Hence:
+
+<ul><li>$(D,d)$ is a dominant strategy equilibrium, and the only Nash equilibrium, in which both serve two years;</li><li>every outcome except $(D,d)$ is Pareto optimal;</li><li>$(C,c)$ maximises social welfare.</li></ul>
+
+Intuition says they should both cooperate and serve one year each. But individual rationality leads both to defect. That is the **dilemma**, and it is everywhere: nuclear arms reduction ("why don't I keep mine?"), free riding on public transport or on the television licence.
+</role>
+<role r="question" a="can cooperation be rescued?">
+
+Some have concluded that the game-theoretic notion of rationality is wrong, or that the dilemma is formulated wrongly. Attempts to recover cooperation include: "we are not all Machiavelli" and "the other prisoner is my twin" (neither survives scrutiny: if you really prefer cooperating, your preferences are different and it isn't a Prisoner's Dilemma); and two that do work, **program equilibria** and **the shadow of the future**, both in Chapter 5. The honest summary: cooperation doesn't occur in the one-shot Prisoner's Dilemma because the conditions it needs are not present.
+</role>
+
+<thm k="Example 3.16" nm="The game of chicken" pg="157">
+Two drivers race towards each other; swerving is cooperating and driving straight is defecting.
+<pm r="D,C" c="d,c" p1="0,4;2,3" p2="0,2;4,3" br ne></pm>
+The difference from the Prisoner's Dilemma is that **mutual defection** is the most feared outcome, rather than the sucker's payoff. There is no dominant strategy; $(C,d)$ and $(D,c)$ are pure Nash equilibria; every outcome except $(D,d)$ is Pareto optimal and maximises utilitarian welfare; and $(C,c)$ maximises egalitarian welfare. It is an **anti-coordination game**: players should choose *different* strategies.
+</thm>
+
+<thm k="Example 3.17" nm="A coordination game" pg="159">
+<pm r="A,B" c="a,b" p1="1,0;0,1" p2="1,0;0,1" br ne></pm>
+Here $(A,a)$ and $(B,b)$ are both pure Nash equilibria, equally good. The problem is how the players, choosing independently, pick the *same* one.
+</thm>
+<role r="idea" a="focal points">
+
+Two ways out. **Focal points** (Schelling, *The Strategy of Conflict*, 1960): some outcomes stand out for reasons that have nothing to do with the payoffs. If two people are separated in a city with no prior arrangement, many head for the most prominent landmark. And **evolution**: given time, populations learn to coordinate (Section 5.8).
+</role>
+
+<thm k="Example 3.18" nm="The stag hunt" pg="162">
+"If it was a matter of hunting a deer, everyone well realised that he must remain faithful to his post; but if a hare happened to pass within reach of one of them, we cannot doubt that he would have gone off in pursuit of it without scruple." (Rousseau, *A Discourse on Inequality*)
+<pm r="Deer,Hare" c="deer,hare" p1="7,0;4,4" p2="7,4;0,4" br ne></pm>
+Another social dilemma, less painful than the Prisoner's Dilemma: there are two pure Nash equilibria, one excellent (both hunt deer) and one safe (both hunt hare).
+</thm>
+
+<thm k="Example 3.19" nm="The Hawk–Dove game" pg="164">
+Individuals compete for a resource of value $V$. Hawks are fierce, Doves timid. A Hawk against a Dove takes the whole resource; two Doves share it equally; two Hawks fight, sharing the resource but each paying a cost $C$ of fighting:
+<pm r="Hawk,Dove" c="hawk,dove" p1="$\tfrac V2-C$ , $V$ ; $0$ , $\tfrac V2$" p2="$\tfrac V2-C$ , $0$ ; $V$ , $\tfrac V2$"></pm>
+The pure Nash equilibria depend on how $V$ compares with $C$:
+
+<ul><li>if $\frac V2>C$, the only one is $(H,h)$;</li><li>if $C>\frac V2$, they are $(H,d)$ and $(D,h)$;</li><li>if $C=\frac V2$, all three of $(H,h)$, $(H,d)$, $(D,h)$.</li></ul>
+
+This game plays an important role in evolutionary game theory (Section 5.8, where the fighting cost is modelled slightly differently).
+</thm>
+
+<thm k="Example 3.20" nm="Matching pennies" pg="167">
+Each player has a coin and shows heads or tails, simultaneously. If the faces match, player 1 takes player 2's coin; if not, player 2 takes player 1's.
+<pm r="Heads,Tails" c="heads,tails" p1="1,-1;-1,1" p2="-1,1;1,-1" br ne></pm>
+None of our solution concepts helps: there is no dominant strategy and **no pure Nash equilibrium** (no cell is boxed twice), and all outcomes are identical as far as social welfare goes. You may as well toss a coin, and Chapter 4 shows that this is exactly right.
+</thm>
+
+<thm k="Definition 3.21" nm="Strictly competitive and zero-sum games" pg="170">
+When the players' preferences are diametrically opposed, the interaction is **strictly competitive**. A game is **zero-sum** if $\sum_{i\in N}u_i(\omega)=0$ for every outcome $\omega$.
+</thm>
+<role r="caution" a="Definition 3.21">
+
+Zero-sum encounters are bad news: for me to gain, you must lose, and the best outcome for me is the worst for you. Matching pennies is zero-sum. Real-life zero-sum encounters are very rare, but people often behave as though they were in one, and miss the benefits of common interest. Chapter 6 is about zero-sum games.
+</role>
+
+<sheet n="2" qs="1">True-or-false statements about $2\times2$ games and the concepts of Sections 3.2 to 3.4.</sheet>
+
+## 3.6 Iterated elimination of dominated strategies {171} [d2 i2]
+
+<thm k="Definition 3.22" nm="Strictly dominated strategy" pg="172">
+For $\sigma_1,\sigma_2\in\Sigma_i$, $\sigma_1$ **strictly dominates** $\sigma_2$ if
+$$u_i(\sigma_{-i},\sigma_1)>u_i(\sigma_{-i},\sigma_2)\qquad\text{for all }\sigma_{-i}\in\Sigma_{-i}.$$
+</thm>
+<role r="idea" a="never play a dominated strategy">
+
+Then $\sigma_1$ is strictly better than $\sigma_2$ whatever the others do, so **a rational player never plays a strictly dominated strategy**. We can delete it from the game. And once it is gone, the other players know it is gone, which may make some of *their* strategies dominated. This gives an algorithm, **iterated elimination of strictly dominated strategies** (IEDS):
+
+<ol class="parts"><li>let $G_0=G$ and $t=0$;</li><li>if $G_t$ has no strictly dominated strategies, stop and return $G_t$;</li><li>otherwise delete strictly dominated strategies from $G_t$ to obtain a smaller game $G_{t+1}$, increase $t$, and go back to step 2.</li></ol>
+
+If a single outcome remains, the game is **dominance-solvable**.
+</role>
+
+<thm k="Lemma 3.23" d="A dominance-solvable game has exactly one pure equilibrium" pg="174" it>
+If $G$ is dominance-solvable, then the outcome that survives IEDS is the unique pure strategy Nash equilibrium of $G$.
+</thm>
+
+<pf h="Proof (added here; the slides leave it as an exercise).">
+**No deleted strategy is part of a Nash equilibrium.** Suppose a Nash equilibrium $\sigma$ used a deleted strategy, and look at the *first* stage $t$ at which a strategy $\sigma_i$ of $\sigma$ was deleted. Up to then all components of $\sigma$ survive, so $\sigma_{-i}$ is a profile of $G_t$. Being deleted at stage $t$, $\sigma_i$ is strictly dominated in $G_t$ by some $\sigma_i'$, so $u_i(\sigma_{-i},\sigma_i')>u_i(\sigma)$: player $i$ has a profitable deviation, contradicting equilibrium.
+
+**The survivor is a Nash equilibrium.** Let $\sigma^*$ be the surviving profile, and suppose player $i$ had a profitable deviation $\sigma_i'$ in $G$. Among all strategies $\tau$ of player $i$ with $u_i(\sigma^*_{-i},\tau)>u_i(\sigma^*)$, pick one deleted *last*, at stage $t$. It was deleted because something in $G_t$ strictly dominates it, and since strict dominance is a strict partial order on a finite set, we can choose a dominating $\tau'$ that is itself undominated in $G_t$, so it survives stage $t$. In particular $u_i(\sigma^*_{-i},\tau')>u_i(\sigma^*_{-i},\tau)>u_i(\sigma^*)$, since $\sigma^*_{-i}$ survives in $G_t$. So $\tau'$ is also a profitable deviation. It isn't $\sigma_i^*$ itself, so it is deleted later, contradicting the choice of $\tau$.
+
+Together, the Nash equilibria are exactly the surviving profiles, and there is one.
+</pf>
+
+<thm k="Example 3.24" d="IEDS in a 3 by 3 game" pg="176">
+<pm r="T,M,B" c="l,c,r" p1="4,5,6;2,8,3;3,9,2" p2="3,1,2;1,4,6;0,6,8"></pm>
+For player 2, column $c$ is strictly dominated by $r$ (compare the top-right numbers: $2>1$, $6>4$, $8>6$), so delete it. In what remains, $M$ and $B$ are both dominated by $T$ for player 1 ($4>2,3$ and $6>3,2$). Finally, in row $T$, $r$ is dominated by $l$ for player 2 ($3>2$). The only outcome left is $(T,l)$. Figure 3.3 runs the elimination step by step.
+</thm>
+
+@@gt-fig3-3@@
+
+<role r="reading" a="evaluating IEDS">
+
+IEDS always leaves something, so a "solution" exists, but it need not be unique, and it often fails to predict anything (every outcome survives). It is powerful when it applies. Note what it assumes: not just that players are rational, but that each knows the others are rational, and knows that they know, and so on: **common knowledge of rationality**.
+</role>
+
+## 3.7 Computing pure Nash equilibria {180} [d2 i2]
+<role r="setup" a="exhaustive search">
+
+The simplest way to find a pure Nash equilibrium is **exhaustive search**: check every profile for a profitable deviation. Assuming $u_i(\sigma)$ can be computed in unit time, this takes time $O(|\Sigma_1\times\dots\times\Sigma_n|)$, exponential in the number of players.
+</role>
+
+<div class="algo" id="alg3-25" data-label="Algorithm 3.25" data-name="Exhaustive search for a pure Nash equilibrium"><div class="algo-h"><span class="algo-k">Algorithm 3.25</span> Exhaustive search for a pure Nash equilibrium</div><ol class="algo-l"><li><b>for</b> each profile $\sigma\in\Sigma_1\times\dots\times\Sigma_n$:</li><li class="in1">$\mathit{found}\leftarrow$ true</li><li class="in1"><b>for</b> each player $i\in N$ and each $\sigma_i'\in\Sigma_i$:</li><li class="in2"><b>if</b> $u_i(\sigma_{-i},\sigma_i')>u_i(\sigma)$: $\mathit{found}\leftarrow$ false <span class="algo-c">a profitable deviation</span></li><li class="in1"><b>if</b> $\mathit{found}$: <b>return</b> $\sigma$</li><li><b>return</b> "no pure NE"</li></ol></div>
+
+<role r="setup" a="myopic best response">
+
+An alternative that is sometimes faster is **myopic best response**: start anywhere, and while some player is not playing a best response, let that player switch to one. If it stops, it has found a pure Nash equilibrium, since nobody wants to move. But it is **not guaranteed to stop**.
+</role>
+
+<div class="algo" id="alg3-26" data-label="Algorithm 3.26" data-name="Myopic best response"><div class="algo-h"><span class="algo-k">Algorithm 3.26</span> Myopic best response</div><ol class="algo-l"><li>$\sigma\leftarrow$ any profile <span class="algo-c">say, a random one</span></li><li><b>while</b> some player $i$ is not playing a best response in $\sigma$:</li><li class="in1">$\sigma_i'\leftarrow$ an element of $BR_i(\sigma)$</li><li class="in1">$\sigma\leftarrow(\sigma_{-i},\sigma_i')$</li><li><b>return</b> $\sigma$</li></ol></div>
+
+<thm k="Example 3.27" d="Myopic best response going round in circles" pg="185">
+<pm r="T,M,B" c="l,c,r" p1="-1,1,-2;1,-1,-2;-2,-2,2" p2="1,-1,-2;-1,1,-2;-2,-2,2" br ne></pm>
+Start at $(T,l)$. Player 1 switches to $M$; then player 2 switches to $c$; then player 1 to $T$; then player 2 to $l$, and we are back at $(T,l)$. The process cycles forever around the top-left $2\times2$ block, which is a disguised Matching Pennies, and never finds the pure equilibrium $(B,r)$. Figure 3.4 animates it.
+</thm>
+
+@@gt-fig3-4@@
+
+<role r="question" a="when is a pure equilibrium guaranteed?">
+
+Are there natural classes of games where pure Nash equilibria always exist? One is the class of **potential games**, which includes the **congestion games** that model routing and resource sharing.
+</role>
+
+<thm k="Definition 3.28" nm="Potential game" pg="187">
+A game $\langle N,\Sigma_1,\dots,\Sigma_n,u_1,\dots,u_n\rangle$ is an (exact) **potential game** if there is a function $P:\Sigma_1\times\dots\times\Sigma_n\to\R$ such that for every player $i$, every profile $\sigma$ and all $\sigma_i,\sigma_i'\in\Sigma_i$,
+$$u_i(\sigma_{-i},\sigma_i')-u_i(\sigma_{-i},\sigma_i)=P(\sigma_{-i},\sigma_i')-P(\sigma_{-i},\sigma_i).$$
+</thm>
+<role r="reading" a="Definition 3.28">
+
+A single function $P$ tracks every player's incentives: whenever one player changes strategy, her gain is exactly the change in $P$. It is as if all players were secretly maximising the same thing.
+</role>
+
+<thm k="Theorem 3.29" d="Finite potential games have pure equilibria" pg="188" it>
+Every finite potential game has a pure strategy Nash equilibrium.
+</thm>
+
+<pf>
+Since the game is finite, some profile $\sigma^*$ maximises $P$. Suppose $\sigma^*$ is not a Nash equilibrium: some player $i$ has $\sigma_i'$ with $u_i(\sigma^*_{-i},\sigma_i')>u_i(\sigma^*)$. By the defining property of the potential,
+$$\underbrace{P(\sigma^*_{-i},\sigma_i')-P(\sigma^*)}_{\text{change in potential}}=\underbrace{u_i(\sigma^*_{-i},\sigma_i')-u_i(\sigma^*)}_{\text{change in utility}}>0,$$
+so $P(\sigma^*_{-i},\sigma_i')>P(\sigma^*)$, contradicting maximality.
+</pf>
+<role r="payoff" a="myopic best response works here">
+
+The same argument shows that in a finite potential game myopic best response always terminates: every switch strictly increases $P$, which takes finitely many values.
+</role>
+
+<role r="caution" a="representation">
+
+For games with many players, representation becomes a problem. With $n$ players and $m$ strategies each there are $m^n$ outcomes, so writing down each $u_i$ explicitly is hopeless. And solution concepts quantify over strategies ("there is no deviation such that..."), so for compactly specified games deciding them becomes NP-hard or worse (Gottlob, Greco and Scarcello, 2005). Boolean games are a standard compact representation.
+</role>
+
+## 3.8 Boolean games {189} [d3 i2]
+
+<thm k="Definition 3.30" nm="Boolean game" pg="191">
+A **Boolean game** is a structure $G=(N,\Phi,\Phi_1,\dots,\Phi_n,\gamma_1,\dots,\gamma_n)$, where $N=\{1,\dots,n\}$ is the set of players, $\Phi$ is a finite set of Boolean variables partitioned into sets $\Phi_i$ (the variables **controlled** by player $i$), and $\gamma_i$ is a propositional formula over $\Phi$, the **goal** of player $i$. A strategy for $i$ is an assignment $\sigma_i:\Phi_i\to\{\top,\bot\}$; a profile $\sigma$ is then a valuation of all of $\Phi$, and
+$$u_i(\sigma)=\begin{cases}1&\text{if }\sigma\models\gamma_i,\\0&\text{otherwise.}\end{cases}$$
+Nash equilibria are defined as usual.
+</thm>
+<role r="reading" a="Definition 3.30">
+
+Each player controls some switches and wants a formula to come out true: dichotomous preferences (Section 2.4), given compactly. A player with $k$ variables has $2^k$ strategies, but the game is described by a few short formulas.
+</role>
+
+<thm k="Example 3.31" d="A small Boolean game" pg="193">
+Let $\Phi_1=\{p\}$, $\Phi_2=\{q,r\}$, $\gamma_1=q$ and $\gamma_2=q\vee r$. Player 1 has $2$ strategies and player 2 has $4$, so there are $8$ profiles:
+
+<table class="bt"><thead><tr><th>$p$</th><th>$q$</th><th>$r$</th><th>$\gamma_1$?</th><th>$\gamma_2$?</th><th>NE?</th></tr></thead><tbody>
+<tr><td>⊥</td><td>⊥</td><td>⊥</td><td>no</td><td>no</td><td>no</td></tr>
+<tr><td>⊥</td><td>⊥</td><td>⊤</td><td>no</td><td>yes</td><td>yes</td></tr>
+<tr><td>⊥</td><td>⊤</td><td>⊥</td><td>yes</td><td>yes</td><td>yes</td></tr>
+<tr><td>⊥</td><td>⊤</td><td>⊤</td><td>yes</td><td>yes</td><td>yes</td></tr>
+<tr><td>⊤</td><td>⊥</td><td>⊥</td><td>no</td><td>no</td><td>no</td></tr>
+<tr><td>⊤</td><td>⊥</td><td>⊤</td><td>no</td><td>yes</td><td>yes</td></tr>
+<tr><td>⊤</td><td>⊤</td><td>⊥</td><td>yes</td><td>yes</td><td>yes</td></tr>
+<tr><td>⊤</td><td>⊤</td><td>⊤</td><td>yes</td><td>yes</td><td>yes</td></tr></tbody></table>
+
+Player 1 can never deviate profitably, because her goal depends only on player 2's variable $q$. Player 2 can deviate only when $\gamma_2$ fails, by setting $q$ or $r$. So six of the eight profiles are equilibria; player 2's goal is achieved in all of them, player 1's in four.
+</thm>
+
+<thm k="Example 3.32" d="Matching pennies as a Boolean game" pg="195">
+With $\Phi_1=\{p\}$, $\Phi_2=\{q\}$, $\gamma_1=p\leftrightarrow q$ and $\gamma_2=\neg(p\leftrightarrow q)$, exactly one goal is satisfied in every profile, and the loser can always flip her variable. There is no Nash equilibrium.
+</thm>
+
+<thm k="Theorem 3.33" d="Boolean games: checking is coNP-complete, existence is Σ2P-complete" pg="196" it>
+Checking whether a given profile is a Nash equilibrium of a Boolean game is $\mathrm{coNP}$-complete. Checking whether a Boolean game has a Nash equilibrium is $\Sigma_2^p$-complete.
+</thm>
+
+<bg id="bg-sigma2" t="The class Σ₂ᵖ and QBF" lead="From Part A complexity">
+NP asks "is there a certificate $x$ that a polynomial check accepts?", a single $\exists$. The class $\Sigma_2^p$ asks "is there an $x$ such that **for all** $y$ a polynomial check accepts?", an $\exists\forall$. Its standard complete problem is $\mathrm{QBF}_{2,\exists}$: is $\exists X\,\forall Y\,\psi(X,Y)$ true, for a propositional $\psi$? It sits above both NP and coNP.
+</bg>
+
+<pf>
+**Membership is coNP-complete.** Work with the complement: some player has a beneficial deviation. That is in NP: guess a player $i$ and a strategy $\sigma_i'$, and check that $i$'s goal fails at $\sigma$ but holds after the deviation. For hardness, reduce SAT: given $\varphi$, build a one-player game with goal $\gamma_1=\varphi\wedge z$ for a new variable $z$, and let $\sigma_1$ set every variable false. Then $\sigma_1$ fails the goal, and player 1 has a beneficial deviation iff $\varphi$ is satisfiable.
+
+**Non-emptiness is in $\Sigma_2^p$.** The game has a Nash equilibrium iff
+$$\exists\Phi\;\bigwedge_{i\in N}\big((\exists\Phi_i\,\gamma_i)\to\gamma_i\big):$$
+there is a profile at which every player who *could* achieve her goal by changing her own variables already does. Pushing the inner $\exists\Phi_i$ out of the implication turns it into a $\forall$, so this is an $\exists\forall$ formula, a $\mathrm{QBF}_{2,\exists}$ instance.
+
+**Non-emptiness is $\Sigma_2^p$-hard.** Given $\exists X\,\forall Y\,\psi(X,Y)$, build a two-player game with new variables $x$ and $y$:
+$$\Phi_1=X\cup\{x\},\quad\gamma_1=\psi(X,Y)\vee(x\leftrightarrow y);\qquad\Phi_2=Y\cup\{y\},\quad\gamma_2=\neg\psi(X,Y)\wedge\neg(x\leftrightarrow y).$$
+The goals are each other's negations, so in every profile exactly one player is satisfied.
+
+<ul><li>If $\exists X\forall Y\,\psi$ is true, player 1 sets $X$ to a witness. Then $\psi$ holds whatever $Y$ is, so $\gamma_1$ holds and player 2 can't change that: a Nash equilibrium.</li><li>If it is false, then $\forall X\exists Y\,\neg\psi$. In any profile, if $\gamma_1$ holds, player 2 can choose $Y$ to make $\psi$ false and $y$ to make $x\leftrightarrow y$ false, a beneficial deviation; if $\gamma_2$ holds, player 1 can flip $x$ to make $x\leftrightarrow y$ true. So no profile is an equilibrium.</li></ul>
+</pf>

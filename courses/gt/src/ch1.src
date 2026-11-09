@@ -1,0 +1,115 @@
+@num 1
+@title Introduction and Motivation
+@titlehtml What a <em>game</em> is
+@pages 1–26
+@dek Game theory is the mathematics of choosing well when other people are choosing too. This chapter says what a game is, what it means to "solve" one, how the answers can be read, and why computer scientists care.
+---
+## 1.1 What game theory is about {3} [d1 i3]
+<role r="question" a="choices that affect each other">
+
+**Game theory** is the mathematical theory of interaction between **self-interested agents**. The agents, called **players**, act in pursuit of their own preferences. What makes the subject interesting is that each player's decision can affect the outcome for everybody else. So to choose well, a player has to think about how the other players will choose, and they in turn are thinking about her. These are **strategic** considerations.
+</role>
+<role r="setup" a="a game is a model">
+
+A "game" here is an abstract **model** of a situation in which self-interested players interact. Abstract means it keeps only the detail relevant to the decisions the players make. This leads to the complaint that game-theoretic models are toys, but that is the point: the aim is to isolate the issues that are central to the decision. The subject did grow out of parlour games such as chess, which are useful for highlighting the key ideas, but the word "game" makes it sound more trivial than it is.
+</role>
+<role r="caution" a="when not to use it">
+
+Game theory is the right tool when there are **several loci of control and self-interest**. If a system has a single designer or owner, the designer faces an ordinary optimisation problem, and game theory is probably out of place. And if all players have the same preferences, the challenge is **coordination**: making sure everybody pulls in the same direction.
+</role>
+
+<thm k="Example 1.1" d="Negotiating hard or soft: a game of chicken" pg="6">
+Two parties to a negotiation must each choose whether to negotiate **hard** or **soft**. The best choice for each depends on what the other does. The worst outcome for both is that both take a hard line. Otherwise, each does best by doing the opposite of the other: if they go hard, you should go soft, and if they go soft, you should go hard. Here is one way to put numbers on it (larger is better; the first player chooses a row, the second a column):
+<pm r="Hard,Soft" c="hard,soft" p1="0,4;2,3" p2="0,2;4,3"></pm>
+This is the **game of chicken**, which we meet properly in Chapter 3.
+</thm>
+
+<thm k="Example 1.2" d="Issues or insults in a debate" pg="7">
+Two candidates meet in a televised debate. Each must choose between debating the **issues** and trading **insults**. How well each is perceived to do depends partly on what the other chooses. Before any analysis, two questions: what are the possible outcomes, and how does each candidate rank them? Game theory starts by writing those down.
+</thm>
+
+## 1.2 Solution concepts {8} [d2 i3]
+<role r="question" a="what is a rational choice here?">
+
+The key concern of game theory is what the outcome of a game will be, assuming the players act **rationally**: in pursuit of their preferences, given their beliefs. But in a strategic setting it is often not clear what the best thing to do is, because it depends on what the others do. A **solution concept** is a precise proposal for which outcomes count as rational.
+</role>
+
+<thm k="Definition 1.3" nm="Solution concept" pg="17">
+Let $\Gamma$ be a class of games, with an associated set $\Omega$ of outcomes, and for $G\in\Gamma$ let $\Omega_G\subseteq\Omega$ be the possible outcomes of $G$. A **solution concept** for $\Gamma$ is a function
+$$f:\Gamma\to2^\Omega\qquad\text{with}\qquad f(G)\subseteq\Omega_G\quad\text{for every }G\in\Gamma.$$
+</thm>
+<role r="reading" a="Definition 1.3">
+
+Here $2^\Omega$ is the set of all subsets of $\Omega$. So a solution concept picks out, for every game, a subset of its outcomes: those that would occur if players acted according to the model of rational choice that the concept stands for. It doesn't matter exactly what the games in $\Gamma$ are; the definition works for every kind of game in this course.
+</role>
+<role r="why" a="how to judge a solution concept">
+
+There are many solution concepts, and we judge them by how well they do on five criteria.
+
+<ul><li>**Existence.** Does every game have at least one rational outcome?</li><li>**Uniqueness.** Is the rational outcome unique?</li><li>**Tractability.** Is it computationally easy to check that an outcome is rational, or to find one?</li><li>**Comprehensibility.** Can people understand why an outcome is, or is not, rational?</li><li>**Invariance.** Do small changes to the game lead to small changes in the outcome?</li></ul>
+
+Every solution concept fails at least one of these.
+</role>
+
+<thm k="Definition 1.4" nm="The three computational questions" pg="18">
+Let $f$ be a solution concept for a class $\Gamma$ of games.
+
+<ol><li>**Non-emptiness.** Given $G\in\Gamma$, is $f(G)\neq\emptyset$? Does the game have any rational outcome at all, according to $f$?</li><li>**Membership.** Given $G\in\Gamma$ and $\omega\in\Omega_G$, is $\omega\in f(G)$? Is this particular outcome rational?</li><li>**Computation.** Given $G\in\Gamma$, output some $\omega\in f(G)$. Here we want to actually find a rational outcome.</li></ol>
+</thm>
+<role r="link" a="these questions run through the course">
+
+These three questions recur in every chapter: for dominant strategies and pure Nash equilibria in Chapter 3, mixed equilibria in Chapter 4, game trees in Chapter 5, zero-sum games in Chapter 6, and win-lose games in Chapter 7, where the answers turn into whole complexity classes.
+</role>
+
+## 1.3 Interpreting game theory {10} [d1 i2]
+<role r="setup" a="descriptive and normative readings">
+
+What does a game-theoretic prediction actually claim? There are two readings.
+
+<ul><li>Under a **descriptive** interpretation, game theory predicts how people will act in strategic settings, and explains why they acted as they did. How well solution concepts predict real human choices is a large and somewhat controversial research area.</li><li>Under a **normative** interpretation, game theory gives advice about what we *ought* to do. Whether the advice is any good depends on whether the model fits the situation and whether its assumptions hold. Typical assumptions are that everybody knows everybody's preferences, actions and their consequences, and that everybody acts rationally.</li></ul>
+</role>
+<role r="aside" a="when the descriptive reading works">
+
+Ken Binmore (*Does Game Theory Work?*, 2007) suggests the descriptive reading works when four things hold. Social norms, especially norms of cooperation, often shape decisions, but large enough incentives can override them; so the incentives must be **adequate**. The game must be **simple enough** for players to reason about. And players must have had **time to learn**: behaviour moves towards rational outcomes with enough opportunity for trial and error.
+</role>
+<role r="example" a="designing games">
+
+The normative reading also lets us *design* interactions so that self-interested behaviour leads somewhere good. This is **mechanism design**. The UK's auction of 3G mobile spectrum in 2000 raised about $35 billion; the "security games" of Milind Tambe use game theory to schedule security patrols.
+</role>
+<role r="setup" a="cooperative and non-cooperative">
+
+Game theory comes in two versions. **Non-cooperative** game theory studies settings where players act alone; its solution concepts are about individual choices. **Cooperative** game theory assumes players can make binding agreements to work together, and asks which teams ("coalitions") will form and how they will share the benefits. This course is almost entirely about the non-cooperative kind.
+</role>
+
+## 1.4 Why computer science? {14} [d1 i2]
+<role r="why" a="protocols with preferences">
+
+Distributed systems research has long studied **protocols** (TCP/IP, leader election, Bluetooth), with issues such as deadlock and mutual exclusion. Computational game theory adds **preferences and rational choice**: protocol participants are not benevolent, they are self-interested, and strategic considerations come to the fore. Ignoring self-interest misses much of the story. A familiar example is **sniping** on eBay: bidding in the last seconds of an auction so that others can't respond. In multi-agent systems the participants are software agents acting for their owners.
+</role>
+<role r="roadmap" a="two directions">
+
+So the traffic goes both ways.
+
+<ul><li>**Computer science for game theory:** how do we represent games, how computationally complex are solution concepts, and how do we compute them efficiently?</li><li>**Game theory for computer science:** how can game theory inform the design and analysis of computer systems?</li></ul>
+
+Chapter 5's "rational verification" is an example of the second; most of the complexity results are examples of the first.
+</role>
+
+## 1.5 A short history, and further reading {22} [d1 i1]
+<role r="history" a="three phases">
+
+Game theory in its current form began in the early twentieth century, with parlour games such as poker and chess (Zermelo wrote about chess in 1913). Its history falls into three phases. Figure 1.1 marks the milestones.
+
+<ul><li>**1928 to 1954.** The first milestone is John von Neumann's **minimax theorem** of 1928 (Chapter 6), leading to von Neumann and Morgenstern's *Theory of Games and Economic Behavior* (1944). The scope was limited, mostly to two-person zero-sum games.</li><li>**1954 to 1980.** John Nash's work in the early 1950s, and the concept of **Nash equilibrium** (Chapters 3 and 4), hugely extended the scope; it remains the chief analytical concept of game theory. Selten, Aumann, Shapley, Harsanyi and others followed. Activity then slowed as the limitations of Nash equilibrium made themselves felt.</li><li>**1980 to the present.** Attention shifted to how societies **converge** on strategies. John Maynard Smith and George Price founded **evolutionary game theory** (Chapter 5), which refines Nash equilibrium and explains many questions in biology and economics. Robert Axelrod's Prisoner's Dilemma tournament drew wide attention. From the 1990s, auction design drove interest in mechanism design, and computer scientists, Christos Papadimitriou among them, began studying the computational side.</li></ul>
+</role>
+
+@@gt-fig1-1@@
+
+<role r="aside" a="books">
+
+For game theory in general: Maschler, Solan and Zamir, *Game Theory* (2013), rigorous but very readable; Osborne and Rubinstein, *A Course in Game Theory* (1994), free online; and Binmore, *Game Theory: A Very Short Introduction* (2007), full of sharp opinions. For the computer science side: Shoham and Leyton-Brown, *Multiagent Systems* (2009), free online; Chalkiadakis, Elkind and Wooldridge, *Computational Aspects of Cooperative Game Theory* (2011); and Nisan, Roughgarden, Tardos and Vazirani (eds.), *Algorithmic Game Theory* (2007).
+</role>
+
+<pause n="Is it a game?" q="Which of these are games in the sense of this chapter? (a) Choosing a route to work when other drivers also choose routes. (b) A single company scheduling its own delivery vans. (c) Two shops setting prices for the same product. (d) A team of robots, all owned by one company, cleaning a warehouse.">
+(a) and (c) are games: several self-interested decision makers, each affecting the others' outcomes (congestion, market share). (b) is an optimisation problem: one decision maker, one set of preferences. (d) is a coordination problem rather than a game, since the robots share one owner and one goal; the challenge is making them pull in the same direction, not resolving a conflict of interests.
+</pause>

@@ -1,0 +1,168 @@
+{
+"nodes": [
+[
+"nf",
+"Normal form game",
+"r3-2",
+1
+],
+[
+"br",
+"Best response",
+"r3-5",
+0
+],
+[
+"dom",
+"Dominant strategies",
+"r3-6",
+0
+],
+[
+"dse",
+"Dominant strategy eq.",
+"r3-7",
+0
+],
+[
+"ne",
+"Pure Nash equilibrium",
+"r3-8",
+1
+],
+[
+"fp",
+"NE = fixed point of BR",
+"r3-9",
+0
+],
+[
+"welf",
+"Pareto, utilitarian, egalitarian",
+"r3-11",
+0
+],
+[
+"rel",
+"How concepts relate",
+"r3-14",
+1
+],
+[
+"gal",
+"PD, chicken, stag hunt, pennies",
+"s3-5",
+0
+],
+[
+"ieds",
+"IEDS",
+"r3-22",
+0
+],
+[
+"alg",
+"Exhaustive search, myopic BR",
+"alg3-25",
+0
+],
+[
+"pot",
+"Potential games",
+"r3-28",
+0
+],
+[
+"bool",
+"Boolean games, Σ2P",
+"r3-33",
+0
+]
+],
+"edges": [
+[
+"nf",
+"br",
+"given others"
+],
+[
+"br",
+"dom",
+"against everything"
+],
+[
+"dom",
+"dse",
+"everyone"
+],
+[
+"br",
+"ne",
+"mutual"
+],
+[
+"ne",
+"fp",
+"="
+],
+[
+"dse",
+"rel",
+"⇒ NE"
+],
+[
+"welf",
+"rel",
+"vs"
+],
+[
+"ne",
+"gal",
+"examples"
+],
+[
+"dom",
+"ieds",
+"delete dominated"
+],
+[
+"ne",
+"alg",
+"compute"
+],
+[
+"alg",
+"pot",
+"MBR converges"
+],
+[
+"ne",
+"bool",
+"compact games"
+]
+],
+"ext": [
+[
+"c4",
+"Mixed strategies",
+"r4-1"
+],
+[
+"c6",
+"Zero-sum games",
+"r6-1"
+]
+],
+"extedges": [
+[
+"gal",
+"c4",
+"pennies has no pure NE"
+],
+[
+"gal",
+"c6",
+"pennies is zero-sum"
+]
+]
+}

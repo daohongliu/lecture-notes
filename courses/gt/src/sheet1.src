@@ -1,0 +1,112 @@
+@num 1
+@title Preferences, utilities and decisions
+@source Tutorial 1 · MT26
+@dek Building utility functions, a preference relation that no utility function can represent, a decision under uncertainty, and the von Neumann–Morgenstern axioms put to work, broken, and argued with. Needs Chapter 2.
+---
+## Preferences and utility functions
+
+<qn n="1" t="A utility function for lexicographic preferences">
+Recall the lexicographic preferences of Definition 2.22. The attributes are colour, engine type and nationality, ranked
+$$\text{colour}>\text{engine}>\text{nationality},$$
+and within each attribute
+<ul><li>colour: red $\succ$ blue $\succ$ green;</li><li>engine type: electric $\succ$ petrol $\succ$ diesel;</li><li>nationality: German $\succ$ French $\succ$ UK.</li></ul>
+
+Define a utility function taking the three attributes as input and returning a real number, which represents this preference ordering. Don't do it by enumerating all $27$ cases! Argue that your function is correct.
+
+<details class="hint"><summary>hint</summary>Score each attribute $0$, $1$ or $2$, and combine the scores with weights chosen so that a one-step improvement in a more important attribute outweighs the largest possible change in all the less important ones together. Writing numbers in base $3$ is one way to think about it.</details>
+
+<p class="uses">Uses Definitions 2.2 and 2.22.</p>
+</qn>
+
+<qn n="2" t="Preferences no utility function can represent">
+In the lectures $\Omega$ was finite. Now let $\Omega=\R^+\times\R^+$, where $\R^+$ is the positive reals, and define
+$$(x_1,x_2)\succeq(y_1,y_2)\iff x_1>y_1\ \text{ or }\ \big(x_1=y_1\text{ and }x_2\ge y_2\big).$$
+
+<ol class="parts"><li>Prove that $\succeq$ is a preference relation.</li><li>Prove that no utility function $u:\Omega\to\R$ represents $\succeq$.</li></ol>
+
+Between any two distinct real numbers lies a rational number.
+
+<details class="hint"><summary>hint</summary>For part 2, suppose $u$ exists. For each $x_1$, the two points $(x_1,1)\prec(x_1,2)$ give an open interval $\big(u(x_1,1),u(x_1,2)\big)$. Show that the intervals for different $x_1$ are disjoint, pick a rational in each, and count.</details>
+
+<p class="uses">Contrasts with Theorem 2.4, where finiteness of $\Omega$ was what made the construction work.</p>
+</qn>
+
+## Decisions under uncertainty
+
+<qn n="3" t="Football, pub or rowing">
+You can go to football, the pub, or rowing. Your utility depends on whether it rains:
+
+<table class="bt"><thead><tr><th>activity</th><th>utility if rain</th><th>utility if no rain</th></tr></thead><tbody><tr><td>football</td><td>1</td><td>2</td></tr><tr><td>pub</td><td>3</td><td>0</td></tr><tr><td>rowing</td><td>0</td><td>1</td></tr></tbody></table>
+
+Let $p_{\text{rain}}$ be the probability of rain.
+
+<ol class="parts"><li>Formulate this as a problem of decision making under uncertainty.</li><li>Is there an alternative you would never choose, whatever $p_{\text{rain}}$ is?</li><li>Write down a rule saying what is best as a function of $p_{\text{rain}}$, of the form "if $p_{\text{rain}}\in[X,Y]$ then do $Z$, else if…".</li></ol>
+
+<details class="hint"><summary>hint</summary>Each activity's expected utility is a straight line in $p_{\text{rain}}$. Draw the three lines on $[0,1]$; the answer to part 3 is read off the upper envelope, as in Figure 2.2's comparison of lotteries.</details>
+
+<p class="uses">Uses Definitions 2.8 and 2.10 (lotteries and expected utility).</p>
+</qn>
+
+## The von Neumann–Morgenstern axioms
+
+<qn n="4" t="A mixture with something better is better">
+Suppose $\Omega=\{A,B\}$ and $A\succ B$. Show that if $\succ$ satisfies the von Neumann–Morgenstern axioms, then for every $p\in(0,1]$,
+$$[pA+(1-p)B]\succ B.$$
+Say which axioms you use.
+
+<details class="hint"><summary>hint</summary>Write $B$ itself as the degenerate lottery $[pB+(1-p)B]$ and compare the two lotteries using the axiom that lets you replace part of a lottery by something preferred.</details>
+
+<p class="uses">Uses Definition 2.12.</p>
+</qn>
+
+<qn n="5" t="Inconsistent choices about money">
+Consider the four lotteries
+$$\ell_1=\Big[\tfrac12\,£100+\tfrac12\,£0\Big],\qquad\ell_2=£50,\qquad\ell_3=\Big[\tfrac1{20}\,£100+\tfrac{19}{20}\,£0\Big],\qquad\ell_4=\Big[\tfrac1{10}\,£50+\tfrac9{10}\,£0\Big].$$
+Suppose I say $\ell_2\succ\ell_1$ and $\ell_3\succ\ell_4$. Show that my preferences don't satisfy the von Neumann–Morgenstern axioms.
+
+<details class="hint"><summary>hint</summary>Notice that $\ell_3$ and $\ell_4$ are $\ell_1$ and $\ell_2$, each played with probability $\frac1{10}$ and otherwise replaced by $£0$. Either use independence directly, or argue as in Lemma 2.18 with $u(£0)$, $u(£50)$, $u(£100)$.</details>
+
+<p class="uses">The Allais paradox of Example 2.17 in miniature.</p>
+</qn>
+
+<qn n="6" t="Ranking two compound lotteries">
+Let $\Omega=\{A,B,C,D\}$ and
+$$\ell_1=\Big[\tfrac35A+\tfrac25D\Big],\quad\ell_2=\Big[\tfrac34A+\tfrac14C\Big],\quad\ell_3=\Big[\tfrac25A+\tfrac15B+\tfrac15C+\tfrac15D\Big],\quad\ell_4=\Big[\tfrac25A+\tfrac35C\Big].$$
+A von Neumann–Morgenstern preference relation satisfies $C\sim\ell_1$, $B\sim\ell_2$ and $A\succ D$. How are $\ell_3$ and $\ell_4$ ranked?
+
+<details class="hint"><summary>hint</summary>By Theorem 2.14 there is an expected utility representation, and you may normalise $u(A)=1$, $u(D)=0$. Then $C\sim\ell_1$ and $B\sim\ell_2$ pin down $u(C)$ and $u(B)$.</details>
+
+<p class="uses">Uses Theorem 2.14.</p>
+</qn>
+
+<qn n="7" t="Mixing preferred lotteries">
+Someone whose preferences satisfy the von Neumann–Morgenstern axioms says $\ell_1\succeq\ell_2$ and $\ell_3\succeq\ell_4$. Should it follow that for all $p\in[0,1]$,
+$$p\ell_1+(1-p)\ell_3\ \succeq\ p\ell_2+(1-p)\ell_4\,?$$
+If so, give an argument from the axioms.
+
+<details class="hint"><summary>hint</summary>Go via the intermediate lottery $p\ell_2+(1-p)\ell_3$, using independence twice, then transitivity. Alternatively use the linearity of expected utility.</details>
+
+<p class="uses">Uses Definition 2.12 and Theorem 2.14.</p>
+</qn>
+
+## Beyond the axioms
+
+<qn n="8" t="The St Petersburg game">
+Toss a fair coin until the first head appears. If that takes $k$ tosses, you are paid $£2^k$ (so $H$ pays $£2$, and $TTH$ pays $£8$).
+
+<ol class="parts"><li>Express this as a lottery with infinitely many outcomes.</li><li>If utility is expected money, compute the expected utility.</li><li>Now suppose $u(£n)=\log_2n$. Show that the expected utility is bounded above.</li><li>By giving examples, argue that an agent with this logarithmic utility is risk-averse.</li></ol>
+
+<details class="hint"><summary>hint</summary>Part 3: the series $\sum_kk/2^k$ converges (compare with a geometric series, or differentiate $\sum x^k$). Part 4: compare a fair gamble with its expected value for certain, as in Figure 2.1.</details>
+
+<p class="uses">Uses Definition 2.10 and Example 2.16 on risk aversion.</p>
+</qn>
+
+<qn n="9" t="The bomber pilots">
+In the Second World War, a US bomber squadron was based 3000km from its target, too far for fighter escorts. Planes carried few bombs so that they had fuel to return. Pilots flew 30 missions before going home, but on average only half survived all 30. Logistics experts proposed that each plane carry a much heavier load but fuel for one way only: every mission a suicide mission, but so many fewer missions needed that 75% of pilots, chosen at random, would return home, while the 25% who flew would face certain death. Every pilot rejected the proposal in favour of the status quo.
+
+<ol class="parts"><li>Formulate both scenarios as lotteries over two outcomes, $\mathit{live}\succ\mathit{die}$. Show that the pilots' choice violates the von Neumann–Morgenstern axioms. Which axiom?</li><li>Now use three outcomes, $\mathit{live\ with\ honour}\succ\mathit{die\ with\ honour}\succ\mathit{live\ without\ honour}$ (flying and surviving; flying and being killed; living because someone else flew to certain death). Reformulate the scenarios. Do the pilots now violate the axioms?</li><li>Are the airmen's preferences lexicographic? If so, give the attributes and their ranking.</li><li>What factors do you think influenced the pilots?</li></ol>
+
+<details class="hint"><summary>hint</summary>Part 1 is a comparison of $[\frac12\mathit{live}+\frac12\mathit{die}]$ with $[\frac34\mathit{live}+\frac14\mathit{die}]$; think about which axiom says more probability on the better outcome is better. Part 2: what outcome does a pilot who is *not* selected now get?</details>
+
+<p class="uses">Uses Definitions 2.12 and 2.22; compare the framing effects of Example 2.19.</p>
+</qn>

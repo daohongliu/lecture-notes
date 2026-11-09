@@ -1,0 +1,162 @@
+{
+"nodes": [
+[
+"wl",
+"Win-lose games",
+"s7-1",
+1
+],
+[
+"ab",
+"α- and β-ability",
+"r7-1",
+0
+],
+[
+"det",
+"Backward induction ⇒ determined",
+"r7-4",
+1
+],
+[
+"lad",
+"Complexity ladder",
+"r7-5",
+1
+],
+[
+"gg",
+"Graph games: P",
+"r7-6",
+0
+],
+[
+"W",
+"Winning positions W",
+"r7-7",
+0
+],
+[
+"alg",
+"Attractor algorithm",
+"alg7-9",
+0
+],
+[
+"fg",
+"Formula game = QBF",
+"r7-12",
+0
+],
+[
+"geo",
+"Geography: PSPACE",
+"r7-13",
+0
+],
+[
+"ps",
+"Polynomial length ⇒ PSPACE",
+"r7-15",
+0
+],
+[
+"peek",
+"PEEK-G4: EXPTIME",
+"r7-17",
+0
+],
+[
+"nr",
+"No repetition: EXPSPACE",
+"r7-18",
+0
+]
+],
+"edges": [
+[
+"wl",
+"ab",
+"forcing a win"
+],
+[
+"wl",
+"det",
+"solve"
+],
+[
+"det",
+"lad",
+"compact input"
+],
+[
+"lad",
+"gg",
+"explicit"
+],
+[
+"gg",
+"W",
+"smallest set"
+],
+[
+"W",
+"alg",
+"compute"
+],
+[
+"lad",
+"fg",
+"few moves"
+],
+[
+"fg",
+"geo",
+"also"
+],
+[
+"geo",
+"ps",
+"why"
+],
+[
+"lad",
+"peek",
+"exp. many moves"
+],
+[
+"alg",
+"peek",
+"on state graph"
+],
+[
+"peek",
+"nr",
+"memory"
+]
+],
+"ext": [
+[
+"c5",
+"Backward induction",
+"alg5-4"
+],
+[
+"c5b",
+"LTL synthesis",
+"r5-25"
+]
+],
+"extedges": [
+[
+"det",
+"c5",
+"same algorithm"
+],
+[
+"lad",
+"c5b",
+"games for ever"
+]
+]
+}

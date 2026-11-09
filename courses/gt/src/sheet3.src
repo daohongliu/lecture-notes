@@ -1,0 +1,72 @@
+@num 3
+@title Dynamic games
+@source Tutorial 3 · MT26
+@dek Building a game tree and solving it, counting strategies with information sets, three games where player 1 forgets something, the forgetful driver, and automata playing the iterated Prisoner's Dilemma. Needs Chapter 5.
+---
+## Extensive form games
+
+<qn n="1" t="Formulating an extensive form game">
+In a two-player game, player 1 chooses $A$ or $B$. Choosing $A$ ends the game; choosing $B$ passes the move to player 2, who chooses $C$ (ending the game) or $D$ (passing the move back to player 1). Player 1 then chooses $E$ or $F$, and the game ends either way.
+
+<ol class="parts"><li>Model this as a game tree.</li><li>How many pure strategies does each player have?</li><li>Identify the subgames.</li><li>Suppose $A$ gives utilities $(2,0)$ (player 1 first), $C$ gives $(3,1)$, $E$ gives $(0,0)$ and $F$ gives $(1,2)$. What are the pure Nash equilibria? What SPNE outcome does Zermelo's algorithm give?</li></ol>
+
+<details class="hint"><summary>hint</summary>Player 1 has two decision nodes, so her strategies are pairs like $(A,E)$, including ones where the second choice is never reached. For the Nash equilibria, write the $4\times2$ strategic form (as in Section 5.3) and box best responses; for the SPNE, use Algorithm 5.4. Expect more Nash equilibria than subgame perfect ones.</details>
+
+<p class="uses">Uses Definitions 5.1, 5.2, 5.8 and Algorithm 5.4.</p>
+</qn>
+
+<qn n="2" t="Counting strategies">
+In an imperfect information game, each player has $k$ information sets, $|I_i|=k$.
+
+<ol class="parts"><li>If a player has the same number $m$ of actions at each information set, how many pure strategies does she have?</li><li>If she has $m_j$ actions at her $j$-th information set ($1\le j\le k$), how many?</li></ol>
+
+<p class="uses">Uses Definition 5.11: a strategy is a function from information sets to actions.</p>
+</qn>
+
+<qn n="3" t="Three games of imperfect information">
+In the three games of Figure 1 below, player 1's information sets are shown by dashed lines. (Game (b) has payoffs at the leaves; for (a) and (c) only the structure matters.)
+
+@@gt-s3-fig1@@
+
+<ol class="parts"><li>For each game, what information can player 1 lose during play?</li><li>For each game, write down both players' information sets and pure strategies.</li><li>For game (b), find all pure strategy Nash equilibria.</li></ol>
+
+<details class="hint"><summary>hint</summary>In each game, ask what player 1 knew at an earlier node that she can no longer tell at the dashed set: the other player's move, her own earlier move, or even whether she has moved at all. In (b), player 1 has a single information set, so only two pure strategies.</details>
+
+<p class="uses">Uses Definitions 5.11 and 5.13.</p>
+</qn>
+
+<qn n="4" t="The forgetful driver">
+Recall the forgetful driver of Example 5.15, drawn in Figure 3. A behavioural strategy is a probability $p$ that the driver exits (so she drives straight on with probability $1-p$), the same at both exits.
+
+@@gt-s3-fig3@@
+
+<ol class="parts"><li>Write down the expected utility of the behavioural strategy $p$.</li><li>Find the $p$ that maximises it.</li></ol>
+
+<details class="hint"><summary>hint</summary>There are three leaves: reached with probabilities $p$, $(1-p)p$ and $(1-p)^2$. The result is a quadratic in $p$. Figure 5.2 plots it, in terms of the probability of going straight.</details>
+
+<p class="uses">Uses Definition 5.12; compare Example 5.15.</p>
+</qn>
+
+## Iterated games
+
+<qn n="5" t="Automata for the iterated Prisoner’s Dilemma">
+Play the infinitely repeated Prisoner's Dilemma with finite automaton strategies and limit-of-means utility. The stage game is
+<pm r="defect,coop" c="defect,coop" p1="-2,0;-3,-1" p2="-2,-3;0,-1"></pm>
+Figure 2 shows three two-state strategies.
+
+@@gt-s3-fig2@@
+
+<ol class="parts"><li>Explain informally what TAT-FOR-TIT does.</li><li>Play each strategy against each (including itself). Find the run, identify its repeating block, and use it to compute each player's utility.</li><li>Which pairs do you think form a Nash equilibrium? (An informal argument is enough.)</li></ol>
+
+<details class="hint"><summary>hint</summary>By Theorem 5.19 each run is a prefix followed by a block repeated forever; it appears as soon as a pair of states repeats. Figure 5.3 runs any pair, so use it to check your hand computations, not to replace them.</details>
+
+<p class="uses">Uses Definitions 5.17, 5.18 and Theorem 5.19.</p>
+</qn>
+
+<qn n="6" t="All the two-state automata">
+This question is for personal development, not assessment. Consider all one- and two-state automata for the iterated Prisoner's Dilemma.
+
+<ol class="parts"><li>If both states of a machine are labelled with the same action, what behaviour does it generate? Can the machine be simplified?</li><li>Call automata $\sigma_1$ and $\sigma_2$ **distinct** if some automaton $\sigma^*$ generates a different sequence of outcomes against $\sigma_1$ than against $\sigma_2$. Claim: there are exactly $26$ distinct one- and two-state automata (the one-state ones are ALLD and ALLC), $13$ starting with $C$ and $13$ with $D$. Draw the $13$ that start with $C$, and then obtain the $13$ that start with $D$.</li></ol>
+
+<details class="hint"><summary>hint</summary>A two-state machine with different actions in its states is determined by its initial state and, for each state, where it goes after the opponent's $C$ and after her $D$. Count these, then remove the ones that behave like one-state machines or like another machine.</details>
+</qn>

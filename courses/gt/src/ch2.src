@@ -1,0 +1,394 @@
+@num 2
+@title Preferences, Utilities and Decisions
+@titlehtml Preferences, <em>utilities</em> and decisions
+@pages 27–114
+@dek Before two players can interact, one player has to be able to choose. Preferences say what a player wants; utilities turn wanting into arithmetic; and expected utility, justified by von Neumann and Morgenstern's theorem, says how to choose when the outcome is uncertain.
+---
+<role r="roadmap" a="why preferences come first">
+
+Preferences are what give games their strategic character. In multi-agent systems we **delegate** our preferences to a software agent, which then acts on our behalf. That raises practical problems: people find it hard to state their preferences, and do not always act consistently with the preferences they claim. Extracting preferences from the person an agent works for is called **preference elicitation**. This chapter is about the mathematics: how to write preferences down, when they can be turned into numbers (**utilities**), and how numbers reduce decision making to calculation.
+</role>
+
+## 2.1 Outcomes and preferences {29} [d1 i3]
+<role r="setup" a="outcomes">
+
+Let $\Omega=\{\omega_1,\dots,\omega_k\}$ be the set of **outcomes**: the consequences of the players' choices. In this course $\Omega$ is usually finite. It might be all the possible ends of a game of chess, the possible results of a negotiation between nations, or the possible results of an eBay auction.
+
+We interpret preferences a little differently depending on the setting. In decision making under **certainty** we know exactly what each choice leads to. Under **uncertainty**, each choice can lead to several outcomes, each with a probability. We start with certainty.
+</role>
+<role r="idea" a="preferences are rankings">
+
+The idea is that for any two outcomes we can say which we prefer. In other words, we can **rank** outcomes, and the ranking is allowed to have ties: you may be indifferent between two outcomes.
+</role>
+
+<thm k="Definition 2.1" nm="Preference relation" pg="33">
+A **preference relation** is a binary relation ${\succeq}\subseteq\Omega\times\Omega$ which is
+
+<ol><li>**reflexive:** $\omega\succeq\omega$ for all $\omega\in\Omega$;</li><li>**complete:** for all $\omega,\omega'\in\Omega$, either $\omega\succeq\omega'$ or $\omega'\succeq\omega$;</li><li>**transitive:** for all $\omega,\omega',\omega''\in\Omega$, if $\omega\succeq\omega'$ and $\omega'\succeq\omega''$ then $\omega\succeq\omega''$.</li></ol>
+</thm>
+
+<thm k="Definition 2.2" nm="Indifference and strict preference" pg="34">
+If $\omega\succeq\omega'$ and $\omega'\succeq\omega$, you are **indifferent** between $\omega$ and $\omega'$, written $\omega\sim\omega'$. If $\omega\succeq\omega'$ but not $\omega'\succeq\omega$, you **strictly prefer** $\omega$ to $\omega'$, written $\omega\succ\omega'$.
+</thm>
+
+<role r="caution" a="what preferences mean (important)">
+
+Two points that prevent many arguments.
+
+<ul><li>**Revealed preference.** Preferences are not observable; choices are. So $\omega\succ\omega'$ means: if you have a choice between $\omega$ and $\omega'$ you will choose $\omega$, and more generally, if one option leads to $\omega$ and another to $\omega'$, you choose the first.</li><li>**Rational choice doesn't make you Scrooge.** A preference relation must include *everything* that influences your decision. If you care about other people, that is part of your preferences. The theory copes equally well with angels and devils: "self-interested" means acting on your own preferences, whatever they are, not acting selfishly.</li></ul>
+</role>
+
+<role r="why" a="numbers are easier than relations">
+
+It is convenient to attach numbers to outcomes, higher numbers for more preferred outcomes. These numbers are called **utilities** (or utility values, or payoffs).
+</role>
+
+<thm k="Definition 2.3" nm="Utility function" pg="38">
+A function $u:\Omega\to\R$ **represents** a preference relation $\succeq$ if, for all $\omega,\omega'\in\Omega$,
+$$u(\omega)\ge u(\omega')\iff\omega\succeq\omega'.$$
+</thm>
+
+<thm k="Theorem 2.4" d="Every preference relation on a finite set has a utility function" pg="38" it>
+If $\Omega$ is finite, then every preference relation ${\succeq}\subseteq\Omega\times\Omega$ is represented by some utility function $u:\Omega\to\R$.
+</thm>
+
+<pf h="Proof (added here; the slides leave it as an exercise).">
+Score each outcome by how many outcomes it is at least as good as:
+$$u(\omega)=\big|\{\omega'\in\Omega:\omega\succeq\omega'\}\big|.$$
+**If $\omega\succeq\omega'$ then $u(\omega)\ge u(\omega')$.** Every $\omega''$ counted for $\omega'$ satisfies $\omega'\succeq\omega''$, so $\omega\succeq\omega''$ by transitivity, and it is counted for $\omega$ too.
+
+**If $u(\omega)\ge u(\omega')$ then $\omega\succeq\omega'$.** Suppose not. By completeness $\omega'\succeq\omega$, and $\omega'\not\sim\omega$, so $\omega'\succ\omega$. By the first part every outcome counted for $\omega$ is counted for $\omega'$. Also $\omega'$ is counted for $\omega'$ (reflexivity) but not for $\omega$ (since $\omega\not\succeq\omega'$). So $u(\omega')>u(\omega)$, a contradiction.
+</pf>
+
+<sheet n="1" qs="1,2">Question 1 builds a utility function for lexicographic preferences (Section 2.4). Question 2 shows that on an infinite set a preference relation need not have one.</sheet>
+
+<role r="caution" a="what utility is and isn't">
+
+Utilities are chosen to **represent** preferences, which is what makes rational choice a calculation. Three warnings.
+
+<ul><li>It is a fallacy to say you choose $\omega$ over $\omega'$ *because* $u(\omega)>u(\omega')$. You choose it because $\omega\succ\omega'$; the numbers were picked to reflect that. But if the numbers are right, you behave **as though** you were maximising utility.</li><li>Under certainty, utilities are **ordinal**: they record the ranking, not its intensity. Any increasing transformation of $u$ represents the same preferences.</li><li>**Interpersonal comparisons** are difficult. There is no Celsius scale for utility: one "util" for me is not one util for you.</li></ul>
+
+And **utility is not money**. Much misunderstanding, including the idea that game theory is about greed, comes from reading utility as money. Money is often a useful analogy, but the typical relationship is concave (Figure 2.1): each extra pound matters less than the last.
+</role>
+
+@@gt-fig2-1@@
+
+<thm k="Definition 2.5" nm="Outcome function" pg="41">
+Let $\Sigma$ be the set of **strategies** (choices, actions, alternatives) available to a decision maker. An **outcome function** is a map $g:\Sigma\to\Omega$. The **feasible** outcomes are those in its range $\operatorname{ran}g$; if $\operatorname{ran}g\subsetneq\Omega$, some outcomes are not feasible.
+</thm>
+
+<thm k="Definition 2.6" nm="Decision making under certainty" pg="42">
+A problem of **decision making under certainty** is a quadruple $\langle\Omega,\;u:\Omega\to\R,\;\Sigma,\;g:\Sigma\to\Omega\rangle$. The task is to select a strategy that leads to an outcome of maximal utility:
+$$\sigma^*\in\arg\max_{\sigma\in\Sigma}u(g(\sigma)).$$
+</thm>
+<role r="reading" a="Definition 2.6">
+
+This is just an optimisation problem. ($\arg\max$ is the *set* of maximisers, which is why we write $\sigma^*\in$.) The interesting cases are when the outcome is uncertain, or when it also depends on other players' choices.
+</role>
+
+## 2.2 Decision making under uncertainty {43} [d2 i3]
+<role r="question" a="choosing between gambles">
+
+In most settings we don't know exactly which outcome a strategy will produce: each strategy leads to a range of outcomes, with different probabilities. Preferences over outcomes are then not enough. We need preferences over **lotteries**.
+</role>
+
+<thm k="Example 2.7" d="A robot choosing between three noisy moves" pg="45">
+A robot sits at $(2,2)$ on a $4\times4$ grid, and wants to reach the cell marked with money at $(2,0)$, two steps north. Its motors are unreliable. Each move succeeds with probability $0.6$, and otherwise slips to one of two neighbouring cells with probability $0.2$ each:
+
+<ul><li>**north** gives $(2,1)$ with probability $0.6$, $(1,2)$ with $0.2$ and $(3,2)$ with $0.2$;</li><li>**west** gives $(1,2)$ with probability $0.6$, $(2,1)$ with $0.2$ and $(2,3)$ with $0.2$;</li><li>**east** gives $(3,2)$ with probability $0.6$, $(2,1)$ with $0.2$ and $(2,3)$ with $0.2$.</li></ul>
+
+Each action induces a **lottery** over cells, and choosing the best action means choosing the most preferred lottery. Figure 2.2 lets you put utilities on the cells and compare.
+</thm>
+
+@@gt-fig2-2@@
+
+<bg id="bg-dist" t="Probability distributions on a finite set" lead="From Prelims">
+A **probability distribution** over a non-empty finite set $S$ is a function $f:S\to[0,1]$ with $\sum_{s\in S}f(s)=1$; $f(s)$ is the probability of $s$. Write $\Delta(S)$ for the set of all of them, and $P(s,f)$ for $f(s)$ when that is clearer.
+</bg>
+
+<thm k="Definition 2.8" nm="Lottery" pg="52">
+A **lottery** over $\Omega$ is a probability distribution over $\Omega$. Write $\ell,\ell',\ell_1,\ldots$ for lotteries and $\operatorname{lott}(\Omega)$ for the set of them. We write a lottery as a weighted sum, leaving out outcomes of probability $0$; for example, with $\Omega=\{\text{whisky},\text{gin},\text{brandy},\text{rum}\}$,
+$$\ell_1=\tfrac1{10}\,\text{whisky}+\tfrac2{10}\,\text{gin}+\tfrac7{10}\,\text{brandy}$$
+gives whisky with probability $0.1$, gin $0.2$, brandy $0.7$ and rum $0$. The **support** of a lottery is the set of outcomes with strictly positive probability. A lottery with a single outcome in its support, such as $\ell_2=\text{brandy}$, is **degenerate**: brandy with certainty.
+</thm>
+
+<thm k="Definition 2.9" nm="Compound lotteries" pg="54">
+A **compound lottery** is a lottery whose prizes are themselves lotteries. Define $\operatorname{lott}^0(\Omega)=\operatorname{lott}(\Omega)$ and
+$$\operatorname{lott}^k(\Omega)=\operatorname{lott}\big(\operatorname{lott}^{k-1}(\Omega)\big)\cup\operatorname{lott}^{k-1}(\Omega)\quad(k\ge1),\qquad\operatorname{Lott}(\Omega)=\bigcup_{k\in\N}\operatorname{lott}^k(\Omega).$$
+Every compound lottery can be reduced to a simple one, an element of $\operatorname{lott}(\Omega)$, by multiplying out the probabilities. We work with preference relations on $\operatorname{Lott}(\Omega)$.
+</thm>
+<role r="example" a="Definition 2.9">
+
+With $\ell_1=\frac1{10}\text{gin}+\frac9{10}\text{brandy}$ and $\ell_2=\text{brandy}$, the compound lottery $\ell_3=\frac9{10}\ell_1+\frac1{10}\ell_2$ first picks $\ell_1$ or $\ell_2$, then runs it. Multiplying out, gin has probability $\frac9{10}\cdot\frac1{10}=\frac9{100}$ and brandy the rest, so $\ell_3$ reduces to $\frac9{100}\text{gin}+\frac{91}{100}\text{brandy}$.
+</role>
+
+<thm k="Definition 2.10" nm="Expected utility" pg="56">
+Given a utility function $u:\Omega\to\R$, the **expected utility** of a lottery $\ell$ is
+$$EU(\ell)=\sum_{\omega\in\Omega}u(\omega)\,P(\omega,\ell),$$
+the average utility the lottery gives, weighted by probability (for a compound lottery, use the probabilities after reducing it).
+</thm>
+<role r="question" a="when do utilities exist for lotteries?">
+
+Now the main question. Suppose I give you a preference relation ${\succeq}\subseteq\operatorname{Lott}(\Omega)\times\operatorname{Lott}(\Omega)$. Is there a utility function $u:\Omega\to\R$ on *outcomes* such that
+$$\ell_1\succeq\ell_2\iff EU(\ell_1)\ge EU(\ell_2)?$$
+The answer is yes exactly when the preferences satisfy a few extra axioms, due to von Neumann and Morgenstern. **Important:** utilities under uncertainty must capture the **intensity** of preferences, not just the ranking. Whether you prefer a sure $\omega_2$ to a coin flip between $\omega_1$ and $\omega_3$ depends on *how much* better $\omega_1$ is than $\omega_2$.
+</role>
+
+<thm k="Theorem 2.11" nm="Win-lose lotteries" pg="59" it>
+Let $\Omega=\{W,L\}$ with $W\succ L$, and suppose ${\succeq}$ on $\operatorname{Lott}(\{W,L\})$ is reflexive, complete and transitive, and **monotone**: $\ell_1\succeq\ell_2$ iff $P(W,\ell_1)\ge P(W,\ell_2)$. Then there is a utility function $u:\{W,L\}\to\R$ with $\ell_1\succeq\ell_2$ iff $EU(\ell_1)\ge EU(\ell_2)$.
+</thm>
+
+<pf h="Proof (added here).">
+Take $u(W)=1$ and $u(L)=0$. Then $EU(\ell)=P(W,\ell)$, and monotonicity says exactly that $\ell_1\succeq\ell_2$ iff $P(W,\ell_1)\ge P(W,\ell_2)$.
+</pf>
+
+<thm k="Definition 2.12" nm="Von Neumann–Morgenstern axioms" pg="60">
+In addition to reflexivity, completeness and transitivity, a preference relation on $\operatorname{Lott}(\Omega)$ may satisfy:
+
+<ol><li>**Reduction of compound lotteries.** Only the final distribution over outcomes matters: if $\ell_1$ and $\ell_2$ reduce to the same simple lottery, then $\ell_1\sim\ell_2$.</li><li>**Monotonicity.** If $\ell_1\succ\ell_2$, then for $p,q\in[0,1]$,
+$$p>q\iff p\ell_1+(1-p)\ell_2\succ q\ell_1+(1-q)\ell_2:$$
+you prefer the bigger chance of the better lottery.</li><li>**Continuity** (or the Archimedean axiom). If $\ell_1\succeq\ell_2\succeq\ell_3$, there is a $p\in[0,1]$ with
+$$\ell_2\sim p\ell_1+(1-p)\ell_3.$$</li><li>**Independence** (or substitution). For all lotteries $\ell_1,\ell_2,\ell_3$ and $p\in(0,1)$,
+$$\ell_1\succeq\ell_2\iff p\ell_1+(1-p)\ell_3\succeq p\ell_2+(1-p)\ell_3.$$</li></ol>
+</thm>
+<role r="reading" a="Definition 2.12">
+
+Continuity says preferences can be **quantified**: anything between two lotteries is equivalent to some mixture of them. Independence says we can freely substitute lotteries we are indifferent between, like equal terms in algebra: mixing both sides with the same third lottery, in the same proportion, doesn't change the comparison. Reduction says the "story" of how a lottery is run doesn't matter, only the odds.
+</role>
+
+<thm k="Definition 2.13" nm="Representing preferences over lotteries" pg="65">
+A utility function $u:\Omega\to\R$ **represents** a preference relation ${\succeq}\subseteq\operatorname{Lott}(\Omega)\times\operatorname{Lott}(\Omega)$ if, for all $\ell_1,\ell_2\in\operatorname{Lott}(\Omega)$,
+$$\ell_1\succeq\ell_2\iff EU(\ell_1)\ge EU(\ell_2).$$
+</thm>
+
+<thm k="Theorem 2.14" nm="Von Neumann and Morgenstern" pg="66" it>
+A preference relation ${\succeq}\subseteq\operatorname{Lott}(\Omega)\times\operatorname{Lott}(\Omega)$ satisfies the von Neumann–Morgenstern axioms if and only if some utility function $u:\Omega\to\R$ represents it.
+</thm>
+
+<pf h="Proof of the forward direction.">
+The plan: find the best and worst outcomes, call them $W$ and $L$; use them as the ends of a scale with $L$ at $0$ and $W$ at $1$; and use continuity to place every other outcome on the scale.
+
+**Step 1: the trivial case.** If all outcomes are indifferent, $\omega_1\sim\dots\sim\omega_k$, then by reduction every lottery is indifferent to every other, and $u\equiv1$ works.
+
+**Step 2: a scale from worst to best.** Otherwise, by completeness and transitivity we can order the outcomes. Let $L$ be a worst one and $W$ a best one, so $W\succeq\omega\succeq L$ for every $\omega$ and $W\succ L$. Set $u(L)=0$ and $u(W)=1$. For $p\in[0,1]$ write
+$$\ell^*(p)=pW+(1-p)L$$
+for the lottery that wins with probability $p$.
+
+**Step 3: place each outcome.** Since $W\succeq\omega\succeq L$, continuity gives some $p_\omega\in[0,1]$ with $\omega\sim\ell^*(p_\omega)$. Define $u(\omega)=p_\omega$. (By monotonicity this $p_\omega$ is unique, so $u$ is well defined; and $u(W)=1$, $u(L)=0$ agree with step 2.)
+
+**Step 4: rewrite lotteries in terms of $W$ and $L$.** Take any lottery, which by reduction we may assume simple: $\ell=p_1\omega_1+\dots+p_k\omega_k$. Replace each $\omega_i$ by the equivalent $\ell^*(u(\omega_i))$, one at a time, using independence each time. Then multiply out using reduction:
+$$\begin{aligned}\ell&\sim p_1\ell^*(u(\omega_1))+\dots+p_k\ell^*(u(\omega_k))&&\why{independence, $k$ times}\\&\sim\Big(\sum_{i=1}^kp_iu(\omega_i)\Big)W+\Big(1-\sum_{i=1}^kp_iu(\omega_i)\Big)L&&\why{reduction}\\&=\ell^*\big(EU(\ell)\big).\end{aligned}$$
+So every lottery is equivalent to "win with probability equal to its expected utility".
+
+**Step 5: compare.** For two lotteries, $\ell_1\sim\ell^*(EU(\ell_1))$ and $\ell_2\sim\ell^*(EU(\ell_2))$. Since $W\succ L$, monotonicity says $\ell^*(a)\succeq\ell^*(b)$ iff $a\ge b$. So
+$$\ell_1\succeq\ell_2\iff\ell^*(EU(\ell_1))\succeq\ell^*(EU(\ell_2))\iff EU(\ell_1)\ge EU(\ell_2).$$
+(Step 2 of the slides assumes the order is strict, with no ties. The argument above doesn't need that; ties just give equal values of $u$.)
+</pf>
+
+<role r="reading" a="what the theorem buys">
+
+The utility function is unique up to a positive affine change $u\mapsto au+b$ with $a>0$: that changes every expected utility in the same way and so represents the same preferences. Under uncertainty, utility is no longer just a ranking; the *differences* between utilities matter.
+</role>
+
+<thm k="Definition 2.15" nm="Decision making under uncertainty" pg="75">
+A problem of **decision making under uncertainty** is a quadruple $\langle\Omega,\;u:\Omega\to\R,\;\Sigma,\;g:\Sigma\to\operatorname{Lott}(\Omega)\rangle$. The task is to select a strategy that maximises expected utility:
+$$\sigma^*\in\arg\max_{\sigma\in\Sigma}EU(g(\sigma))=\arg\max_{\sigma\in\Sigma}\sum_{\omega\in\Omega}u(\omega)\,P(\omega,g(\sigma)).$$
+</thm>
+<role r="link" a="the most important single definition in AI">
+
+This **maximum expected utility** (MEU) principle is probably the most important single definition underpinning contemporary AI: a rational agent is often *defined* as one that maximises expected utility.
+</role>
+
+<sheet n="1" qs="3,4,5,6,7">Question 3 is a decision under uncertainty (like Figure 2.2). Questions 4 to 7 exercise the axioms directly.</sheet>
+
+## 2.3 Paradoxes of expected utility {76} [d2 i2]
+<role r="question" a="does anyone actually behave like this?">
+
+The MEU paradigm is so entrenched that rational agents are commonly *defined* as expected utility maximisers. But it is not hard to find examples where maximising expected utility seems wrong, or where the theory's advice runs against strong intuitions.
+</role>
+
+<thm k="Example 2.16" d="Risk aversion: money is not utility" pg="77">
+Compare $\ell_1=\$50$ for certain with $\ell_2=\frac12\$101+\frac12\$0$. The second has higher expected *money* ($\$50.50$), but many people prefer the certain $\$50$. That is **risk aversion**, and it shows that expected monetary reward is not expected utility. With a concave utility of money (Figure 2.1) it is perfectly consistent with the theory.
+</thm>
+
+<thm k="Example 2.17" nm="The Allais paradox" pg="78">
+Consider the lotteries
+$$\ell_A=\$2\text{m},\qquad\ell_B=\tfrac{89}{100}\$2\text{m}+\tfrac{10}{100}\$10\text{m}+\tfrac1{100}\$0,$$
+$$\ell_C=\tfrac{11}{100}\$2\text{m}+\tfrac{89}{100}\$0,\qquad\ell_D=\tfrac{10}{100}\$10\text{m}+\tfrac{90}{100}\$0.$$
+Most people prefer $\ell_A$ to $\ell_B$ (why risk anything when $\$2$m is certain?), and $\ell_D$ to $\ell_C$ (the chances are similar, so go for the bigger prize).
+</thm>
+
+<thm k="Lemma 2.18" d="The Allais choices violate the axioms" pg="80" it>
+Anyone with preferences $\ell_A\succ\ell_B$ and $\ell_D\succ\ell_C$ does not satisfy the von Neumann–Morgenstern axioms.
+</thm>
+
+<pf>
+Suppose $u$ represents $\succeq$, and write $x=u(\$0)$, $y=u(\$2\text{m})$, $z=u(\$10\text{m})$. The two preferences say
+$$\begin{aligned}EU(\ell_A)>EU(\ell_B):&\qquad y>0.1z+0.89y+0.01x,\\EU(\ell_D)>EU(\ell_C):&\qquad0.1z+0.9x>0.11y+0.89x.\end{aligned}$$
+Add $0.89(x-y)$ to both sides of the first inequality:
+$$0.11y+0.89x>0.1z+0.9x,$$
+which says $EU(\ell_C)>EU(\ell_D)$, contradicting the second. So no $u$ represents these preferences, and by Theorem 2.14 the axioms fail.
+</pf>
+
+<role r="idea" a="the common consequence">
+
+Here is why. All four lotteries share a common piece. $\ell_A$ and $\ell_B$ both give $\$2$m with probability $0.89$; $\ell_C$ and $\ell_D$ both give $\$0$ with probability $0.89$. On the remaining $0.11$ of probability, $A$ and $C$ are *identical* ($\$2$m for sure), and so are $B$ and $D$ ($\frac{10}{11}$ chance of $\$10$m, $\frac1{11}$ of $\$0$). The independence axiom says the common $0.89$ shouldn't matter, so you must rank $A$ against $B$ the same way as $C$ against $D$. Figure 2.3 shows the four lotteries as bars.
+</role>
+
+@@gt-fig2-3@@
+
+<thm k="Example 2.19" nm="Framing effects" pg="82">
+(Tversky and Kahneman, 1981.) A disease is expected to kill 600 people, and there are two treatments.
+
+<ul><li>(A) 200 people will be saved.</li><li>(B) With probability $\frac13$, 600 will be saved; with probability $\frac23$, nobody will be saved.</li></ul>
+
+72% of subjects chose A. A second group was offered:
+
+<ul><li>(C) 400 people will die.</li><li>(D) With probability $\frac13$ nobody will die; with probability $\frac23$, 600 will die.</li></ul>
+
+78% chose D. But A and C describe the same lottery, as do B and D.
+</thm>
+<role r="reading" a="Example 2.19">
+
+People are affected by how a decision problem is **framed**: described in terms of lives saved, we are risk-averse; described in terms of deaths, risk-seeking. The study of how people actually make economic decisions is **behavioural economics** (Ariely's *Predictably Irrational* is a fun introduction). None of this refutes the theory as a normative account, but it limits the descriptive one.
+</role>
+
+<sheet n="1" qs="8,9">Question 8 is the St Petersburg paradox; Question 9 a story about bomber pilots whose preferences seem to break the axioms.</sheet>
+
+## 2.4 Preferences with structure {83} [d1 i2]
+<role r="setup" a="three common shapes">
+
+Preference relations often have structure. Three important classes are single-peaked, dichotomous and lexicographic preferences.
+</role>
+
+<thm k="Definition 2.20" nm="Single-peaked preferences" pg="86">
+Fix an ordering $\omega_1>\omega_2>\dots>\omega_k$ of the alternatives, called the **axis**. A preference relation $\succeq$ is **single-peaked** with respect to it if
+
+<ol><li>there is a unique most preferred alternative $\omega^*$, and</li><li>of any two alternatives on the same side of $\omega^*$, the one closer to $\omega^*$ is strictly preferred: if $\omega'>\omega>\omega^*$ then $\omega\succ\omega'$, and if $\omega^*>\omega>\omega'$ then $\omega\succ\omega'$.</li></ol>
+</thm>
+<role r="example" a="Definition 2.20">
+
+Order election candidates from left-wing to right-wing. It is natural to have a personal ideal point on that axis and to prefer candidates closer to it. A bar chart of utilities in axis order is then a mountain with a single peak. Single-peaked preferences matter in **social choice theory**, where they are the hypothesis of the **median voter theorem**.
+</role>
+
+<thm k="Definition 2.21" nm="Dichotomous preferences" pg="87">
+A preference relation is **dichotomous** if it splits all outcomes into **wins** and **losses**: there are $W,L\subseteq\Omega$ with $W\cup L=\Omega$ and $W\cap L=\emptyset$, such that $\omega_1\sim\omega_2$ whenever both are in $W$ or both are in $L$, and $\omega_1\succ\omega_2$ whenever $\omega_1\in W$ and $\omega_2\in L$.
+</thm>
+<role r="reading" a="Definition 2.21">
+
+The set $W$ can be thought of as a **goal**. Dichotomous preferences are naturally specified by logical formulae, as in Section 2.5, and they are the preferences of the Boolean games of Chapter 3 and the win-lose games of Chapter 7.
+</role>
+
+<thm k="Definition 2.22" nm="Lexicographic preferences" pg="88">
+Suppose outcomes are described by attributes $a_1,\dots,a_m$ in decreasing order of importance. Each attribute $a_j$ has a set of values $D_j$ with a strict ranking $\succ_j$, and $\omega[a_j]\in D_j$ is the value of $\omega$ on attribute $a_j$. A preference relation is **lexicographic** if, for all $\omega,\omega'$, $\omega\succ\omega'$ iff there is an attribute $a_j$ with
+$$\omega[a_j]\succ_j\omega'[a_j]\qquad\text{and}\qquad\omega[a_k]=\omega'[a_k]\text{ for all }k<j.$$
+</thm>
+<role r="example" a="Definition 2.22">
+
+The name comes from the dictionary: all words starting with "a" before all words starting with "b", and among those starting with "a", all "aa" words before all "ab" words. For cars, someone might rank by colour first, then engine, then nationality:
+$$\text{red}\succ\text{blue}\succ\text{green};\qquad\text{electric}\succ\text{petrol}\succ\text{diesel};\qquad\text{German}\succ\text{French}\succ\text{UK}.$$
+Then every red car beats every non-red car, every red electric car beats every red petrol car, and so on. No amount of a lower attribute compensates for a higher one.
+</role>
+
+<pause n="A utility for lexicographic cars" q="Give a utility function for the car preferences above without listing all 27 cars. (This is Sheet 1, Question 1.)">
+Score each attribute $0$, $1$ or $2$ from worst to best, and read the three scores as the digits of a number in base $3$:
+$$u(\text{car})=9\,s_{\text{colour}}+3\,s_{\text{engine}}+s_{\text{nationality}}.$$
+A better colour adds at least $9$, while the other two attributes together can add at most $3\cdot2+2=8$, so colour always wins; similarly engine beats nationality. This is exactly the lexicographic order. (Any base larger than the number of values per attribute works.)
+</pause>
+
+## 2.5 Compact representations {92} [d3 i2]
+<role r="question" a="when there are too many outcomes to list">
+
+Often $\Omega$ is too large to list a preference relation explicitly. If you must form a team with some subset of $n$ classmates, your preferences have to order $2^n$ possible teams. We need **compact** and **tractable** representations. But compactness has a price: decision problems start to get hard. Finding representations that are both is a major research area.
+</role>
+<role r="setup" a="Boolean domains">
+
+Many domains are described by a finite set of Boolean variables $\Phi=\{x_1,\dots,x_l\}$, each true ($\top$) or false ($\bot$). In the team example, take a variable $x_i$ for each classmate $i\in N=\{1,\dots,n\}$, meaning "$i$ is in the team". Every **valuation** $v:\Phi\to\{\top,\bot\}$ then describes a team. Dichotomous preferences over teams can be given by a propositional formula $\gamma$: the winning teams are its satisfying valuations, and
+$$u(v)=\begin{cases}1&\text{if }v\models\gamma,\\0&\text{otherwise.}\end{cases}$$
+</role>
+
+<pause n="The Fab Four" q="Which teams satisfy $\gamma=(\text{John}\vee\text{Paul})\wedge(\text{George}\wedge\text{Ringo})\wedge\neg(\text{John}\wedge\text{Paul})$?">
+George and Ringo must both be in, and exactly one of John and Paul. So the winning teams among the four are $\{\text{John},\text{George},\text{Ringo}\}$ and $\{\text{Paul},\text{George},\text{Ringo}\}$ (together with anyone else from the class, if $N$ is bigger, since $\gamma$ doesn't mention them).
+</pause>
+
+<thm k="Theorem 2.23" d="Formulas represent dichotomous preferences, sometimes compactly" pg="97" it>
+Let the **naive representation** of dichotomous Boolean preferences list all winning sets $W\subseteq2^N$ explicitly.
+
+<ol><li>The propositional formula representation is **complete**: every dichotomous Boolean preference relation is given by some formula.</li><li>It can be **exponentially more compact** than the naive representation.</li><li>Some dichotomous preference relations have no formula smaller than exponential in $|N|$, so in the worst case it is no better than the naive representation.</li></ol>
+</thm>
+<role r="reading" a="Theorem 2.23">
+
+Completeness: take the disjunction, over all winning valuations, of the conjunction describing that valuation exactly. Compactness: the formula $x_1$ alone describes $2^{n-1}$ winning teams. The worst case is a counting argument: there are $2^{2^n}$ dichotomous preference relations, but far fewer short formulas.
+</role>
+
+<thm k="Definition 2.24" nm="Weighted formula representation" pg="98">
+A **weighted formula** (or **rule**) is a pair $(\varphi,x)$ of a propositional formula $\varphi$ and a number $x\in\R$, sometimes written $\varphi\to x$. A **rule base** $R=\{(\varphi_1,x_1),\dots,(\varphi_k,x_k)\}$ defines the utility function
+$$u_R(v)=\sum_{(\varphi_i,x_i)\in R,\;v\models\varphi_i}x_i,$$
+the sum of the weights of the rules that $v$ satisfies.
+</thm>
+
+<thm k="Theorem 2.25" d="Weighted formulas: complete, sometimes compact" pg="99" it>
+The weighted formula representation is complete for utility functions $u:2^N\to\R$; it can be exponentially more compact than the naive representation (listing all $2^{|N|}$ input/output pairs); and some utility functions need exponentially many rules.
+</thm>
+
+<role r="setup" a="assumption on the weights">
+
+From now on the weights are natural numbers written in binary. Then the largest possible utility,
+$$S=\sum_{i=1}^kx_i,$$
+is at most exponential in the input size, so its binary length is polynomial.
+</role>
+
+<thm k="Theorem 2.26" d="Is utility t achievable? NP-complete" pg="102" it>
+Given a rule base $R$ and a target $t\in\N$, deciding whether some valuation $v$ has $u_R(v)\ge t$ (the problem $\text{AT-LEAST}(t)$) is NP-complete.
+</thm>
+
+<pf>
+**In NP.** A certificate is a valuation $v$: we can evaluate every $\varphi_i$ on $v$ in polynomial time, add up the weights, and compare with $t$.
+
+**NP-hard.** Reduce SAT. Given a formula $\varphi$, take the rule base $R=\{(\varphi,1)\}$ and $t=1$. Some valuation has utility at least $1$ iff $\varphi$ is satisfiable.
+</pf>
+
+<thm k="Theorem 2.27" d="Finding an optimal valuation is in FP^NP" pg="101" it>
+Finding an optimal valuation $v^*\in\arg\max_vu_R(v)$ is in $\mathrm{FP}^{\mathrm{NP}}$: it can be done in polynomial time with polynomially many calls to an NP oracle.
+</thm>
+
+<pf>
+**Find the optimal value by binary search.** Keep an interval $[L,U]$ that always contains the optimum $\mathrm{OPT}$, starting with $L=0$ and $U=S$. While $L<U$, ask the oracle about the upper midpoint $m=\lfloor(L+U+1)/2\rfloor$:
+
+<ol class="parts"><li>if $\text{AT-LEAST}(m)$ says yes, then $\mathrm{OPT}\ge m$, so set $L\leftarrow m$;</li><li>if it says no, then $\mathrm{OPT}<m$, so set $U\leftarrow m-1$.</li></ol>
+
+The interval halves each time, so this takes about $\log_2S$ queries, polynomial in the input size, and returns $L=\mathrm{OPT}$. (The *upper* midpoint is what guarantees progress when $U=L+1$.)
+
+**Then find a valuation achieving it.** Fix the variables one at a time. For $x_1$, ask whether value $\mathrm{OPT}$ is still achievable with $x_1$ forced true (replace $x_1$ by $\top$ in every rule). If so, keep $x_1=\top$, otherwise set $x_1=\bot$. Continue with $x_2,\dots,x_l$. That is $l$ more queries.
+</pf>
+
+## 2.6 Preferences for combinatorial auctions {105} [d2 i1]
+<role r="example" a="bundles of goods">
+
+In a **combinatorial auction**, bidders buy **bundles** of goods. Spectrum licences are the classic case: a licence for the 1.7–1.72 GHz band in Brooklyn is far more useful together with the same band in Manhattan, Queens and Staten Island. Licences for the same band are most valuable together, but a licence for a different band is still better than none. Preferences over bundles are complicated.
+</role>
+
+<thm k="Definition 2.28" nm="Valuation function" pg="107">
+Let $\mathcal Z=\{z_1,\dots,z_m\}$ be the items for sale. Bidder $i$'s preferences are a **valuation function** $u_i:2^{\mathcal Z}\to\R$, giving for every bundle $Z\subseteq\mathcal Z$ what it is worth to $i$. It is **normalised** if $u_i(\emptyset)=0$, and satisfies **free disposal** if $Z_1\subseteq Z_2$ implies $u_i(Z_1)\le u_i(Z_2)$: more stuff never hurts.
+</thm>
+
+<thm k="Definition 2.29" nm="Atomic and XOR bids" pg="110">
+An **atomic bid** is a pair $(Z,p)$ with $Z\subseteq\mathcal Z$ and $p\in\R_+$. A bundle $Z'$ **satisfies** it if $Z\subseteq Z'$: it contains at least the items asked for. An atomic bid defines the valuation $u(Z')=p$ if $Z'$ satisfies $(Z,p)$, and $0$ otherwise. An **XOR bid**
+$$\beta=(Z_1,p_1)\;\text{XOR}\;\cdots\;\text{XOR}\;(Z_k,p_k)$$
+defines the valuation
+$$u_\beta(Z')=\begin{cases}0&\text{if }Z'\text{ satisfies no }(Z_i,p_i),\\\max\{p_i:Z_i\subseteq Z'\}&\text{otherwise.}\end{cases}$$
+</thm>
+<role r="example" a="Definition 2.29">
+
+"XOR" because the bidder pays for at most one of the atomic bids. For $\beta_1=(\{a,b\},3)\;\text{XOR}\;(\{c,d\},5)$:
+$$u_{\beta_1}(\{a\})=u_{\beta_1}(\{b\})=0,\quad u_{\beta_1}(\{a,b\})=3,\quad u_{\beta_1}(\{c,d\})=5,\quad u_{\beta_1}(\{a,b,c,d\})=5.$$
+The last one is $5$, not $8$: having both bundles is worth only the better of the two.
+</role>
+
+<thm k="Proposition 2.30" d="XOR bids can express everything, at a price" pg="114">
+XOR bids are **fully expressive**: they can express any normalised valuation function with free disposal. Doing so may need exponentially many atomic bids. But given an XOR bid, the value of any bundle can be computed in polynomial time.
+</thm>
+<role r="reading" a="Proposition 2.30">
+
+For expressiveness, bid $(Z,u(Z))$ for every bundle $Z$; free disposal makes the maximum over contained bundles equal to $u(Z')$. That is $2^m$ atomic bids. Evaluation is easy: check each atomic bid for $Z_i\subseteq Z'$ and take the largest price.
+</role>

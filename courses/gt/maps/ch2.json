@@ -1,0 +1,136 @@
+{
+"nodes": [
+[
+"pref",
+"Preference relation ⪰",
+"r2-1",
+1
+],
+[
+"util",
+"Utility function",
+"r2-3",
+0
+],
+[
+"fin",
+"Finite Ω ⇒ utility exists",
+"r2-4",
+0
+],
+[
+"cert",
+"Choice under certainty",
+"r2-6",
+0
+],
+[
+"lot",
+"Lotteries",
+"r2-8",
+1
+],
+[
+"eu",
+"Expected utility",
+"r2-10",
+0
+],
+[
+"vnm",
+"vNM axioms",
+"r2-12",
+1
+],
+[
+"thm",
+"vNM theorem",
+"r2-14",
+1
+],
+[
+"allais",
+"Allais paradox",
+"r2-17",
+0
+],
+[
+"shapes",
+"Single-peaked, dichotomous, lexicographic",
+"s2-5",
+0
+],
+[
+"comp",
+"Compact representations & NP",
+"r2-26",
+0
+]
+],
+"edges": [
+[
+"pref",
+"util",
+"represented by"
+],
+[
+"util",
+"fin",
+"exists if"
+],
+[
+"util",
+"cert",
+"maximise"
+],
+[
+"pref",
+"lot",
+"over gambles"
+],
+[
+"lot",
+"eu",
+"average utility"
+],
+[
+"vnm",
+"thm",
+"characterise"
+],
+[
+"thm",
+"eu",
+"⇔"
+],
+[
+"thm",
+"allais",
+"violated by"
+],
+[
+"pref",
+"shapes",
+"special forms"
+],
+[
+"shapes",
+"comp",
+"succinctly"
+]
+],
+"ext": [
+[
+"c3",
+"Normal form games",
+"r3-2"
+]
+],
+"extedges": [
+[
+"eu",
+"c3",
+"payoffs"
+]
+]
+}

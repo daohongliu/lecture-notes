@@ -1,0 +1,102 @@
+{
+"nodes": [
+[
+"game",
+"A game: self-interested players",
+"s1-1",
+1
+],
+[
+"ex",
+"Chicken, debates",
+"r1-1",
+0
+],
+[
+"sc",
+"Solution concept f(G) ⊆ Ω",
+"r1-3",
+1
+],
+[
+"crit",
+"Existence, uniqueness, tractability…",
+"s1-2",
+0
+],
+[
+"q3",
+"Non-emptiness, membership, computation",
+"r1-4",
+1
+],
+[
+"interp",
+"Descriptive vs normative",
+"s1-3",
+0
+],
+[
+"cs",
+"Why computer science",
+"s1-4",
+0
+]
+],
+"edges": [
+[
+"game",
+"ex",
+"e.g."
+],
+[
+"game",
+"sc",
+"what is rational?"
+],
+[
+"sc",
+"crit",
+"judged by"
+],
+[
+"sc",
+"q3",
+"computational questions"
+],
+[
+"sc",
+"interp",
+"read as"
+],
+[
+"q3",
+"cs",
+"complexity"
+]
+],
+"ext": [
+[
+"c2",
+"Preferences & utility",
+"r2-1"
+],
+[
+"c3",
+"Nash equilibrium",
+"r3-8"
+]
+],
+"extedges": [
+[
+"game",
+"c2",
+"preferences"
+],
+[
+"sc",
+"c3",
+"main example"
+]
+]
+}

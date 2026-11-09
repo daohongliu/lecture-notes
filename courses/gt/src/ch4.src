@@ -1,0 +1,195 @@
+@num 4
+@title Mixed Strategies and Nash’s Theorem
+@titlehtml Mixed strategies and <em>Nash’s theorem</em>
+@pages 202–242
+@dek Some games have no pure equilibrium, but every finite game has one if players may randomise. The indifference principle computes mixed equilibria; plotting best responses shows why they must exist for 2-by-2 games; and a fixed point theorem does the rest.
+---
+## 4.1 Mixed strategies {203} [d2 i3]
+<role r="question" a="what if no pure equilibrium exists?">
+
+Matching Pennies (Example 3.20) has no pure Nash equilibrium: from every cell, one of the players wants to switch. The fix is to let players **randomise**: play heads and tails with probability $\frac12$ each.
+
+Why is that an equilibrium? If player 1 put more weight on heads than tails, player 2's best response would be tails with certainty; if more on tails, heads with certainty. Only when player 1 is exactly balanced does player 2 have no reason to prefer one side, and then randomising half-half is one of her best responses. The same holds the other way round.
+</role>
+
+<thm k="Definition 4.1" nm="Mixed strategy" pg="206">
+A **mixed strategy** for player $i$ is a probability distribution $\mu_i$ over her pure strategies $\Sigma_i$: play $\sigma^1$ with probability $p_1$, $\sigma^2$ with probability $p_2$, and so on, where $p_j\in[0,1]$ and $\sum_jp_j=1$. Write $M_i=\Delta\Sigma_i$ for the set of mixed strategies of player $i$.
+</thm>
+<role r="reading" a="Definition 4.1">
+
+Payoffs are now **expected utilities** (Chapter 2): when every player mixes independently, a profile of mixed strategies $\mu=(\mu_1,\dots,\mu_n)$ induces a lottery over pure profiles, and $EU_i(\mu)$ is player $i$'s expected utility from it. A pure strategy is the special case of a mixed strategy putting probability $1$ on one choice. Nash equilibrium is defined exactly as before, with $EU_i$ in place of $u_i$ and $M_i$ in place of $\Sigma_i$.
+</role>
+
+<thm k="Theorem 4.2" nm="Nash, 1950" pg="207" it>
+A game is **finite** if every $\Sigma_i$ is finite. Every finite game has a Nash equilibrium in mixed strategies.
+</thm>
+<role r="roadmap" a="existence and computation">
+
+Nash's theorem guarantees existence. But what about **computing** an equilibrium? Sections 4.2 and 4.3 give a method, the indifference principle; Sections 4.4 and 4.5 explain why the theorem is true.
+</role>
+
+## 4.2 The indifference principle for 2×2 games {208} [d2 i3]
+
+<thm k="Definition 4.3" nm="Support" pg="210">
+The **support** of a mixed strategy $\mu_i:\Sigma_i\to[0,1]$ is the set of pure strategies it plays with positive probability,
+$$\operatorname{supp}(\mu_i)=\{\sigma\in\Sigma_i:\mu_i(\sigma)>0\}.$$
+$\mu_i$ is **fully mixed** if $\operatorname{supp}(\mu_i)=\Sigma_i$.
+</thm>
+
+<role r="setup" a="the generic 2×2 game">
+
+Work with a generic $2\times2$ game, writing $v^i_k$ for player $i$'s utility in cell $k$ (cells numbered $1$ to $4$ across then down):
+<pm r="T,B" c="l,r" p1="$v^1_1$ , $v^1_2$ ; $v^1_3$ , $v^1_4$" p2="$v^2_1$ , $v^2_2$ ; $v^2_3$ , $v^2_4$"></pm>
+A mixed strategy for player 1 is a number $p\in[0,1]$: play $T$ with probability $p$ and $B$ with probability $1-p$. Similarly player 2 plays $l$ with probability $q$. Against $q$, player 1's two pure strategies give
+$$EU_1(T,q)=v^1_1q+v^1_2(1-q),\qquad EU_1(B,q)=v^1_3q+v^1_4(1-q),$$
+and against $p$, player 2's give
+$$EU_2(l,p)=v^2_1p+v^2_3(1-p),\qquad EU_2(r,p)=v^2_2p+v^2_4(1-p).$$
+</role>
+
+<thm k="Theorem 4.4" nm="Indifference principle for 2×2 games" pg="214" it>
+If $(p,q)\in(0,1)^2$ is a mixed strategy Nash equilibrium of the generic $2\times2$ game, then
+$$EU_1(T,q)=EU_1(B,q)\qquad\text{and}\qquad EU_2(l,p)=EU_2(r,p).$$
+</thm>
+
+<pf h="Proof (added here).">
+Player 1's expected utility from mixing with probability $p$ is
+$$EU_1(p,q)=p\,EU_1(T,q)+(1-p)\,EU_1(B,q),$$
+a straight line in $p$. If $EU_1(T,q)>EU_1(B,q)$, the line increases, so $p=1$ does strictly better than any $p<1$, and player 1 would deviate from $p\in(0,1)$. The same if $EU_1(T,q)<EU_1(B,q)$, with $p=0$. So in an equilibrium with $0<p<1$ the two pure strategies must give the same payoff. The same argument applies to player 2.
+</pf>
+
+<role r="idea" a="you mix only if you don't care">
+
+This is a special case of a general fact: **in equilibrium, every pure strategy in the support of a player's mixed strategy gives her the same expected payoff.** You only randomise between options you are indifferent between. Notice the twist: player 1's indifference condition is an equation in $q$, player 2's probability. Each player mixes so as to make the *other* player indifferent.
+</role>
+
+<role r="technique" a="the algorithm">
+
+This gives an algorithm for $2\times2$ games.
+
+<ol class="parts"><li>Look for pure Nash equilibria. (A rule of thumb: generic games have an odd number of equilibria, so if you find an even number of pure ones, look for a mixed one.)</li><li>Solve $EU_1(T,q)=EU_1(B,q)$ for $q$.</li><li>Solve $EU_2(l,p)=EU_2(r,p)$ for $p$.</li><li>Any solution $(p,q)\in(0,1)^2$ is a mixed Nash equilibrium.</li></ol>
+
+The equations are linear, so this takes polynomial time. (Problem Sheet 2, Question 2 asks you to prove the converse of Theorem 4.4, which step 4 relies on.)
+</role>
+
+<thm k="Example 4.5" d="The mixed equilibrium of Matching Pennies" pg="216">
+In Matching Pennies, first find $q$ from player 1's indifference:
+$$\begin{aligned}EU_1(\text{Heads},q)&=EU_1(\text{Tails},q)\\1\cdot q+(-1)(1-q)&=(-1)q+1\cdot(1-q)\\2q-1&=1-2q,\end{aligned}$$
+so $q=\frac12$. Player 2's indifference gives, in the same way, $1-2p=2p-1$, so $p=\frac12$. The unique Nash equilibrium is $(\frac12,\frac12)$: both toss a fair coin.
+</thm>
+
+@@gt-fig4-1@@
+
+<sheet n="2" qs="2">The indifference principle for $2\times2$ games, in both directions.</sheet>
+
+## 4.3 The indifference principle in general {218} [d3 i2]
+
+<thm k="Theorem 4.6" nm="Indifference principle" pg="219" it>
+If the mixed strategy profile $\mu=(\mu_1,\dots,\mu_n)$ is a Nash equilibrium, then for every player $i$ and all $\sigma,\sigma'\in\operatorname{supp}(\mu_i)$,
+$$EU_i(\sigma,\mu_{-i})=EU_i(\sigma',\mu_{-i}).$$
+Moreover each such $\sigma$ is a best response to $\mu_{-i}$.
+</thm>
+
+<pf h="Proof (added here).">
+Player $i$'s payoff is an average over her support: $EU_i(\mu)=\sum_\sigma\mu_i(\sigma)\,EU_i(\sigma,\mu_{-i})$. An average is at most the largest term, with equality only if every term with positive weight equals the largest. If some $\sigma$ in the support gave less than the best pure response $\sigma^*$ against $\mu_{-i}$, then moving its weight to $\sigma^*$ would strictly increase $EU_i$, contradicting equilibrium. So every strategy in the support achieves the maximum, and they are all equal.
+</pf>
+
+<role r="why" a="the hard part is the support">
+
+This suggests a method for two-player games with more than two strategies. If we knew the supports of an equilibrium, we could find it by solving linear equations and inequalities. The difficulty is knowing the support.
+</role>
+
+<thm k="Definition 4.7" nm="The support feasibility program" pg="221">
+Given a two-player game $G$ and candidate supports $S_1\subseteq\Sigma_1$, $S_2\subseteq\Sigma_2$, the linear feasibility program $\mathrm{SEP}(G,S_1,S_2)$ has unknowns $\mu_1(\sigma_1)$, $\mu_2(\sigma_2)$, $v_1$, $v_2$ and constraints
+
+$$#eq4-1 \begin{aligned}\sum_{\sigma_2\in S_2}\mu_2(\sigma_2)\,u_1(\sigma_1,\sigma_2)&=v_1&&\forall\sigma_1\in S_1\\\sum_{\sigma_2\in S_2}\mu_2(\sigma_2)\,u_1(\sigma_1,\sigma_2)&\le v_1&&\forall\sigma_1\in\Sigma_1\setminus S_1\\\sum_{\sigma_1\in S_1}\mu_1(\sigma_1)\,u_2(\sigma_1,\sigma_2)&=v_2&&\forall\sigma_2\in S_2\\\sum_{\sigma_1\in S_1}\mu_1(\sigma_1)\,u_2(\sigma_1,\sigma_2)&\le v_2&&\forall\sigma_2\in\Sigma_2\setminus S_2\\\sum_{\sigma_i\in S_i}\mu_i(\sigma_i)&=1,\quad\mu_i(\sigma_i)>0\text{ on }S_i,\quad\mu_i(\sigma_i)=0\text{ off }S_i.\end{aligned} \tag{4.1}$$
+</thm>
+<role r="reading" a="Definition 4.7">
+
+Line by line: every strategy in player 1's support earns the same $v_1$ (indifference); nothing outside the support earns more (no profitable deviation); the same for player 2; and the $\mu_i$ are probability distributions with exactly the given supports. Any feasible solution is a Nash equilibrium.[[The slides have $\mu_1(\sigma_2)$ in the fourth line; it should be $\mu_1(\sigma_1)$.]] The strict inequalities $\mu_i>0$ are not quite linear programming, but a standard trick (maximise the smallest $\mu_i$ and check it is positive) handles them.
+</role>
+
+<div class="algo" id="alg4-8" data-label="Algorithm 4.8" data-name="Support enumeration"><div class="algo-h"><span class="algo-k">Algorithm 4.8</span> Support enumeration</div><ol class="algo-l"><li><b>for</b> $i=1,\dots,|\Sigma_1|$ and $j=1,\dots,|\Sigma_2|$:</li><li class="in1"><b>for</b> each $S_1\subseteq\Sigma_1$ with $|S_1|=i$ and each $S_2\subseteq\Sigma_2$ with $|S_2|=j$:</li><li class="in2"><b>if</b> $\mathrm{SEP}(G,S_1,S_2)$ has a solution: <b>return</b> $S_1,S_2,\mu_1,\mu_2,v_1,v_2$</li></ol></div>
+
+<role r="reading" a="Algorithm 4.8">
+
+By Nash's theorem it always returns something. Each linear program is solved in polynomial time, but there are exponentially many pairs of supports, so the algorithm takes exponential time in the worst case. (The slides start the loops at size $2$, presumably having checked pure equilibria, supports of size $1$, separately.) Whether two-player equilibria can be found in polynomial time is a famous open problem; the answer is believed to be no (the problem is PPAD-complete).
+</role>
+
+## 4.4 Nash’s theorem in the 2×2 case {223} [d2 i2]
+
+<thm k="Definition 4.9" nm="Best response functions for mixed strategies" pg="224">
+Player $i$'s best response function is $BR_i:M_1\times\dots\times M_n\to2^{M_i}$,
+$$BR_i(\mu)=\arg\max_{\mu_i'\in M_i}EU_i(\mu_{-i},\mu_i'),$$
+and the game's best response function is $BR(\mu)=BR_1(\mu)\times\dots\times BR_n(\mu)$.
+</thm>
+
+<thm k="Lemma 4.10" d="Mixed equilibria are fixed points of BR" pg="225" it>
+$\mu\in NE(G)$ if and only if $\mu\in BR(\mu)$.
+</thm>
+<role r="reading" a="Lemma 4.10">
+
+This is Lemma 3.9 again, with the same one-line proof: being a best response to everyone else's strategy, for every player, is the definition of equilibrium.
+</role>
+
+<thm k="Example 4.11" d="Plotting best responses to see the equilibrium" pg="226">
+Take the game
+<pm r="T,B" c="L,R" p1="1,0;0,2" p2="5,0;0,1" br ne></pm>
+Player 1 is indifferent when $q=2(1-q)$, that is $q=\frac23$; player 2 when $5p=1-p$, that is $p=\frac16$. So
+$$BR_1(q)=\begin{cases}\{0\}&q<\frac23\\{[0,1]}&q=\frac23\\\{1\}&q>\frac23\end{cases}\qquad BR_2(p)=\begin{cases}\{0\}&p<\frac16\\{[0,1]}&p=\frac16\\\{1\}&p>\frac16\end{cases}$$
+(here $BR_1(q)$ is the set of best values of $p$, and $BR_2(p)$ of $q$). Plot both in the unit square, $BR_1$ as a function of $q$ and $BR_2$ as a function of $p$, on the same axes. Each graph is a staircase that crosses the square from one side to the other, so the two must meet. Here they meet three times: at the two pure equilibria $(p,q)=(1,1)$ and $(0,0)$ (the shaded cells), and at the mixed equilibrium $(\frac16,\frac23)$.
+</thm>
+<role r="payoff" a="why existence is guaranteed for 2×2">
+
+In every $2\times2$ game the best response plots look like this: each is a connected staircase (or the whole square) running from one side of the unit square to the opposite side, one left to right and the other bottom to top. Two such paths **must cross**. Every crossing point is a fixed point of $BR$, hence a Nash equilibrium. That is Nash's theorem for $2\times2$ games, and Figure 4.1 above lets you watch it for any payoffs.
+</role>
+
+## 4.5 Fixed point theorems and Nash’s theorem {231} [d3 i2]
+<role r="roadmap" a="fixed point theorems">
+
+The key to Nash's result is a family of theorems from topology, **fixed point theorems**, which say when a function must have a fixed point. Nash's theorem can be proved using Brouwer's fixed point theorem or Kakutani's; Kakutani's is the most direct.
+</role>
+
+<thm k="Theorem 4.12" nm="Brouwer, 1909" pg="233" it>
+Let $S\subseteq\R^k$ be convex, bounded and closed, and let $f:S\to S$ be continuous. Then $f$ has a fixed point.
+</thm>
+
+<bg id="bg-convex" t="Convex, bounded, closed, continuous" lead="From Prelims analysis">
+A set $S\subseteq\R^k$ is **convex** if it contains the straight segment between any two of its points: $\theta x+(1-\theta)y\in S$ for all $x,y\in S$ and $\theta\in[0,1]$ ("no holes or dents"). It is **bounded** if all its points lie within some fixed distance of each other, and **closed** if it contains its boundary points (limits of its sequences). A function is **continuous** if, informally, you can draw it without lifting the pen. $[0.3,0.7]$ is convex; $[0,1]\cup[2,3]$ is not, since the midpoint $1.5$ of $0$ and $3$ is missing.
+</bg>
+
+<role r="caution" a="each condition is needed">
+
+The conditions are not decoration: drop any one and the theorem fails.
+
+<ul><li>**Convexity.** Let $S$ be a circle (just the curve) and $f$ rotate every point by $90°$. $f$ is continuous, but nothing is fixed.</li><li>**Boundedness.** On $S=\R_{\ge0}$, $f(x)=x+1$ moves every point.</li><li>**Continuity.** On $S=[0,1]$, let $f(x)=0.7$ for $x\le0.5$ and $f(x)=0.3$ otherwise. It jumps over the diagonal at $x=0.5$.</li><li>**Closedness.** On $S=[0,1)$, $f(x)=\frac{x+1}2$ moves every point halfway to $1$, which is missing from $S$. On $[0,1]$ the fixed point $1$ is back.</li></ul>
+</role>
+
+<thm k="Proposition 4.13" d="Brouwer in one dimension" pg="239" it>
+Every continuous $f:[0,1]\to[0,1]$ has a fixed point.
+</thm>
+
+<pf>
+Plot $f$ from $0$ to $1$. Since $f(0)\ge0$ the graph starts on or above the diagonal $y=x$, and since $f(1)\le1$ it ends on or below it. Being continuous, it must cross the diagonal somewhere (formally, apply the intermediate value theorem to $g(x)=f(x)-x$, which has $g(0)\ge0\ge g(1)$). Where it crosses, $f(x)=x$. Notice where continuity and the endpoints $0$ and $1$ were used. Figure 4.2 lets you draw your own $f$.
+</pf>
+
+@@gt-fig4-2@@
+
+<thm k="Theorem 4.14" nm="Kakutani, 1941" pg="240" it>
+Let $S\subseteq\R^n$ be non-empty, compact (closed and bounded) and convex, and let $f:S\to2^S$ be such that $f(s)$ is non-empty and convex for every $s\in S$ and $f$ has a closed graph. Then $f$ has a fixed point: some $s\in S$ with $s\in f(s)$.
+</thm>
+<role r="reading" a="Theorem 4.14">
+
+Kakutani's theorem is Brouwer's for **set-valued** functions, which is exactly what best response functions are. "Closed graph" plays the role of continuity: the set $\{(s,t):t\in f(s)\}$ is closed, so if $t_k\in f(s_k)$ with $s_k\to s$ and $t_k\to t$, then $t\in f(s)$. (The slides date it 1940; the paper appeared in 1941.)
+</role>
+
+<pf h="Proof of Nash’s theorem (Theorem 4.2).">
+**Fixed points are equilibria.** By Lemma 4.10, the Nash equilibria of $G$ are exactly the fixed points of $BR$.
+
+**Kakutani applies.** We check the conditions for $BR:S\to2^S$ with $S=M_1\times\dots\times M_n$.
+
+<ul><li>$S$ is a product of simplices (each $M_i$ is the set of probability vectors of length $|\Sigma_i|$), so it is non-empty, compact and convex.</li><li>$BR(\mu)$ is non-empty: each $EU_i(\mu_{-i},\cdot)$ is continuous on the compact $M_i$, so it attains a maximum.</li><li>$BR(\mu)$ is convex: $EU_i(\mu_{-i},\mu_i')$ is linear in $\mu_i'$, and the set of maximisers of a linear function over a convex set is convex (it is the set of mixtures of the best pure responses).</li><li>$BR$ has a closed graph: if $\mu^k\to\mu$, $\tau^k\in BR(\mu^k)$ and $\tau^k\to\tau$, then $EU_i(\mu^k_{-i},\tau^k_i)\ge EU_i(\mu^k_{-i},\nu_i)$ for every $\nu_i$, and since $EU_i$ is continuous we can pass to the limit, so $\tau_i\in BR_i(\mu)$.</li></ul>
+
+So $BR$ has a fixed point, which is a Nash equilibrium. All the work is in checking Kakutani's conditions; the slides' "From the source" refers to Nash's own one-page 1950 paper, which does exactly this.
+</pf>
+
+<sheet n="2" qs="3,4">The Tragedy of the Commons (Question 3) and two firms buying data (Question 4) are pure-strategy problems, good practice before mixing.</sheet>

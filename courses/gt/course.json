@@ -1,0 +1,15 @@
+{
+ "prefix": "gt-",
+ "code": "CS · MT26",
+ "short": "GT",
+ "title": "Computational Game Theory",
+ "titlehtml": "Computational <em>Game Theory</em>",
+ "eyebrow": "Michaelmas Term 2026",
+ "after": "after the Computational Game Theory lecture slides",
+ "dek": "What a rational choice is when other people are choosing too, how to find one, and how hard that is to compute. Written for someone who has never seen a payoff matrix.",
+ "blurb": "Preferences and expected utility, normal form games and Nash equilibrium, mixed strategies, game trees, repeated and evolutionary games, zero-sum games, and win-lose games as complexity classes.",
+ "motif": "matrices",
+ "pagelabel": "slide",
+ "pageslabel": "slides",
+ "colophon": "<p>Based on the lecture slides for <em>Computational Game Theory</em> (Department of Computer Science, Oxford), seven lectures and three tutorial sheets. Numbering of results is added here, since the slides number nothing; the small numbers in the margin are slide numbers. The background boxes, figures, proofs marked as additions and exercises are new; errors in them are new too.</p>"
+}

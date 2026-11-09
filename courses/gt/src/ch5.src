@@ -1,0 +1,440 @@
+@num 5
+@title Dynamic Games
+@titlehtml <em>Dynamic</em> games
+@pages 243–379
+@dek Games where players move in turn, see some of what came before, play the same game over and over, or are not players at all but a population evolving. Backward induction is the workhorse; the rest of the chapter is about what it misses.
+---
+## 5.1 Extensive form games {244} [d2 i3]
+<role r="question" a="what if players move in turn?">
+
+Strategic form games assume each player makes a single choice, in ignorance of the choices of the others. "Simultaneous moves" is really an assumption about **information**, not about time: it doesn't matter when you move, only what you know when you do. Many settings have a much richer structure: several moves each, with some knowledge of what has happened so far. This chapter studies three kinds of dynamic game: **extensive form games** (game trees), **iterated games** (the same game played repeatedly), and **evolutionary games** (where strategies are not chosen but selected).
+</role>
+<role r="setup" a="three kinds of knowledge">
+
+Extensive form games come in increasing order of ignorance.
+
+<ul><li>**Perfect information:** players know exactly how the current state of the game was reached. Chess is the standard example.</li><li>**Imperfect information:** players may be uncertain about earlier moves, and so about which state they are in. Card games where you can't see the other hands are like this.</li><li>**Imperfect recall:** players may *forget* things they once knew, even their own earlier moves.</li></ul>
+
+We assume throughout that there are no **chance moves**: every move is made by a player.
+</role>
+
+<bg id="bg-trees" t="Trees" lead="From Prelims">
+A **tree** $T=(V,E,v_0)$ is a directed graph with vertices $V$ and edges $E\subseteq V\times V$ such that
+
+<ol><li>exactly one vertex has no incoming edges, the **root** $v_0$;</li><li>there is a path from the root to every other vertex;</li><li>every other vertex has exactly one incoming edge.</li></ol>
+
+The **children** of $v$ are $\mathrm{children}(v)=\{v':(v,v')\in E\}$. Vertices with no children are **leaves**; the others are **interior** vertices. Because each vertex has one parent, there is exactly one path from the root to any vertex, so a vertex "remembers" the whole history of how it was reached.
+</bg>
+
+<thm k="Definition 5.1" nm="Extensive form game of perfect information" pg="252">
+An extensive form game of perfect information is a structure
+$$G=(N,(V,E,v_0),\mathit{owner},a,u_1,\dots,u_n)$$
+where
+
+<ul><li>$N=\{1,\dots,n\}$ is the set of players;</li><li>$(V,E,v_0)$ is a finite tree;</li><li>$\mathit{owner}:\mathrm{interior}(V,E)\to N$ says which player moves at each decision node;</li><li>$a:E\to A$ labels each edge with an action; the actions available at $v$ are $A(v)=\{a(v,v'):(v,v')\in E\}$, and we require that $a(v,v')=a(v,v'')$ implies $v'=v''$;</li><li>$u_i:\mathrm{leaves}(V,E)\to\R$ is player $i$'s utility function.</li></ul>
+</thm>
+<role r="reading" a="Definition 5.1">
+
+The game is played by starting at the root and letting the owner of the current node pick an edge, until a leaf is reached; the leaf's labels are the payoffs. The condition on $a$ says that **different edges out of the same node carry different actions**, so naming an action at a node determines where you go. Write $V_i=\{v:\mathit{owner}(v)=i\}$ for player $i$'s decision nodes and $A_i=\bigcup_{v\in V_i}A(v)$ for all the actions she ever has.
+</role>
+
+<thm k="Definition 5.2" nm="Strategy in an extensive form game" pg="253">
+A (pure) **strategy** for player $i$ is a function $\sigma_i:V_i\to A_i$ with $\sigma_i(v)\in A(v)$ for every $v\in V_i$. Strategy profiles, Nash equilibria and so on are defined as for strategic form games.
+</thm>
+<role r="caution" a="a strategy is a complete plan">
+
+A strategy chooses an action at **every** one of the player's nodes, including nodes that the strategy itself (or the other players' strategies) will never reach. It is a complete contingency plan, like instructions left for a deputy who might find themselves anywhere in the tree. Every profile $\sigma$ traces a unique path from the root to a leaf $v(\sigma)$, the outcome; if $\sigma$ is an equilibrium this is the **equilibrium path**.
+</role>
+
+<thm k="Example 5.3" d="The running example and its strategies" pg="254">
+Player 1 moves first, choosing $L$ or $R$. Player 2 sees the choice and then chooses $l$ or $r$. The four leaves pay
+$$(L,l)\mapsto(4,1),\qquad(L,r)\mapsto(0,2),\qquad(R,l)\mapsto(3,1),\qquad(R,r)\mapsto(1,2).$$
+Player 1 has one decision node, so two pure strategies, $L$ and $R$. Player 2 has **two** decision nodes $v_1$ (after $L$) and $v_2$ (after $R$), and a strategy picks an action at each, so she has four: $ll$, $lr$, $rl$, $rr$, where $lr$ means "$l$ at $v_1$, $r$ at $v_2$". Figure 5.1 draws the tree.
+</thm>
+
+## 5.2 Backward induction {257} [d2 i3]
+<role r="idea" a="solve from the leaves up">
+
+Use dynamic programming. A node whose children are all leaves is easy: its owner picks the child that is best for her. Replace the node by that child's payoffs, and repeat. Eventually the root is labelled with the payoffs that rational play produces, and the choices made along the way form a strategy profile.
+</role>
+
+<div class="algo" id="alg5-4" data-label="Algorithm 5.4" data-name="Backward induction"><div class="algo-h"><span class="algo-k">Algorithm 5.4</span> Backward induction</div><ol class="algo-l"><li>$\mathit{done}\gets\mathrm{leaves}(V,E)$</li><li><b>while</b> $\mathit{done}\ne V$:</li><li class="in1">$\mathit{next}\gets\{v\in V\setminus\mathit{done}:\mathrm{children}(v)\subseteq\mathit{done}\}$</li><li class="in1"><b>for</b> $v\in\mathit{next}$:</li><li class="in2">$i\gets\mathit{owner}(v)$; $\ O\gets\arg\max_{v'\in\mathrm{children}(v)}u_i(v')$ (the optimal choices)</li><li class="in2">$v''\gets$ any element of $O$</li><li class="in2"><b>for</b> $j\in N$: $u_j(v)\gets u_j(v'')$ (back the utilities up)</li><li class="in2">$\mathit{done}\gets\mathit{done}\cup\{v\}$</li></ol></div>
+
+<role r="history" a="the name">
+
+It is sometimes called **Zermelo's algorithm**, after Ernst Zermelo's 1913 paper on chess, though he didn't invent it. It is one of the most useful algorithms in computer science: the same idea computes CTL model checking and optimal policies in Markov decision processes ("value iteration").
+</role>
+
+<thm k="Example 5.5" d="Backward induction on the running example" pg="259">
+At $v_1$ (after $L$), player 2 chooses between payoffs $1$ (from $l$) and $2$ (from $r$), so she picks $r$, and $v_1$ is labelled $(0,2)$. At $v_2$ (after $R$), she again picks $r$, labelling $v_2$ with $(1,2)$. Now player 1 chooses between $0$ (from $L$) and $1$ (from $R$), so she picks $R$. The root is labelled $(1,2)$. We write the equilibrium by listing each player's actions: $(R,rr)$, or just $(R,r)$ along the path.
+</thm>
+
+@@gt-fig5-1@@
+
+<thm k="Theorem 5.6" d="What backward induction gives" pg="264" it>
+In an extensive form game with perfect information and no chance moves:
+
+<ol><li>backward induction terminates in time polynomial in the size of the tree, labelling the root with the payoff profile of a Nash equilibrium (in fact, of a subgame perfect equilibrium, Section 5.3);</li><li>in particular, every such game has a Nash equilibrium **in pure strategies**.</li></ol>
+</thm>
+
+<pf h="Proof sketch.">
+Each node is processed once, and processing it takes time proportional to its number of children, so the total is linear in the size of the tree. For correctness, show by induction from the leaves up that the strategies chosen below any node $v$ form a Nash equilibrium of the game starting at $v$. At a node $v$ owned by $i$, the other players' choices below $v$ are fixed, and $i$ picks the child whose backed-up value is best for her; any deviation, at $v$ or below it, can only lead to a child value that is no better, by the induction hypothesis.
+</pf>
+
+<role r="caution" a="uniqueness">
+
+The slides add a third part: "if no two leaves have the same utility for any player, the Nash equilibrium is unique". That is true of the **subgame perfect** equilibrium of Section 5.3 (backward induction then never has to break a tie), but not of Nash equilibria in general.[[A counterexample: player 1 chooses Out, paying $(1,3)$, or In; after In, player 2 chooses Fight $(0,0)$ or Accommodate $(2,1)$. All payoffs of each player are distinct. Backward induction gives (In, Accommodate), but (Out, Fight) is also a Nash equilibrium: given Fight, Out is best for player 1, and given Out, player 2 gets $3$ whatever she plans.]]
+</role>
+
+## 5.3 Subgame perfect equilibrium {266} [d2 i3]
+
+<thm k="Example 5.7" d="An equilibrium built on an empty threat" pg="267">
+Player 1 chooses $L$, which ends the game with $(0,0)$, or $R$, after which player 2 chooses $l$, giving $(0,0)$, or $r$, giving $(2,2)$. Backward induction gives $(R,r)$, which makes sense. But $(L,l)$ is also a Nash equilibrium.
+
+<ul><li>If player 1 plays $L$, player 2 gets $0$ whatever she does, so $l$ is a best response to $L$.</li><li>If player 2 plays $l$, player 1 gets $0$ from $L$ and $0$ from $R$, so $L$ is a best response to $l$.</li></ul>
+</thm>
+<role r="reading" a="Example 5.7">
+
+In $(L,l)$, player 2 is **threatening** to play $l$. But the threat is not credible: if she is ever actually called on to move, choosing $l$ would be irrational. Nash equilibrium can't see this, because it only checks deviations from the equilibrium path's point of view, and player 2's node is off the path. We need a refinement, due to Reinhard Selten.
+</role>
+
+<thm k="Definition 5.8" nm="Subgame perfect Nash equilibrium" pg="273">
+The **subgames** of an extensive form game $G$ are the games starting at each decision node of $G$, with strategies and utilities restricted accordingly. ($G$ is a subgame of itself.) A strategy profile $\sigma$ is a **subgame perfect Nash equilibrium** (SPNE) if it is a Nash equilibrium of every subgame of $G$.
+</thm>
+<role r="example" a="Definition 5.8">
+
+The game of Example 5.7 has two subgames: itself, and the one starting at player 2's node. $(L,l)$ is not subgame perfect, because in the second subgame $l$ is not a Nash equilibrium (it is a one-player game, where $r$ is strictly better). $(R,r)$ is subgame perfect.
+</role>
+
+<thm k="Theorem 5.9" d="Backward induction computes SPNE" pg="274" it>
+Every extensive form game of perfect information with no chance moves has a subgame perfect equilibrium, and one can be computed in polynomial time by backward induction. If no player has the same utility at two different leaves, the SPNE is unique.
+</thm>
+<role r="reading" a="Theorem 5.9">
+
+Backward induction solves every subgame on the way up, which is exactly the SPNE condition. With no ties, every choice it makes is forced, which gives uniqueness.
+</role>
+
+<thm k="Example 5.10" nm="The centipede game" pg="275">
+Players $1$ and $2$ alternately choose **Right** (end the game) or **Down** (continue). Ending at the four decision nodes pays $(1,1)$, $(0,3)$, $(2,2)$ and $(1,4)$ respectively; if everyone continues, the game ends at $(3,3)$. Backward induction: at the last node player 2 prefers $4$ to $3$, so ends it. Knowing that, player 1 at the third node prefers $2$ to $1$, so ends it. And so on back to the root: **player 1 ends the game immediately**, with $(1,1)$.
+</thm>
+<role r="caution" a="a poor outcome">
+
+Both players would be better off at $(3,3)$, and in experiments people do continue for a few rounds before someone ends it. The SPNE is an equilibrium with poor social welfare, and arguably a poor prediction. Load the centipede game into Figure 5.1 to watch the unravelling.
+</role>
+
+<role r="technique" a="back to strategic form">
+
+Any extensive form game can be turned into a strategic form game: the strategies are the extensive form strategies, and $u_i(\sigma)=u_i(v(\sigma))$ (an abuse of notation). For the running example:
+<pm r="L,R" c="ll,lr,rl,rr" p1="4,4,0,0;3,1,3,1" p2="1,1,2,2;1,2,1,2" br ne></pm>
+The shaded cell is the unique pure Nash equilibrium, $(R,rr)$. Note the **exponential blowup**: a player with $k$ binary decision nodes has $2^k$ strategies, so the matrix can be exponentially larger than the tree.
+</role>
+
+## 5.4 Imperfect information {279} [d3 i2]
+<role r="question" a="what if you can't see the other move?">
+
+Try to write Matching Pennies as a tree: player 1 shows $H$ or $T$, then player 2 shows $h$ or $t$. This doesn't work, because when player 2 moves she *knows* what player 1 did, and the strategy "$t$ after $H$, $h$ after $T$" wins every time. We need a way of saying that player 2 can't tell the two nodes apart.
+</role>
+
+<thm k="Definition 5.11" nm="Information sets" pg="282">
+Partition each player's decision nodes into **information sets**; let $I_i$ be player $i$'s information sets, and $[v]$ the one containing $v$. If $[v]=[v']$, the player cannot distinguish $v$ from $v'$. We require $A(v)=A(v')$ whenever $[v]=[v']$. A strategy now assigns an action to each information set,
+$$\sigma_i:I_i\to A_i.$$
+</thm>
+<role r="reading" a="Definition 5.11">
+
+The requirement $A(v)=A(v')$ is forced: if the available actions differed, the player could tell the nodes apart by looking at them. In pictures, nodes in the same information set are joined by a dotted line (singletons aren't drawn). Matching Pennies is the tree above with $I_2=\{\{v_1,v_2\}\}$: player 2 must choose $h$ or $t$ without knowing which node she is at, which is the same as moving simultaneously.
+</role>
+
+<thm k="Definition 5.12" nm="Mixed and behavioural strategies" pg="285">
+In an extensive form game, a player can randomise in two ways.
+
+<ul><li>A **mixed strategy** is a probability distribution over pure strategies, as before: $M_i=\Delta\Sigma_i$. The player rolls one die at the start and then follows the chosen plan.</li><li>A **behavioural strategy** randomises separately at each information set: $\beta_i:I_i\to\Delta A_i$ with $\operatorname{supp}(\beta_i(I))\subseteq A(I)$. The player rolls a fresh die each time she has to move.</li></ul>
+</thm>
+
+<thm k="Definition 5.13" nm="Perfect recall" pg="289">
+A game has **perfect recall** if, along every play, each player always remembers all of her own information sets reached so far and all of her own earlier actions. Games of perfect information have perfect recall.
+</thm>
+
+<thm k="Theorem 5.14" nm="Kuhn" pg="290" it>
+In extensive form games with perfect recall, for every mixed strategy there is a behavioural strategy giving the same probability distribution over outcomes, and vice versa.
+</thm>
+<role r="reading" a="Theorem 5.14">
+
+So with perfect recall, it doesn't matter which kind of randomisation we use. Without it, the two can come apart, and the next example shows behavioural strategies doing strictly better.
+</role>
+
+<thm k="Example 5.15" nm="The forgetful driver" pg="291">
+An absent-minded professor drives home in fog. The road has two exits, $A$ then $B$. Exiting at $A$ means a long drive on poor country roads: utility $0$. Exiting at $B$ is best, straight home on good roads: utility $4$. Missing both exits means a fair detour: utility $1$. In the fog she can't tell which exit she is at: both decision nodes are in **one information set**, and she has to make the same choice at both.
+</thm>
+<role r="payoff" a="randomising each time helps">
+
+A pure strategy says "exit" (and she exits at $A$: utility $0$) or "straight" (and she misses both: utility $1$). A mixed strategy is a lottery over these two plans, so it also gets at most $1$. The only way to have any chance of the prize $4$ is to **randomise at each node**: a behavioural strategy that goes straight with some probability $s$ reaches exit $B$ with probability $s$ and exits there with probability $1-s$. Figure 5.2 plots the expected utility; its peak is above $1$. (Problem Sheet 3, Question 4 asks you to find it.) The game has imperfect recall, since at the second exit she has forgotten that she has already passed one, so Kuhn's theorem doesn't apply.
+</role>
+
+@@gt-fig5-2@@
+
+<sheet n="3" qs="1,2,3,4">Question 1 formulates a tree and finds its equilibria; Questions 2 to 4 are about information sets and recall.</sheet>
+
+## 5.5 Iterated games {294} [d2 i3]
+<role r="question" a="does repetition help cooperation?">
+
+In the Prisoner's Dilemma (Example 3.15) mutual defection is the unique dominant strategy equilibrium, although it fails every test of a socially reasonable outcome. One natural answer: play the game more than once. If you know you will meet your opponent again, perhaps the incentive to defect evaporates?
+</role>
+
+<thm k="Theorem 5.16" d="Finitely repeated Prisoner’s Dilemma" pg="297" it>
+If the Prisoner's Dilemma is played for a fixed, finite number $n$ of rounds that both players know in advance, then in every subgame perfect equilibrium both players defect in every round.
+</thm>
+
+<pf>
+Backward induction on rounds. In round $n$ nothing that happens can affect the future, so it is a one-shot Prisoner's Dilemma, and both defect. So in round $n-1$, play in round $n$ is mutual defection whatever happens now, and round $n-1$ is also effectively one-shot: both defect. Continue back to round $1$.
+</pf>
+<role r="caution" a="not a dominant strategy">
+
+The slides call all-defection a "dominant strategy equilibrium". It isn't one: always defecting is not dominant in the repeated game.[[Against an opponent playing Tit-for-Tat (Section 5.5) for $3$ rounds, always defecting earns $0-2-2=-4$, while cooperating twice and then defecting earns $-1-1+0=-2$. What *is* true is that every Nash equilibrium has mutual defection on its path, and the SPNE is all-defection.]] The unravelling argument needs the number of rounds to be known: with an unknown or infinite horizon, there is no last round to start from.
+</role>
+
+<role r="question" a="infinitely many rounds">
+
+With infinitely many rounds there are two issues. How do we **measure** utility over an infinite play? Summing gives infinity. And how do we **represent** strategies? A strategy must now respond to arbitrarily long histories.
+</role>
+
+<thm k="Definition 5.17" nm="Limit of means" pg="299">
+The value to player $i$ of an infinite play $\omega_1,\omega_2,\omega_3,\dots$ of stage-game outcomes is
+$$\lim_{T\to\infty}\frac1T\sum_{t=1}^Tu_i(\omega_t),$$
+the long-run average payoff.
+</thm>
+<role r="caution" a="Definition 5.17">
+
+For a general sequence this limit need not exist (the running average can oscillate forever). It does exist when the players use the finite automata below.
+</role>
+
+<thm k="Definition 5.18" nm="Automaton strategies" pg="300">
+An **automaton strategy** is a finite state machine with output (a Moore machine, or transducer). Each state is labelled with the action it plays; each state has one outgoing arrow per action of the opponent, saying which state to move to after the opponent plays that action; one state is initial.
+</thm>
+
+<role r="example" a="five strategies">
+
+For the iterated Prisoner's Dilemma:
+
+<ul><li>**ALLD** has one state, playing $D$: always defect.</li><li>**ALLC** has one state, playing $C$: always cooperate.</li><li>**GRIM** starts in a $C$ state and stays there while the opponent cooperates; the first time the opponent defects it moves to a $D$ state, which it never leaves.</li><li>**TIT-FOR-TAT** cooperates first, then copies the opponent's last move.</li><li>**TAT-FOR-TIT** starts with $D$, then plays $C$ if both players did the same thing last round and $D$ otherwise.</li></ul>
+</role>
+
+<thm k="Theorem 5.19" d="Automata produce eventually periodic plays" pg="302" it>
+When two finite automaton strategies play each other, the play has the form
+$$\underbrace{\omega_0\,\omega_1\cdots\omega_k}_{\text{non-repeating prefix}}\ \underbrace{\omega_{k+1}\cdots\omega_l}_{\text{repeated forever}}.$$
+So the limit of means is the average utility over the repeating block $\omega_{k+1},\dots,\omega_l$.
+</thm>
+
+<pf>
+The pair (state of machine 1, state of machine 2) determines everything that happens next. There are finitely many pairs, so some pair occurs twice; from then on the play repeats. The prefix contributes a fixed finite amount, which vanishes when divided by $T\to\infty$.
+</pf>
+
+<thm k="Example 5.20" d="Automata playing each other" pg="303">
+With Prisoner's Dilemma payoffs ($-1$ each for mutual cooperation, $-2$ for mutual defection, $0$ and $-3$ when one defects on the other):
+
+<ul><li>ALLC against ALLC: $CC$ forever, utility $-1$ each. Not a Nash equilibrium, since either player would rather switch to ALLD.</li><li>ALLC against ALLD: $-3$ and $0$. Not an equilibrium.</li><li>ALLD against ALLD: $-2$ each. An equilibrium, much as in the one-shot game, and not a desirable one.</li><li>GRIM against ALLD: GRIM cooperates once, then defects forever. Both get $-2$ in the limit. Not an equilibrium: ALLD could switch to GRIM and get $-1$.</li><li>GRIM against GRIM: $CC$ forever, $-1$ each, and this **is** a Nash equilibrium. Deviating means defecting at some point, after which the other player defects forever, giving at best $-2$ in the limit.</li></ul>
+
+Cooperation is rationally sustained: the threat of punishment keeps players in line. Figure 5.3 runs any pair.
+</thm>
+
+@@gt-fig5-3@@
+
+<thm k="Theorem 5.21" nm="Nash folk theorem" pg="308" it>
+In an infinitely repeated game with limit-of-means utilities, every outcome in which every player gets at least her **security value** can be sustained as a Nash equilibrium.
+</thm>
+<role r="reading" a="Theorem 5.21">
+
+Player $i$'s security value is what she can be held down to: the other players choose the action that minimises her best response payoff. With two players, write
+$$\bar u_i(\sigma_j)=\max_{\sigma_i\in\Sigma_i}u_i(\sigma_i,\sigma_j)$$
+for the most $i$ can get if $j$ plays $\sigma_j$. Then $i$'s security value is $\min_{\sigma_j}\bar u_i(\sigma_j)$, a "minmax".[[The slides describe it in words as "the best utility it can guarantee for itself, no matter what the others do", which is the maximin of Chapter 6, but compute the minmax; the minmax is what the theorem needs, since it is the punishment the others can inflict. In pure strategies the two can differ, as below.]] The proof uses GRIM-like strategies: everyone plays their part of the target outcome every round, and if anyone deviates, the others switch to punishing her forever, holding her to her security value, which by assumption is no better than what she gets by complying. In the Prisoner's Dilemma, the security value is $-2$, so mutual cooperation ($-1$ each) can be sustained.
+</role>
+
+<thm k="Example 5.22" d="Which outcomes can be sustained?" pg="309">
+Consider the stage game
+<pm r="T,M,B" c="l,r" p1="-1,1;2,0;1,-2" p2="-3,0;-1,1;1,1"></pm>
+For player 1: $\bar u_1(l)=\max\{-1,2,1\}=2$ and $\bar u_1(r)=\max\{1,0,-2\}=1$, so player 2 punishes her with $r$, and her security value is $1$. For player 2: $\bar u_2(T)=\max\{-3,0\}=0$, $\bar u_2(M)=1$, $\bar u_2(B)=1$, so player 1 punishes with $T$, and the security value is $0$. The outcomes giving at least $(1,0)$ are $(T,r)$, paying $(1,0)$, and $(B,l)$, paying $(1,1)$. Both can be sustained in the repeated game.
+</thm>
+<role r="caution" a="maximin would differ">
+
+Player 1's maximin here is $0$ (row $M$ guarantees $\min\{2,0\}=0$), lower than her minmax of $1$. Using it would wrongly admit $(M,r)$, paying $(0,1)$: but in $(M,r)$ player 1 could deviate to $T$ for $1$, and the worst punishment player 2 can impose still leaves her $1>0$.
+</role>
+
+<pause n="Sustaining (B,l)" q="Draw finite state machines for both players that sustain $(B,l)$ as a Nash equilibrium of the repeated game in Example 5.22.">
+Player 1: a state playing $B$, which she stays in as long as player 2 plays $l$; if player 2 ever plays $r$, move to a state playing $T$ forever (holding player 2 to at most $0$). Player 2: a state playing $l$, kept while player 1 plays $B$; on anything else, move to a state playing $r$ forever (holding player 1 to at most $1$). On the path both get $(1,1)$ every round. A deviation by player 1 gains at most $2$ once, then she gets at most $1$ forever, so her limit average is at most $1$: no gain. A deviation by player 2 gains nothing even in the round she deviates ($u_2(B,r)=1$), and then she gets at most $0$.
+</pause>
+
+<thm k="Definition 5.23" nm="Discounted sum" pg="314">
+With a **discount factor** $0<\delta<1$, the value of the infinite play $\omega_0,\omega_1,\omega_2,\dots$ to player $i$ is
+$$\sum_{t=0}^\infty\delta^t\,u_i(\omega_t)=u_i(\omega_0)+\delta\,u_i(\omega_1)+\delta^2u_i(\omega_2)+\cdots.$$
+</thm>
+<role r="technique" a="the geometric series">
+
+The key identity is the geometric series,
+$$\sum_{t=0}^\infty\delta^t=\frac1{1-\delta}.$$
+(The slides start the sum at $t=1$, which gives $\frac\delta{1-\delta}$.) For instance, GRIM against GRIM in the Prisoner's Dilemma is worth $\frac{-1}{1-\delta}$; defecting once against GRIM is worth $0+\frac{-2\delta}{1-\delta}$, which is worse exactly when $\delta>\frac12$. Discounting rewards the future less, so cooperation needs players patient enough.
+</role>
+
+<sheet n="3" qs="5,6">Automata for the iterated Prisoner's Dilemma. Figure 5.3 lets you check your runs.</sheet>
+
+## 5.6 Rational verification {315} [d3 i1]
+<role r="question" a="is the system correct?">
+
+**Model checking** is the most successful approach to proving programs correct. View the state transition graph of a program $P$ as a model $M_P$ of a temporal logic, express the correctness condition as a formula $\varphi$, and check $M_P\models\varphi$. Tools such as SPIN, SMV, PRISM and MCMAS do this at industrial scale, and the most widely used specification language is LTL.
+</role>
+
+<thm k="Definition 5.24" nm="Linear temporal logic" pg="318">
+LTL formulas are built from $\top$, primitive propositions $p\in\Phi$, $\neg$, $\vee$ and the temporal operators
+
+<ul><li>$\mathbf X\varphi$: $\varphi$ holds in the ne**x**t state;</li><li>$\mathbf F\varphi$: $\varphi$ holds at some **f**uture state (eventually);</li><li>$\mathbf G\varphi$: $\varphi$ holds **g**lobally (always from now on);</li><li>$\varphi\,\mathbf U\,\psi$: $\varphi$ holds **u**ntil $\psi$ does (and $\psi$ eventually does).</li></ul>
+
+Formulas are evaluated on infinite sequences of states.
+</thm>
+<role r="example" a="reading LTL">
+
+$\mathbf F\neg\mathit{jetlag}$: eventually I won't have jetlag (a **liveness** property). $\mathbf G\neg\mathit{crash}$: the plane never crashes (a **safety** property). $\mathbf G\mathbf F\,\mathit{drinkBeer}$: I drink beer infinitely often. $\mathbf F\mathbf G\,\mathit{dead}$: eventually I am dead forever after. $(\neg\mathit{friends})\,\mathbf U\,\mathit{youApologise}$: we are not friends until you apologise.
+
+LTL model checking is PSPACE-complete (with the state graph given explicitly). The basic questions are **reachability** (is there a computation on which $\varphi$ eventually holds?) and **invariance** (does $\varphi$ hold on all computations?).
+</role>
+
+<role r="why" a="correctness without a judge">
+
+Classical verification assumes an absolute standard of correctness and a specifier in a privileged position, able to say "correct" or "not correct". For many systems that makes no sense: it is meaningless to ask whether the internet is "correct". Instead, interpret the system as a **game** and its components as rational players.
+</role>
+
+<thm k="Definition 5.25" nm="LTL synthesis" pg="327">
+Two players $E$ and $A$ control disjoint sets of variables $\Phi_E$ and $\Phi_A$. In each of infinitely many rounds both simultaneously choose values for their variables; the play is an infinite word, an LTL model, and $E$ wins if it satisfies a given LTL formula $\gamma$. **LTL synthesis** asks: is there a strategy $\sigma_E$ such that for all $\sigma_A$, the play $\rho(\sigma_E,\sigma_A)\models\gamma$?
+</thm>
+<role r="reading" a="Definition 5.25">
+
+These games are determined (one player has a winning strategy), and LTL synthesis is **2EXPTIME-complete** (Pnueli and Rosner, 1989): hard, because we quantify over strategies for LTL goals. But win-or-lose is a very narrow, 1920s view of games. Picture two robots each needing to pass through a narrow corridor: neither can *guarantee* reaching its goal, so neither has a winning strategy, but both succeed if each reasons about the other as rational. That is the reasoning of equilibrium.
+</role>
+
+<thm k="Definition 5.26" nm="Rational verification" pg="332">
+In **rational verification** we are given a system, the players' preferences (as temporal logic goals), and a property $\varphi$, and ask whether $\varphi$ holds on **some** Nash equilibrium of the game ("Nash reachability", E-NASH) or on **all** of them ("Nash invariance", A-NASH).
+</thm>
+<role r="reading" a="Definition 5.26">
+
+Reachability and invariance over all computations are the wrong questions here: some computations will never arise, because they involve irrational play. We want the properties that hold assuming rational action.
+</role>
+
+<thm k="Definition 5.27" nm="Iterated Boolean game" pg="336">
+An **iterated Boolean game** (iBG) is $G=(N,\Phi,\Phi_1,\dots,\Phi_n,\gamma_1,\dots,\gamma_n)$: players $N$, a finite set $\Phi$ of Boolean variables partitioned into the sets $\Phi_i$ that each player controls, and an LTL goal $\gamma_i$ for each player. In each round every player sets her variables; the infinite sequence of valuations is a run $\rho$, and player $i$ is satisfied if $\rho\models\gamma_i$. Strategies are machine strategies $\sigma_i=(Q_i,q_i^0,\delta_i,\tau_i)$: finite states, an initial state, a transition function $\delta_i:Q_i\times V\to Q_i$ reading the whole valuation, and an output $\tau_i:Q_i\to V_i$ choosing values for $\Phi_i$.
+</thm>
+<role r="reading" a="Definition 5.27">
+
+This is a Boolean game (Definition 3.30) played forever, with temporal goals. Machine strategies are deterministic, so a profile $\sigma$ induces a unique run $\rho(\sigma)$. A profile is a Nash equilibrium if no player whose goal fails could make it hold by changing her own machine: for every $i$ with $\rho(\sigma)\not\models\gamma_i$, and every $\sigma_i'$, $\rho(\sigma_{-i},\sigma_i')\not\models\gamma_i$.
+</role>
+
+<pause n="An iBG equilibrium" q="Player 1 controls $p$ and has goal $\mathbf G\mathbf F(p\leftrightarrow q)$; player 2 controls $q$ and has goal $\mathbf G\mathbf F\neg(p\leftrightarrow q)$. Find a pair of machine strategies forming a Nash equilibrium.">
+Let player 1 set $p$ true forever (one state), and player 2 alternate $q$ true, false, true, … (two states). Then $p\leftrightarrow q$ holds in every other round, and fails in the rounds between, so both $\mathbf G\mathbf F(p\leftrightarrow q)$ and $\mathbf G\mathbf F\neg(p\leftrightarrow q)$ hold. Both players are satisfied, so neither can gain by deviating: a Nash equilibrium. (Matching Pennies played once has no pure equilibrium; played forever with "infinitely often" goals, it does.)
+</pause>
+
+<thm k="Theorem 5.28" d="Complexity of rational verification for iBGs" pg="343" it>
+For iterated Boolean games:
+
+<ul><li>MODEL CHECKING (given $G$, $\sigma$ and $\varphi$, does $\rho(\sigma)\models\varphi$?) and MEMBERSHIP (is $\sigma\in NE(G)$?) are PSPACE-complete;</li><li>E-NASH (is there $\sigma\in NE(G)$ with $\rho(\sigma)\models\varphi$?), A-NASH (do all $\sigma\in NE(G)$ have $\rho(\sigma)\models\varphi$?) and NON-EMPTINESS (is $NE(G)\ne\emptyset$?) are 2EXPTIME-complete.</li></ul>
+</thm>
+<role r="reading" a="Theorem 5.28">
+
+The first pair follow because machine strategies can be encoded as LTL formulas; the hardness of the second three comes from LTL synthesis. There is also a folk theorem: if every player has a safety goal and every player is "punishable", then for every satisfiable $\psi$ there is a Nash equilibrium whose run satisfies $\psi$.
+</role>
+
+<role r="aside" a="reactive modules and EVE">
+
+**Reactive module games** describe the system in a guarded-command language (reactive modules, Alur and Henzinger 1999, used in MOCHA and PRISM). Each agent is a module controlling some variables, with `init` and `update` commands such as $\texttt{[] x -> x' := false}$. An arena $\langle N,\Phi,m_1,\dots,m_n\rangle$ lists the modules (choices, but no preferences); adding LTL goals $\gamma_i$ gives a game. NE-MEMBERSHIP is PSPACE-complete, and NON-EMPTINESS, E-NASH and A-NASH are 2EXPTIME-complete, even though the choices are much more restricted. Oxford's EVE tool solves E-NASH and A-NASH for these games with automata-theoretic methods.
+</role>
+
+## 5.7 Program equilibria {355} [d2 i1]
+<role r="idea" a="cooperate if she will">
+
+The strategy you really want to play in the one-shot Prisoner's Dilemma is "I'll cooperate if she will". **Program equilibria** (Tennenholtz) make this possible: each player submits a *program* to a mediator, which runs them all, and crucially a program can read the other programs' text. Consider
+
+$$\texttt{IF HisProgram == ThisProgram THEN DO(C) ELSE DO(D)}$$
+
+where $\texttt{==}$ compares program texts. The best response to this program is to submit the same program, giving $(C,C)$; submitting anything else gets $D$ played against you. Compare GRIM in the iterated game.
+</role>
+
+<thm k="Theorem 5.29" nm="Tennenholtz’s folk theorem for program equilibria" pg="357" it>
+In any one-shot game, every outcome in which every player gets at least her security value can be obtained as the outcome of a program equilibrium. In particular, mutual cooperation in the Prisoner's Dilemma can.
+</thm>
+
+## 5.8 Axelrod’s tournaments {358} [d2 i3]
+<role r="question" a="which strategy wins a tournament?">
+
+Suppose you play the iterated Prisoner's Dilemma against a whole range of opponents. Which strategy maximises your total? Robert Axelrod (*The Evolution of Cooperation*, 1984) ran a computer tournament to find out. Of the 63 strategies entered, including ALLD, TESTER (defect first; if the opponent retaliates, play Tit-for-Tat, otherwise mix in defections) and JOSS (Tit-for-Tat with occasional defections), the winner was **TIT-FOR-TAT**.
+</role>
+
+<thm k="Proposition 5.30" d="Tit-for-Tat never wins a match" pg="361" it>
+In any finitely repeated Prisoner's Dilemma, in a head-to-head match TIT-FOR-TAT's total payoff is at most its opponent's total.
+</thm>
+<role r="caution" a="Proposition 5.30">
+
+The slides phrase this as "TIT-FOR-TAT does no better (and possibly worse) than all other strategies", which overstates it. TIT-FOR-TAT does not do worse than *every* strategy in absolute terms; it never *beats* the opponent it is playing.
+</role>
+
+<pf>
+Let the opponent play $a_1,\dots,a_n$. Tit-for-Tat plays $b_1=C$ and $b_{t+1}=a_t$. Rounds where both play the same are symmetric. A round with $(b_t,a_t)=(C,D)$, where Tit-for-Tat is exploited, needs $a_t=D$ and $a_{t-1}=C$ (reading $a_0=C$): a switch from $C$ to $D$ in the sequence $a_0,a_1,\dots,a_n$. A round with $(D,C)$ is a switch from $D$ to $C$. Switches alternate, and the sequence starts at $C$, so
+$$\#(C\to D)-\#(D\to C)=\begin{cases}1&a_n=D\\0&a_n=C.\end{cases}$$
+Each exploited round gives the opponent $3$ more than Tit-for-Tat, and each round the other way gives Tit-for-Tat $3$ more, so the opponent's total minus Tit-for-Tat's is $0$ or $3$.
+</pf>
+
+<role r="payoff" a="so why does it win?">
+
+Because the tournament isn't head-to-head. Tit-for-Tat would suffer in a population of ALLD, but it isn't in one: it plays many **cooperative** strategies, and when cooperative strategies meet they share the benefit of mutual cooperation, while strategies that defect get bogged down in conflict. Axelrod's advice for success: **don't be envious** (don't play as if it were zero-sum); **be nice** (start by cooperating, and reciprocate cooperation); **retaliate appropriately** (punish defection immediately but in measure); **don't hold grudges** (reciprocate cooperation immediately). This is not mathematically robust advice, and it is somewhat controversial among game theorists.
+</role>
+
+<role r="history" a="the evolutionary tournament">
+
+Axelrod then treated tournament score as **evolutionary fitness**, and repeated the tournament over hundreds of generations, with strategies that scored well making up more of the next generation's population. How well a strategy does depends on which strategies are present. Again Tit-for-Tat did very well. In his words: "At first, a rule that is successful with all sorts of rules will proliferate, but later as the unsuccessful rules disappear, success requires success with other successful rules."
+</role>
+
+## 5.9 Evolutionary games {366} [d2 i3]
+<role r="idea" a="fitness is utility">
+
+The exciting thing, for Axelrod, was that cooperation could arise through blind evolution, with no "thinking" about what strategy to choose. In **evolutionary game theory** (John Maynard Smith, *Evolution and the Theory of Games*, 1982) strategies are chosen by natural selection, and **evolutionary fitness plays the role of utility**.
+</role>
+
+<thm k="Example 5.31" nm="The Hawk-Dove game" pg="367">
+This is Example 3.19 in evolutionary dress. A very large population contains two variants, **Hawks** and **Doves**, which play the role of strategies. Individuals don't decide what to be: the variants are hardwired, and individuals reproduce asexually, producing offspring of their own type. An individual's **fitness** measures how likely it is to reproduce. Individuals compete in pairs for a resource worth $V$ (the fitness gained by getting it); $C$ is the cost of injury.
+
+<ul><li>Hawk meets Hawk: they fight, each equally likely to gain $V$ or lose $C$, so on average each gains $\frac{V-C}2$.</li><li>Dove meets Dove: they share, each gaining $\frac V2$.</li><li>Hawk meets Dove: the Hawk takes everything, $V$, and the Dove gets $0$.</li></ul>
+<pm r="Hawk,Dove" c="Hawk,Dove" p1="$\frac{V-C}2$ , $V$ ; $0$ , $\frac V2$" p2="$\frac{V-C}2$ , $0$ ; $V$ , $\frac V2$"></pm>
+(Example 3.19 charged each Hawk the full cost, giving $\frac V2-C$ for a fight; here a fight is a fair gamble between winning $V$ and losing $C$. The story is the same.)
+</thm>
+
+<thm k="Definition 5.32" nm="Average fitness" pg="371">
+If a proportion $p$ of the population are Hawks, a Hawk meets a Hawk with probability $p$ and a Dove with probability $1-p$, so the average fitnesses of Hawks and Doves are
+$$F_H=p\cdot\frac{V-C}2+(1-p)V,\qquad F_D=(1-p)\frac V2.$$
+</thm>
+<role r="reading" a="Definition 5.32">
+
+These are the expected utilities of being a Hawk or a Dove, against an opponent drawn at random from the population. Crucially, the fitness of each type depends on the **population makeup**: how well you do depends on who else is around.
+</role>
+
+<thm k="Definition 5.33" nm="Replicator dynamics" pg="373">
+Let $A=pF_H+(1-p)F_D$ be the average fitness of the whole population. The proportion of Hawks in the next generation is
+$$p'=p\cdot\frac{F_H}{A}.$$
+So Hawks increase when $F_H>A$, that is when they are fitter than average, and decrease when $F_H<A$.
+</thm>
+<role r="caution" a="negative fitness">
+
+When $C>V$, a Hawk–Hawk fight has negative average payoff, and with enough Hawks $F_H$ and even $A$ can be negative or zero, making $p'$ meaningless. The standard fix, presumably used for the slides' plots with $C=10$ and $C=100$, is to add a **baseline fitness** $F_0$ to every payoff, large enough that everything stays positive. It changes the speed of the dynamics but not where they go.
+</role>
+
+<role r="payoff" a="where the population settles">
+
+Hawks and Doves do equally well when
+$$F_H=F_D\iff p\,\frac{V-C}2+(1-p)\frac V2=0\iff p=\frac VC.$$
+If $C\le V$, Hawks are always at least as fit as Doves, and they take over (slowly when $C=V$). If $C>V$, the population settles at a mixture with a proportion $\frac VC$ of Hawks: high costs of conflict keep the Hawks rare. Figure 5.4 runs the dynamics for the slides' values $V=4$ and $C\in\{2,3,4,10,100\}$, and any others.
+</role>
+
+@@gt-fig5-4@@
+
+<thm k="Definition 5.34" nm="Evolutionarily stable strategy" pg="379">
+A strategy $\sigma$ is an **evolutionarily stable strategy** (ESS) if
+
+<ol><li>it is a best response to itself, $u(\sigma,\sigma)\ge u(\sigma',\sigma)$ for all $\sigma'$; and</li><li>for any $\sigma'\ne\sigma$ that does as well against $\sigma$ as $\sigma$ does, $\sigma$ does better against $\sigma'$ than $\sigma'$ does against itself: if $u(\sigma',\sigma)=u(\sigma,\sigma)$ then $u(\sigma,\sigma')>u(\sigma',\sigma')$.</li></ol>
+</thm>
+<role r="reading" a="Definition 5.34">
+
+Here $u(\sigma,\tau)$ is the payoff of $\sigma$ against $\tau$. Condition 1 says $(\sigma,\sigma)$ is a symmetric Nash equilibrium. Condition 2 handles a small invading group of mutants $\sigma'$: if they do as well against the natives as the natives do, they can't benefit from meeting each other either. In Hawk-Dove with $C>V$, the mixed strategy "Hawk with probability $\frac VC$" is an ESS, matching where the replicator dynamics settle; with $C\le V$, pure Hawk is.
+</role>

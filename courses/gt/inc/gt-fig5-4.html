@@ -1,0 +1,13 @@
+<figure class="wide" id="fig5-4">
+  <div class="fig-body">
+    <svg id="gt-rep-svg" class="pt" viewBox="0 0 720 300" role="img" aria-label="The proportion of hawks over time under replicator dynamics, for chosen V and C."></svg>
+    <div class="controls">
+      <span class="btn-row" role="group" aria-label="cost of injury" id="gt-rep-btns"></span>
+      <label class="grow" for="gt-rep-v">V <input type="range" id="gt-rep-v" min="1" max="10" step="0.5" value="4"> <output id="gt-rep-vv"></output></label>
+      <label class="grow" for="gt-rep-c">C <input type="range" id="gt-rep-c" min="0.5" max="100" step="0.5" value="10"> <output id="gt-rep-cv"></output></label>
+      <label class="grow" for="gt-rep-p">initial hawks <input type="range" id="gt-rep-p" min="0.01" max="0.99" step="0.01" value="0.05"> <output id="gt-rep-pv"></output></label>
+    </div>
+    <div class="readout" id="gt-rep-out" aria-live="polite"></div>
+  </div>
+  <figcaption><span class="figtag">Figure 5.4</span>Replicator dynamics for Hawk-Dove, \(p'=pF_H/A\), with a baseline fitness added to every payoff so that fitness stays positive. When \(C\le V\) hawks take over; when \(C>V\) the population settles at the dashed line, a proportion \(V/C\) of hawks.</figcaption>
+</figure>

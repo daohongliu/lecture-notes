@@ -1,0 +1,160 @@
+@num 6
+@title Zero-Sum Games
+@titlehtml <em>Zero-sum</em> games
+@pages 380–396
+@dek When one player's gain is exactly the other's loss, pessimism is rational. Maximin and minimax values, saddle points, von Neumann's minimax theorem, and the linear programs that compute optimal mixed strategies in polynomial time.
+---
+## 6.1 Strictly competitive games {381} [d1 i3]
+<role r="question" a="what is special about zero-sum?">
+
+Recall (Definition 3.21) that a game is **zero-sum** if $\sum_{i\in N}u_i(\omega)=0$ for every outcome $\omega$. With two players this means $u_2=-u_1$: the players' preferences are exactly opposed,
+$$\text{best outcome for me}\equiv\text{worst outcome for you},\qquad\text{best outcome for you}\equiv\text{worst outcome for me}.$$
+Such games are **strictly competitive**. A zero-sum game is just a strategic form game, and everything from Chapters 3 and 4 still works (including mixed strategies). But the symmetry of preferences makes simpler, and computationally better, techniques available.
+</role>
+
+<role r="setup" a="one number per cell">
+
+Since $u_2=-u_1$, we list only the **row player's** utilities. Player 1 wants the number large; player 2 wants it small. Here is the running example:
+<pm zs mm ne r="A,B,C,D" c="X,Y,Z" p1="2,5,13;6,5.6,10.5;6,4.5,1;10,3,-2"></pm>
+The extra row and column, and the shading, are explained in Section 6.2.
+</role>
+
+## 6.2 Maximin, minimax and saddle points {382} [d2 i3]
+<role r="idea" a="move first and assume the worst">
+
+Imagine you are the row player and must choose first, after which the column player responds. Whichever row you choose, the column player will pick the column giving you the **smallest** number in that row. So you should choose the row whose minimum is largest.
+</role>
+
+<thm k="Definition 6.1" nm="Maximin value" pg="384">
+The **maximin value** of a two-player zero-sum game is
+$$\underline v=\max_{\sigma_1\in\Sigma_1}\ \min_{\sigma_2\in\Sigma_2}u_1(\sigma_1,\sigma_2).$$
+A strategy achieving it is a **safety strategy** (or maximin strategy), and $\underline v$ is player 1's **safety level** or **reservation value**.
+</thm>
+<role r="example" a="Definition 6.1">
+
+The row minima are $2$, $5.6$, $1$ and $-2$, so $\underline v=5.6$, and $B$ is the safety strategy: whatever the column player does, choosing $B$ guarantees at least $5.6$.[[The slides write $\bar v$ for the maximin and $v$ for the minimax here, then swap to the opposite (standard) convention in the worked example of Section 6.4. These notes use $\underline v$ (lower value, maximin) and $\bar v$ (upper value, minimax) throughout.]]
+</role>
+<role r="caution" a="life is not zero-sum">
+
+Safety strategies are "worst case scenario" thinking. Is that ever justified? In a zero-sum game it is: the worst case for you is precisely what your opponent is trying to bring about. But zero-sum games are rare, and maximin play perhaps makes sense otherwise only against irrational players. In practice people often behave as though they were in a zero-sum game, and miss out on the benefits of common interest.
+</role>
+
+<thm k="Definition 6.2" nm="Minimax value" pg="386">
+The **minimax value** is
+$$\bar v=\min_{\sigma_2\in\Sigma_2}\ \max_{\sigma_1\in\Sigma_1}u_1(\sigma_1,\sigma_2).$$
+</thm>
+<role r="reading" a="Definition 6.2">
+
+Now player 2 moves first: for each column, player 1 will take the largest entry, so player 2 picks the column whose maximum is smallest. In the running example the column maxima are $10$, $5.6$ and $13$, so $\bar v=5.6$. $\bar v$ is the least that player 2 must concede.
+</role>
+
+<thm k="Lemma 6.3" d="Moving first never helps" pg="386" it>
+In every two-player zero-sum game, $\underline v\le\bar v$.
+</thm>
+
+<pf h="Proof (added here).">
+Let $\sigma_1^*$ achieve the maximin and $\sigma_2^*$ the minimax. Then
+$$\begin{aligned}\underline v&=\min_{\sigma_2}u_1(\sigma_1^*,\sigma_2)\\&\le u_1(\sigma_1^*,\sigma_2^*)&&\text{a minimum is at most any one term}\\&\le\max_{\sigma_1}u_1(\sigma_1,\sigma_2^*)&&\text{a maximum is at least any one term}\\&=\bar v.\end{aligned}$$
+</pf>
+
+<thm k="Definition 6.4" nm="Saddle point" pg="387">
+An outcome that is the **smallest in its row and the largest in its column** is a **saddle point**.
+</thm>
+<role r="reading" a="Definition 6.4">
+
+In the running example $(B,Y)$, with value $5.6$, is a saddle point. The name comes from the shape of a horse's saddle: along one direction the point is a minimum, along the other a maximum, like the surface $z=x^2-y^2$ at the origin. A saddle point is exactly a pure Nash equilibrium of the zero-sum game: player 1 can't gain by changing row (it is the largest in its column), and player 2 can't gain by changing column (it is the smallest in its row, and player 2 wants small numbers). Figure 6.1 computes row minima, column maxima and saddle points for any matrix.
+</role>
+
+@@gt-fig6-1@@
+
+<thm k="Theorem 6.5" nm="Minimax theorem for pure strategies" pg="389" it>
+Suppose a finite two-player zero-sum game has a Nash equilibrium $(\sigma_1,\sigma_2)$ in pure strategies. Then
+$$u_1(\sigma_1,\sigma_2)=\underline v=\bar v.$$
+So Nash equilibria and saddle points coincide, and every equilibrium has the same payoff. This common number is the **value** of the game, $v^*$; player 2 gets $-v^*$.
+</thm>
+
+<pf h="Proof (added here).">
+Since $(\sigma_1,\sigma_2)$ is an equilibrium, $\sigma_1$ is a best response for player 1 and $\sigma_2$ for player 2 (who minimises $u_1$), so
+$$\max_{\tau_1}u_1(\tau_1,\sigma_2)=u_1(\sigma_1,\sigma_2)=\min_{\tau_2}u_1(\sigma_1,\tau_2).$$
+Then
+$$\bar v\le\max_{\tau_1}u_1(\tau_1,\sigma_2)=u_1(\sigma_1,\sigma_2)=\min_{\tau_2}u_1(\sigma_1,\tau_2)\le\underline v,$$
+using the definitions of $\bar v$ (a minimum over columns, at most the value at $\sigma_2$) and $\underline v$ (a maximum over rows, at least the value at $\sigma_1$). With Lemma 6.3, all of these are equal.
+</pf>
+
+<role r="payoff" a="interchangeable equilibria">
+
+A consequence: in a zero-sum game, equilibrium strategies are **interchangeable**. If $(\sigma_1,\sigma_2)$ and $(\tau_1,\tau_2)$ are both equilibria, so is $(\sigma_1,\tau_2)$, since each player's equilibrium strategy is just a safety strategy, and doesn't depend on which equilibrium the other has in mind. There is no coordination problem of the kind we saw in the coordination game of Example 3.17.
+</role>
+
+## 6.3 Mixed strategies and the minimax theorem {390} [d2 i3]
+<role r="question" a="what if there is no saddle point?">
+
+Matching Pennies has $\underline v=-1<1=\bar v$, and no saddle point. As in Chapter 4 the answer is to mix. Define the mixed maximin and minimax by letting each player choose a mixed strategy, with expected utility in place of utility:
+$$\underline v=\max_{\mu_1\in M_1}\min_{\mu_2\in M_2}EU_1(\mu_1,\mu_2),\qquad\bar v=\min_{\mu_2\in M_2}\max_{\mu_1\in M_1}EU_1(\mu_1,\mu_2).$$
+</role>
+
+<thm k="Theorem 6.6" nm="von Neumann’s minimax theorem, 1928" it>
+In every finite two-player zero-sum game, with mixed strategies,
+$$\max_{\mu_1}\min_{\mu_2}EU_1(\mu_1,\mu_2)=\min_{\mu_2}\max_{\mu_1}EU_1(\mu_1,\mu_2)=v^*.$$
+The mixed Nash equilibria are exactly the pairs of a maximin strategy for player 1 and a minimax strategy for player 2.
+</thm>
+<role r="reading" a="Theorem 6.6">
+
+Existence of an equilibrium is Nash's theorem (Theorem 4.2), and then the argument of Theorem 6.5 applies word for word to mixed strategies. Historically it went the other way: von Neumann's theorem came first (Chapter 1), and it can also be proved directly from linear programming duality, which is what the next section uses.
+</role>
+
+<role r="technique" a="against a mixed strategy, pure replies suffice">
+
+For fixed $\mu_1$, the function $\mu_2\mapsto EU_1(\mu_1,\mu_2)$ is linear, so its minimum over $M_2$ is attained at a pure strategy:
+$$\min_{\mu_2}EU_1(\mu_1,\mu_2)=\min_{\sigma_2\in\Sigma_2}\sum_{\sigma_1}\mu_1(\sigma_1)\,u_1(\sigma_1,\sigma_2).$$
+This is what makes the problem a linear program: player 1 only needs to guard against each **column**.
+</role>
+
+<role r="example" a="the picture for two rows">
+
+When player 1 has two rows $T$ and $B$, a mixed strategy is a single number $p$ (the probability of $T$), and each column $\sigma_2$ gives a straight line $p\mapsto p\,u_1(T,\sigma_2)+(1-p)u_1(B,\sigma_2)$. Player 1's guaranteed payoff is the **lower envelope** of these lines, and the maximin strategy is its highest point. Figure 6.2 draws it. For Matching Pennies the two lines are $2p-1$ and $1-2p$, crossing at $p=\frac12$ with value $0$.
+</role>
+
+@@gt-fig6-2@@
+
+## 6.4 Computing optimal strategies by linear programming {391} [d2 i3]
+<role r="why" a="polynomial time">
+
+The symmetry of two-player zero-sum games makes computing a mixed equilibrium an **optimisation problem**, which can be solved by linear programming. So mixed equilibria of two-player zero-sum games can be found in **polynomial time**, in contrast with the best known algorithms for general-sum games (support enumeration, Algorithm 4.8, is exponential).
+</role>
+
+<thm k="Definition 6.7" nm="The maximin program for player 1" pg="391">
+With unknowns $v$ and $\mu_1(\sigma_1)$ for $\sigma_1\in\Sigma_1$:
+$$\begin{aligned}\text{maximise }&v\\\text{subject to }&\sum_{\sigma_1\in\Sigma_1}u_1(\sigma_1,\sigma_2)\,\mu_1(\sigma_1)\ge v&&\text{for all }\sigma_2\in\Sigma_2\\&\sum_{\sigma_1\in\Sigma_1}\mu_1(\sigma_1)=1,\qquad\mu_1(\sigma_1)\ge0&&\text{for all }\sigma_1\in\Sigma_1.\end{aligned}$$
+</thm>
+<role r="reading" a="Definition 6.7">
+
+Player 1 chooses a probability distribution $\mu_1$ so as to maximise the payoff $v$ she can **guarantee**: each constraint says that against column $\sigma_2$ she gets at least $v$. By the previous section, guarding against every pure column is enough.
+</role>
+
+<thm k="Definition 6.8" nm="The minimax program for player 2" pg="392">
+$$\begin{aligned}\text{minimise }&\bar v\\\text{subject to }&\sum_{\sigma_2\in\Sigma_2}u_1(\sigma_1,\sigma_2)\,\mu_2(\sigma_2)\le\bar v&&\text{for all }\sigma_1\in\Sigma_1\\&\sum_{\sigma_2\in\Sigma_2}\mu_2(\sigma_2)=1,\qquad\mu_2(\sigma_2)\ge0&&\text{for all }\sigma_2\in\Sigma_2.\end{aligned}$$
+</thm>
+<role r="reading" a="Definition 6.8">
+
+Player 2 chooses $\mu_2$ to minimise the payoff she must **concede**. The two programs are linear programming **duals** of each other, and LP duality says their optimal values are equal: that is the minimax theorem.
+</role>
+
+<thm k="Example 6.9" d="A worked example" pg="393">
+Take the zero-sum game
+<pm zs mm r="T,C,B" c="L,M,R" p1="3,-2,1;-1,3,2;2,1,-3"></pm>
+The row minima are $-2,-1,-3$, so the pure maximin is $-1$; the column maxima are $3,3,2$, so the pure minimax is $2$. They differ, so there is no saddle point, mixed strategies are required, and the value satisfies $-1\le v^*\le2$. Player 1's program is
+$$\begin{aligned}\text{maximise }v^*\text{ subject to }\quad3\mu_1(T)-\mu_1(C)+2\mu_1(B)&\ge v^*&&(\text{column }L)\\-2\mu_1(T)+3\mu_1(C)+\mu_1(B)&\ge v^*&&(\text{column }M)\\\mu_1(T)+2\mu_1(C)-3\mu_1(B)&\ge v^*&&(\text{column }R)\\\mu_1(T)+\mu_1(C)+\mu_1(B)&=1,\quad\mu_1\ge0,\end{aligned}$$
+and player 2's is
+$$\begin{aligned}\text{minimise }v^*\text{ subject to }\quad3\mu_2(L)-2\mu_2(M)+\mu_2(R)&\le v^*&&(\text{row }T)\\-\mu_2(L)+3\mu_2(M)+2\mu_2(R)&\le v^*&&(\text{row }C)\\2\mu_2(L)+\mu_2(M)-3\mu_2(R)&\le v^*&&(\text{row }B)\\\mu_2(L)+\mu_2(M)+\mu_2(R)&=1,\quad\mu_2\ge0.\end{aligned}$$
+</thm>
+<role r="example" a="solving it (added here)">
+
+The slides stop at the programs. Guess that every strategy is used (all supports full); then by the indifference principle every constraint is tight, giving three linear equations plus the normalisation for each player. Solving,
+$$\mu_1=\Big(\frac{17}{47},\frac{23}{47},\frac7{47}\Big),\qquad\mu_2=\Big(\frac{23}{47},\frac{17}{47},\frac7{47}\Big),\qquad v^*=\frac{42}{47}\approx0.89.$$
+All the probabilities are positive, so the guess was right, and since each player's strategy holds the other to exactly $\frac{42}{47}$, both are optimal. As a check, $3\cdot17-23+2\cdot7=42$, $-2\cdot17+3\cdot23+7=42$, and $17+2\cdot23-3\cdot7=42$. The value lies between $-1$ and $2$, as it must.
+</role>
+
+<pause n="Is it fair?" q="Two players each show one or two fingers. If the total is even, player 2 pays player 1 that many pounds; if odd, player 1 pays player 2 that many. ($u_1$: $(1,1)\mapsto2$, $(1,2)\mapsto-3$, $(2,1)\mapsto-3$, $(2,2)\mapsto4$.) Who should want to play?">
+There is no saddle point (row minima $-3,-3$; column maxima $2,4$). Player 1's indifference against player 2's mix $q$ on "one": $2q-3(1-q)=-3q+4(1-q)$, so $5q-3=4-7q$, $q=\frac7{12}$. By symmetry player 1 plays "one" with probability $\frac7{12}$ too. The value is $2\cdot\frac7{12}-3\cdot\frac5{12}=-\frac1{12}$. So player 2 wins about 8p per round on average: the game, which looks symmetric, favours player 2.
+</pause>
