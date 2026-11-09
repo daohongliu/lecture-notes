@@ -113,7 +113,6 @@ function walkStrip() {
 }
 
 /* ---------- chapter contents sidebar, reading progress ---------- */
-const readbar = h('div', 'readbar'); readbar.appendChild(h('i')); document.body.appendChild(readbar);
 const tocSide = h('nav', 'toc-side'); tocSide.setAttribute('aria-label', 'Contents of this chapter'); tocSide.hidden = true;
 const tocBtn = h('button', 'toc-btn', '§ contents'); tocBtn.type = 'button'; tocBtn.hidden = true; tocBtn.setAttribute('aria-expanded', 'false');
 document.body.appendChild(tocSide); document.body.appendChild(tocBtn);
@@ -126,7 +125,6 @@ function buildToc(v) {
   const isDoc = !!v && (v.classList.contains('chapter') || v.classList.contains('sheet'));
   document.body.classList.toggle('has-toc', isDoc);
   tocSide.hidden = !isDoc; tocBtn.hidden = !isDoc; closeToc();
-  readbar.hidden = !isDoc;
   TS = null;
   if (!isDoc) return;
   tocSide.innerHTML = '';
@@ -194,7 +192,6 @@ function updateToc() {
   const { v, secs } = TS;
   const r = v.getBoundingClientRect(), vh = window.innerHeight;
   const frac = clamp((vh * .35 - r.top) / Math.max(1, r.height - vh * .5), 0, 1);
-  readbar.firstChild.style.width = (frac * 100).toFixed(1) + '%';
   TS.prog.style.width = (frac * 100).toFixed(1) + '%';
   let cur = -1;
   secs.forEach((s, i) => { if (s.hd.getBoundingClientRect().top < vh * .3) cur = i; });

@@ -477,8 +477,6 @@ details.pause summary::before { flex: none; }
 .sq .uses { font-family: var(--mono); font-variation-settings: "MONO" 1, "CASL" .6; font-size: .72rem; color: var(--ink-soft); margin-top: .35rem; }
 
 /* reading bar + left contents */
-.readbar { position: fixed; z-index: 21; left: 0; right: 0; top: calc(var(--topbar-h, 2.6rem) + env(safe-area-inset-top, 0px)); height: 2px; pointer-events: none; }
-.readbar i { display: block; height: 100%; width: 0; background: var(--blue); opacity: .55; transition: width .12s linear; }
 .toc-side { position: fixed; z-index: 30; display: none; top: calc(4rem + env(safe-area-inset-top, 0px)); left: max(16px, env(safe-area-inset-left, 0px));
   width: 14.5rem; max-height: calc(100vh - 5.5rem); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; font-size: .84rem; line-height: 1.32; padding-bottom: 1rem; }
 .toc-head { position: sticky; top: 0; background: var(--paper); padding: .2rem 0 .55rem; z-index: 1; }

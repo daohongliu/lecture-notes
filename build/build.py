@@ -474,13 +474,13 @@ def autolink_course(s, p, exist):
 
 def main():
     head = (TPL / 'head.html').read_text()
-    views, pills, js, hubs = [], [], [], []
+    views, pills, js, hubs, confs = [], [], [], [], []
     for cid in COURSES:
         if not any((REPO / 'courses' / cid / 'src').glob('ch*.src')): continue
         conf = json.loads((REPO / 'courses' / cid / 'course.json').read_text())
         v, pl, j, hb = build_course(cid, conf)
-        views.append(v); pills.append(pl); js += j; hubs.append(hb)
-    hubp = '<span class="pillgroup hubgroup">' + ''.join(re.sub(r'.*?href="#(\w+)".*?hc-code">([^<]+).*?hc-t">([^<]+).*', r'<a href="#\1" title="\2 · \3">\3</a>', x, flags=re.S) for x in hubs) + '</span>'
+        views.append(v); pills.append(pl); js += j; hubs.append(hb); confs.append((cid, conf))
+    hubp = '<span class="pillgroup hubgroup">' + ''.join(f'<a href="#{cid}" title="{c["code"]} · {c["title"]}">{c["short"]}</a>' for cid, c in confs) + '</span>'
     shell = (TPL / 'shell-top.html').read_text().replace('%%PILLS%%', hubp + ''.join(pills))
     hub = (TPL / 'hub.html').read_text().replace('%%COURSES%%', ''.join(hubs))
     body = shell + hub + '\n'.join(views) + (TPL / 'shell-bottom.html').read_text()
