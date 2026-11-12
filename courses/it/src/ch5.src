@@ -1,0 +1,347 @@
+@num 5
+@title Noisy Channels with non-iid input
+@titlehtml Noisy channels with <em>non-iid input</em>
+@pages 51–61
+@dek Real sources aren't i.i.d.: letters depend on the letters before them. Entropy extends to such sources as an entropy rate; compressing first and channel coding second turns out to lose nothing; and two recursions, Wonham’s filter and Viterbi’s algorithm, recover a hidden Markov signal from a noisy channel.
+---
+## 5.1 Channel coding with non-iid input {51} [d2 i3]
+<role r="question" a="can we combine Shannon’s two theorems?">
+
+Suppose you want to send digitised speech over a noisy channel. The obvious plan has two stages: **compress** it with a symbol code (Theorem 3.4), then **protect** the compressed bits with a channel code (Theorem 4.15). Two questions arise.
+
+<ol><li>Is the two-stage approach optimal, or would it be better to feed the raw signal straight into a channel code?</li><li>Speech, text and the like are not i.i.d. sequences, and neither is the output of a compressor. Do our results extend?</li></ol>
+
+This section deals with the second question, by extending entropy to sequences of dependent random variables. Section 5.2 then answers the first.
+</role>
+
+<thm k="Definition 5.1" nm="Stochastic process, stationarity" pg="51">
+A **discrete time stochastic process** with state space $\X$ is a sequence $X=(X_i)_{i\ge1}$ of $\X$-valued random variables. It is **stationary** if
+$$\PP(X_1=x_1,\dots,X_n=x_n)=\PP(X_{1+j}=x_1,\dots,X_{n+j}=x_n)$$
+for all $n,j$ and all $x_1,\dots,x_n\in\X$.
+</thm>
+<role r="reading" a="Definition 5.1">
+
+Stationary means the statistics don't depend on when you start looking: any window of $n$ consecutive values has the same distribution as any other window of length $n$. An i.i.d. sequence is stationary, but a stationary process can have strong dependence between its values, like the letters of English text.
+</role>
+
+<thm k="Definition 5.2" nm="Entropy rate" pg="51">
+The **entropy rate** of a stochastic process $X=(X_i)$ is
+$$H(X)=\lim_{n\to\infty}\frac1nH(X_1,\dots,X_n),$$
+whenever the limit exists.
+</thm>
+<role r="reading" a="Definition 5.2">
+
+The entropy per symbol, in the long run. If the $X_i$ are i.i.d., the chain rule (part 3 of Theorem 1.19) gives $H(X_1,\dots,X_n)=nH(X_1)$, so $H(X)=H(X_1)$. With dependence, $H(X_1,\dots,X_n)<\sum_iH(X_i)$, and the rate is smaller: each new symbol is partly predictable from the earlier ones, so it carries less new information.
+</role>
+
+<role r="caution" a="the limit need not exist">
+
+Independence alone is not enough. Let the $X_i$ be independent bits with $\PP(X_i=1)=\frac12$ when $\log\log i\in(2k,2k+1]$ and $\PP(X_i=1)=0$ when $\log\log i\in(2k+1,2k+2]$, for $k=0,1,2,\dots$. Then $H(X_i)$ is $1$ on long stretches and $0$ on exponentially longer ones, and the running average $\frac1n\sum_{i\le n}H(X_i)$ swings between near $0$ and near $1$ forever. No entropy rate.
+</role>
+
+<thm k="Theorem 5.3" d="Stationary processes have an entropy rate" pg="52" it>
+For a stationary stochastic process $X$, the entropy rate exists and
+$$H(X)=\lim_{n\to\infty}H(X_n\,|\,X_{n-1},\dots,X_1).$$
+</thm>
+<role r="reading" a="Theorem 5.3">
+
+Two natural definitions of "entropy per symbol" agree: the average entropy of the first $n$ symbols, and the uncertainty of the next symbol given the whole past. The proof uses two lemmas.
+</role>
+
+<thm k="Lemma 5.4" d="The next symbol gets more predictable" pg="52" it>
+For a stationary process $X$, the sequence $n\mapsto H(X_n\,|\,X_{n-1},\dots,X_1)$ is non-increasing, and so converges.
+</thm>
+
+<pf>
+For every $n$,
+$$\begin{aligned}H(X_{n+1}\,|\,X_n,\dots,X_1)&\le H(X_{n+1}\,|\,X_n,\dots,X_2)&&\why{conditioning reduces entropy}\\&=H(X_n\,|\,X_{n-1},\dots,X_1).&&\why{stationarity: shift by one}\end{aligned}$$
+The first step drops $X_1$ from what we condition on, which can only increase entropy (part 2 of Theorem 1.19, applied conditionally). The second uses that $(X_2,\dots,X_{n+1})$ has the same distribution as $(X_1,\dots,X_n)$. A non-increasing sequence bounded below by $0$ converges.
+</pf>
+
+<thm k="Lemma 5.5" nm="Cesàro mean" pg="52" it>
+If $a_n\to a$, then $\frac1n\sum_{i=1}^na_i\to a$.
+</thm>
+
+<pf>
+Given $\varepsilon>0$, choose $n_0$ with $|a_n-a|<\varepsilon$ for $n\ge n_0$. Then for $n\ge n_0$,
+$$\Big|\frac1n\sum_{i=1}^na_i-a\Big|\le\frac1n\sum_{i=1}^n|a_i-a|\le\frac1n\sum_{i=1}^{n_0}|a_i-a|+\frac{n-n_0}n\,\varepsilon.$$
+As $n\to\infty$ the first term tends to $0$ (a fixed sum divided by $n$), and the second is at most $\varepsilon$. So the $\limsup$ of the left side is at most $\varepsilon$, for every $\varepsilon>0$.
+</pf>
+
+<pf h="Proof of Theorem 5.3.">
+By the chain rule,
+$$\frac{H(X_1,\dots,X_n)}n=\frac1n\sum_{i=1}^nH(X_i\,|\,X_{i-1},\dots,X_1).$$
+The terms on the right converge by Lemma 5.4, so their running averages converge to the same limit by Lemma 5.5.
+</pf>
+
+<thm k="Theorem 5.6" nm="Shannon–McMillan–Breiman" pg="53" it>
+Let $X_1,X_2,\dots$ be a stationary ergodic sequence of random variables in a finite state space $\X$. Then
+$$-\frac1n\log p_{X_1,\dots,X_n}(X_1,\dots,X_n)\to H(X)\quad\text{in probability, as }n\to\infty.$$
+</thm>
+<role r="reading" a="Theorem 5.6">
+
+This is the AEP (Theorem 2.10) for dependent sources: a long output of the source almost always has probability about $2^{-nH}$, with $H$ now the entropy rate. "Ergodic" means, loosely, that time averages along one long realisation converge to expectations, so one long sample tells you the statistics of the whole process. Most stationary processes of practical interest are ergodic. The version stated is due to Breiman; with it, Shannon's block coding argument (Theorem 3.4) goes through unchanged, so stationary ergodic sources can be compressed to their entropy rate.
+</role>
+
+<role r="setup" a="Markov chains">
+
+The most important class of dependent processes are **Markov chains**, where the next value depends on the past only through the present.
+</role>
+
+<thm k="Definition 5.7" nm="Markov chain" pg="53">
+A process $X=(X_i)_{i\ge1}$ on $\X$ is a **Markov chain** if
+$$\PP(X_n=x_n\,|\,X_{n-1}=x_{n-1},\dots,X_1=x_1)=\PP(X_n=x_n\,|\,X_{n-1}=x_{n-1})$$
+for all $n$ and all $x_1,\dots,x_n\in\X$. It is **time-invariant** (time-homogeneous) if $\PP(X_{n+1}=b\,|\,X_n=a)=\PP(X_2=b\,|\,X_1=a)$ for all $n$ and $a,b\in\X$.
+</thm>
+<role r="reading" a="Definition 5.7">
+
+A time-invariant chain on $\X=\{x_1,\dots,x_m\}$ is described by its initial distribution and its **transition matrix**
+$$P=(P_{i,j})_{m\times m},\qquad P_{i,j}=\PP(X_2=x_j\,|\,X_1=x_i).$$
+Writing distributions as row vectors, $p_{X_{n+1}}=p_{X_n}P$. A pmf $\mu$ is a **stationary distribution** if $\mu=\mu P$: start the chain in $\mu$ and it stays in $\mu$. Started from $\mu$, the chain is a stationary process.
+</role>
+
+<thm k="Remark 5.8" d="Irreducible, aperiodic chains forget where they started" pg="53">
+If a time-invariant chain is **irreducible** (every state can reach every other: for all $x_1,x$ there is $t>0$ with $\PP(X_t=x\,|\,X_1=x_1)>0$), it has a unique stationary distribution $\mu$. If it is also **aperiodic** (the reachability holds for all large enough $t$), then from any start $x_0$ the distribution converges to $\mu$ geometrically fast,
+$$|\mu-x_0P^n|\le c(1-\varepsilon)^n\quad\text{for some }c,\varepsilon>0.$$
+This is **geometric ergodicity**, a consequence of the Perron–Frobenius theorem; it is not proved here.
+</thm>
+
+<role r="technique" a="the entropy rate of a Markov chain">
+
+For a stationary time-invariant Markov chain, Theorem 5.3 and the Markov property give
+$$H(X)=\lim_{n\to\infty}H(X_n\,|\,X_{n-1},\dots,X_1)=\lim_{n\to\infty}H(X_n\,|\,X_{n-1})=H(X_2\,|\,X_1),$$
+since the past beyond $X_{n-1}$ is irrelevant, and by stationarity every $H(X_n|X_{n-1})$ equals $H(X_2|X_1)$. Unpacking the conditional entropy,
+$$#eq5-1-1 H(X)=\sum_i\PP(X_1=x_i)\,H(X_2\,|\,X_1=x_i)=-\sum_i\mu_i\sum_jP_{i,j}\log P_{i,j}=-\sum_{i,j}\mu_iP_{i,j}\log P_{i,j}. \tag{5.1.1}$$
+**The entropy rate is the average, over the stationary distribution, of the entropy of each row of $P$.** By geometric ergodicity the rate is the same whatever the starting distribution.
+</role>
+
+<thm k="Example 5.9" d="A two-state chain" pg="54">
+Let $\X=\{a,b\}$, with $\PP(X_2=b|X_1=a)=\alpha$ and $\PP(X_2=a|X_1=b)=\beta$:
+$$P=\begin{pmatrix}1-\alpha&\alpha\\\beta&1-\beta\end{pmatrix}.$$
+The stationary distribution is
+$$\mu(a)=\frac\beta{\alpha+\beta},\qquad\mu(b)=\frac\alpha{\alpha+\beta}.$$
+(Check: the flow from $a$ to $b$, $\mu(a)\alpha$, balances the flow back, $\mu(b)\beta$.) The rows of $P$ are a coin with bias $\alpha$ and one with bias $\beta$, so by (5.1.1)
+$$H(X)=\frac\beta{\alpha+\beta}H(\alpha)+\frac\alpha{\alpha+\beta}H(\beta),$$
+with $H(\cdot)$ the binary entropy.
+</thm>
+<role r="example" a="Example 5.9">
+
+Take $\alpha=\beta=0.1$: the chain is sticky, staying put nine times out of ten. Then $\mu=(\frac12,\frac12)$, so each symbol on its own is a fair coin, $H(X_1)=1$. But $H(X)=H(0.1)\approx0.47$: knowing the previous symbol, the next is quite predictable. Long runs of $a$s and $b$s compress to less than half a bit per symbol. Figure 5.1 plots this for any $\alpha,\beta$.
+</role>
+
+@@it-fig5-1@@
+
+<thm k="Example 5.10" d="A random walk on a weighted graph" pg="54">
+Let $(V,E)$ be a connected graph on vertices $\{1,\dots,m\}$, with no loops, and give each edge $\{i,j\}$ a weight $w_{i,j}=w_{j,i}\ge0$ ($w_{i,j}=0$ if there is no edge). From vertex $i$, move to a neighbour $j$ with probability proportional to the weight of the edge:
+$$P_{i,j}=\frac{w_{i,j}}{w_i},\qquad w_i=\sum_jw_{i,j}\ \ (\text{the total weight at }i).$$
+Let $w=\sum_{i<j}w_{i,j}$ be the total weight of all edges, so $\sum_iw_i=2w$ (each edge is counted at both ends). Then the stationary distribution is
+$$\mu_i=\frac{w_i}{2w}.$$
+</thm>
+
+<pf h="Check.">
+$$\sum_i\mu_iP_{i,j}=\sum_i\frac{w_i}{2w}\cdot\frac{w_{i,j}}{w_i}=\frac1{2w}\sum_iw_{i,j}=\frac{w_j}{2w}=\mu_j.$$
+</pf>
+
+<role r="reading" a="Example 5.10">
+
+The walk spends time at each vertex in proportion to the total weight there, regardless of how the rest of the graph is arranged. (Change other edges, keeping $w_i$ and $w$ fixed, and $\mu_i$ doesn't move.)
+</role>
+
+<role r="technique" a="its entropy rate">
+
+By (5.1.1),
+$$\begin{aligned}H(X)&=-\sum_{i,j}\mu_iP_{i,j}\log P_{i,j}=-\sum_{i,j}\frac{w_i}{2w}\cdot\frac{w_{i,j}}{w_i}\log\frac{w_{i,j}}{w_i}\\&=-\sum_{i,j}\frac{w_{i,j}}{2w}\log\Big(\frac{w_{i,j}}{2w}\cdot\frac{2w}{w_i}\Big)\\&=-\sum_{i,j}\frac{w_{i,j}}{2w}\log\frac{w_{i,j}}{2w}+\sum_{i,j}\frac{w_{i,j}}{2w}\log\frac{w_i}{2w}\\&=-\sum_{i,j}\frac{w_{i,j}}{2w}\log\frac{w_{i,j}}{2w}+\sum_i\frac{w_i}{2w}\log\frac{w_i}{2w},\end{aligned}$$
+using $\sum_jw_{i,j}=w_i$ in the last step. So
+$$H(X)=H\Big(\Big(\frac{w_{i,j}}{2w}\Big)_{i,j}\Big)-H\Big(\Big(\frac{w_i}{2w}\Big)_i\Big),$$
+the entropy of the distribution on (ordered) edges minus the entropy of the stationary distribution. For an unweighted graph ($w_{i,j}\in\{0,1\}$) with $|E|$ edges, every ordered edge has probability $\frac1{2|E|}$, and the formula becomes $H(X)=\log(2|E|)-H\big(\frac{\deg i}{2|E|}\big)_i$. Figure 5.2 lets you change the weights.
+</role>
+
+@@it-fig5-2@@
+
+<thm k="Example 5.11" d="English text, and language models" pg="55">
+Model English text, with an alphabet of $27$ symbols (letters and space), as a Markov chain, estimating $\PP(L_t=a\,|\,L_{t-1}=b)$ from data, where $L_t$ is the $t$-th letter. More generally, let the state be the previous $k$ letters, $X_{t-1}=(L_{t-1},\dots,L_{t-k})\in\mathcal A^k$, and estimate $\PP(L_t=a\,|\,L_{t-1}=b_1,\dots,L_{t-k}=b_k)$. Text generated this way starts to resemble English for $k\ge5$ or so. Large language models are conceptually in the same class: they predict the next word (token) from the previous $k$, with a learned model instead of a table, since the table would be astronomically large.
+</thm>
+
+<role r="question" a="what if we only see part of the state?">
+
+Often the Markov chain itself isn't observed, only a function of it: $Y_i=\phi(X_i)$. Think of a complicated system evolving over time, of which you see only a partial readout. What is the entropy rate of $Y$? This is hard, because $Y$ is usually **not** a Markov chain. But it is stationary (if $X$ is), so $H(Y)$ exists by Theorem 5.3, and $H(Y)=\lim_nH(Y_n|Y_{n-1},\dots,Y_1)$ with the conditional entropies decreasing to the limit. The trouble is that the convergence can be very slow, and from one value of $n$ you can't tell how close you are. The next theorem gives a matching lower bound, which brackets the answer.
+</role>
+
+<thm k="Theorem 5.12" d="Bounds for the entropy rate of a function of a Markov chain" pg="55" it>
+Let $X=(X_i)_{i\in\Z}$ be a stationary Markov chain, $\phi:\X\to\mathcal Y$, and $Y_i=\phi(X_i)$. Then
+$$H(Y_n\,|\,Y_{n-1},\dots,Y_1,X_1)\le H(Y)\le H(Y_n\,|\,Y_{n-1},\dots,Y_1),$$
+and both bounds converge to $H(Y)$ as $n\to\infty$.
+</thm>
+<role r="reading" a="Theorem 5.12">
+
+The upper bound decreases to $H(Y)$ (Lemma 5.4). The lower bound adds knowledge of the hidden starting state $X_1$. The theorem says the two pinch together, so when they are close you know the estimate is good. The proof is two lemmas.
+</role>
+
+<thm k="Lemma 5.13" d="Knowing the initial state gives a lower bound" pg="55" it>
+$H(Y_n\,|\,Y_{n-1},\dots,Y_2,X_1)\le H(Y)$.
+</thm>
+
+<pf>
+Since $Y_1=\phi(X_1)$, adding $Y_1$ to the conditioning changes nothing. Since $X$ is Markov, given $X_1$ the future $(X_2,X_3,\dots)$, hence $(Y_2,\dots,Y_n)$, is independent of the earlier past $X_0,X_{-1},\dots$; so adding those changes nothing either, and neither does adding the $Y$s that are functions of them. For any $k\ge0$:
+$$\begin{aligned}H(Y_n\,|\,Y_{n-1},\dots,Y_2,X_1)&=H(Y_n\,|\,Y_{n-1},\dots,Y_1,X_1)\\&=H(Y_n\,|\,Y_{n-1},\dots,Y_1,X_1,X_0,\dots,X_{-k})\\&=H(Y_n\,|\,Y_{n-1},\dots,Y_1,X_1,X_0,\dots,X_{-k},Y_0,\dots,Y_{-k})\\&\le H(Y_n\,|\,Y_{n-1},\dots,Y_1,Y_0,\dots,Y_{-k})&&\why{dropping the $X$s}\\&=H(Y_{n+k+1}\,|\,Y_{n+k},\dots,Y_1).&&\why{stationarity: shift by $k+1$}\end{aligned}$$
+Letting $k\to\infty$, the right side tends to $H(Y)$ by Theorem 5.3.
+</pf>
+
+<thm k="Lemma 5.14" d="The gap closes" pg="56" it>
+$H(Y_n\,|\,Y_{n-1},\dots,Y_1)-H(Y_n\,|\,Y_{n-1},\dots,Y_1,X_1)\to0$ as $n\to\infty$.
+</thm>
+
+<pf>
+The difference is a conditional mutual information:
+$$H(Y_n\,|\,Y_{n-1},\dots,Y_1)-H(Y_n\,|\,Y_{n-1},\dots,Y_1,X_1)=I(X_1;Y_n\,|\,Y_{n-1},\dots,Y_1).$$
+By the information chain rule (part 3 of Theorem 1.17),
+$$\sum_{i=1}^nI(X_1;Y_i\,|\,Y_{i-1},\dots,Y_1)=I(X_1;Y_n,\dots,Y_1)\le H(X_1).$$
+So the partial sums of a series of non-negative terms are bounded by $H(X_1)<\infty$, uniformly in $n$. The series converges, and its terms tend to $0$.
+</pf>
+
+<role r="reading" a="Lemma 5.14">
+
+A nice way to see it: $X_1$ contains only $H(X_1)$ bits, and each new observation $Y_i$ can reveal some of them, but in total they can't reveal more than all of them. So eventually each new observation reveals almost nothing new about $X_1$. When $\phi$ is a *random* function of $X$, this is exactly the setting of a source sent through a channel, which is where the chapter goes next.
+</role>
+
+## 5.2 Combining symbol and channel coding for DMCs {56} [d2 i3]
+<role r="setup" a="sending a source through a channel">
+
+A source produces symbols from a finite set $\mathcal V$, modelled as a stochastic process $V=(V_i)$. We want to send $V^n=(V_1,\dots,V_n)$ through a DMC using an encoder $c:\mathcal V^n\to\X^n$ and a decoder $d:\mathcal Y^n\to\mathcal V^n$, giving $\hat V^n=d(\mathbf Y)$, with $\PP(V^n\ne\hat V^n)$ small. Here one source symbol is sent per channel use.
+</role>
+
+<thm k="Theorem 5.15" nm="Source–channel separation" pg="56" it>
+Let $(\X,M,\mathcal Y)$ be a DMC with capacity $C$, and $V=(V_i)_{i\ge1}$ a stochastic process on a finite set $\mathcal V$.
+
+<ol><li>If $V$ satisfies the AEP and $H(V)<C$, then for every $\varepsilon>0$ there are $n$ and maps $c:\mathcal V^n\to\X^n$ and $d:\mathcal Y^n\to\mathcal V^n$ with $\PP(V^n\ne\hat V^n)<\varepsilon$.</li><li>Conversely, if $V$ is stationary and $H(V)>C$, then the error probability is bounded away from zero: there is $\delta>0$ such that $\PP(V^n\ne\hat V^n)>\delta$ for every encoder–decoder pair, for all large $n$.</li></ol>
+</thm>
+<role r="caution" a="Theorem 5.15">
+
+Two small corrections to the notes' statement: the decoder maps to $\mathcal V^n$, not $\mathcal V$; and the proof of part 2 gives the bound for all *large* $n$, where the notes say "for any $n\ge1$". For small $n$ the inequality in the proof gives nothing, since its right side can be negative.
+</role>
+
+<pf h="Proof sketch, part 1.">
+Since $V$ satisfies the AEP, for large $n$ there is a typical set $T_\varepsilon^{(n)}$ with $\PP(V^n\in T_\varepsilon^{(n)})\ge1-\varepsilon$ and $|T_\varepsilon^{(n)}|\le2^{n(H(V)+\varepsilon)}$. Index the typical sequences with $n(H(V)+\varepsilon)$ bits, and send the index with a channel code of rate $R=H(V)+\varepsilon$. Choosing $\varepsilon$ small enough that $R<C$, Shannon's second theorem gives a channel code with error less than $\varepsilon$ for large $n$. (Atypical sequences are sent arbitrarily, using leftover codewords.) The decoder decodes the index and looks up the typical sequence. Then
+$$\PP(V^n\ne\hat V^n)\le\PP(V^n\notin T_\varepsilon^{(n)})+\PP\big(d(\mathbf Y)\ne V^n\,\big|\,V^n\in T_\varepsilon^{(n)}\big)\le\varepsilon+\varepsilon.$$
+</pf>
+
+<pf h="Proof, part 2.">
+Suppose $\PP(V^n\ne\hat V^n)\to0$ along a sequence of codes; we show $H(V)\le C$. By Fano's inequality (Corollary 1.22), with $|\mathcal V^n|=|\mathcal V|^n$,
+$$H(V^n\,|\,\hat V^n)\le1+\PP(V^n\ne\hat V^n)\,n\log|\mathcal V|.$$
+Then
+$$\begin{aligned}H(V)&\le\frac{H(V_1,\dots,V_n)}n&&\why{see below}\\&=\frac1nH(V^n\,|\,\hat V^n)+\frac1nI(V^n;\hat V^n)\\&\le\frac1n\Big[1+\PP(V^n\ne\hat V^n)\,n\log|\mathcal V|\Big]+\frac1nI(V^n;\hat V^n)&&\why{Fano}\\&\le\frac1n\Big[1+\PP(V^n\ne\hat V^n)\,n\log|\mathcal V|\Big]+\frac1nI(\mathbf X;\mathbf Y)&&\why{data processing}\\&\le\frac1n+\PP(V^n\ne\hat V^n)\log|\mathcal V|+C.&&\why{memoryless channel}\end{aligned}$$
+The first line holds because, for a stationary process, $\frac1nH(V_1,\dots,V_n)$ is an average of the non-increasing terms $H(V_i|V_{i-1},\dots,V_1)$, so it decreases to its limit $H(V)$ and is always at least it. Letting $n\to\infty$,
+$$H(V)\le\log|\mathcal V|\lim_{n\to\infty}\PP(V^n\ne\hat V^n)+C=C.$$
+So if $H(V)>C$, the error probability can't tend to zero; more quantitatively, the last inequality gives $\PP(V^n\ne\hat V^n)\ge\frac{H(V)-C-1/n}{\log|\mathcal V|}$, positive for $n>\frac1{H(V)-C}$.
+</pf>
+
+<role r="payoff" a="separation loses nothing">
+
+The theorem assumes almost nothing about the source beyond the AEP: $V_1,\dots,V_n$ can have complicated dependencies. And its achievability proof is exactly the two-stage scheme: compress to about $H(V)$ bits per symbol, then channel-code. So **designing the source code and the channel code separately costs nothing** in achievable rates. That answers the first question at the start of the chapter, and it is a big deal for engineering, since it splits one hard problem into two smaller ones. It is still only an existence result; finding good codes for a given problem remains difficult.
+</role>
+
+<role r="recap" a="Shannon’s two theorems side by side">
+
+**Source coding** works because, by the AEP, a set of only about $2^{nH}$ sequences carries almost all the probability, so $H$ bits per symbol suffice. **Channel coding** works because, by the joint AEP, input and output are jointly typical with high probability, while any *other* codeword is jointly typical with the output only with probability about $2^{-nI}$, so about $2^{nI}$ codewords can be used. Theorem 5.15 says the two can be put back to back.
+</role>
+
+## 5.3 Decoding from a noisy non-iid channel {58} [d3 i2]
+<role r="question" a="recovering a hidden signal">
+
+The last task: a message generated by a Markov chain was sent through a noisy DMC. Recover it, efficiently. This is a special case of a general problem in time series analysis, reconstructing the states of a **hidden Markov model** from observations. Two algorithms: **Wonham's filter** computes, at each time, the posterior distribution of the current state given the observations so far; **Viterbi's algorithm** computes the single most likely whole path given all the observations.
+</role>
+
+<role r="setup" a="states as basis vectors">
+
+Let the chain $X$ have transition matrix $P$ and start from $X_0\sim\mu_0$, and let each state $X_t$ be sent through a DMC with emission matrix $M$, producing $Y_t$. The algebra is easiest if each state is a **basis row vector** in $\R^{|\X|}$: with three states, they are $[1,0,0]$, $[0,1,0]$ and $[0,0,1]$; and each output value is a **basis column vector** in $\R^{|\mathcal Y|}$. Then for states $x,\tilde x$ and output $y$:
+
+<ul><li>$xP$ is the distribution of the next state given the current state $x$, and $\PP(X_2=x\,|\,X_1=\tilde x)=\tilde xPx^\top$;</li><li>$xM$ is the distribution of the output given state $x$, and $\PP(Y_t=y\,|\,X_t=x)=xMy$.</li></ul>
+</role>
+
+<role r="technique" a="one step of Bayes’ rule">
+
+Given the previous state $\tilde x$, the new state and its output have joint probability
+$$\PP(X_t=x,Y_t=y\,|\,X_{t-1}=\tilde x)=\PP(Y_t=y\,|\,X_t=x)\,\PP(X_t=x\,|\,X_{t-1}=\tilde x)=(xMy)(\tilde xPx^\top).$$
+By the definition of conditional probability, dividing by the sum over $x$ gives $\PP(X_t=x\,|\,Y_t=y,X_{t-1}=\tilde x)$. The denominator doesn't depend on $x$, so we can ignore it and renormalise at the end:
+$$\PP(X_t=x\,|\,Y_t=y,X_{t-1}=\tilde x)\propto(\tilde xPx^\top)(xMy)=\tilde xP\,(x^\top x)\,My.$$
+Now $x^\top x=\operatorname{diag}(x)$, the diagonal matrix with a single $1$ at the position of $x$, and $\operatorname{diag}(x)My=\operatorname{diag}(My)\,x^\top$ (both pick out the entry of the column $My$ at the position of $x$). So
+$$\PP(X_t=x\,|\,Y_t=y,X_{t-1}=\tilde x)\propto\tilde x\,P\operatorname{diag}(My)\,x^\top.$$
+In words: the row vector $\tilde xP\operatorname{diag}(My)$ is, up to normalisation, the posterior distribution of the new state. **Move with $P$, then weight each state by how likely it was to produce the observed $y$.** Since states are basis vectors, $\PP(X_t=x\,|\,A)=\E[X_t\,|\,A]\,x^\top$ for any event $A$, so the vector of posterior probabilities is $\E[X_t\,|\,\cdot\,]$.
+</role>
+
+<thm k="Proposition 5.16" nm="The Wonham filter" pg="59" it>
+For a Markov chain with $X_0\sim\mu_0$ observed through the emission matrix $M$, the posterior probability vector $\mu_t=\E[X_t\,|\,\{Y_s=y_s\}_{s\le t}]$ satisfies
+$$\mu_t\propto\mu_{t-1}\,P\operatorname{diag}(My_t).$$
+</thm>
+
+<pf>
+Condition on the previous state, using that given $X_{t-1}$, the pair $(X_t,Y_t)$ is independent of everything earlier:
+$$\begin{aligned}\mu_t&=\sum_{\tilde x}\PP\big(X_{t-1}=\tilde x\,\big|\,\{Y_s=y_s\}_{s\le t-1}\big)\,\E\big[X_t\,\big|\,X_{t-1}=\tilde x,Y_t=y_t\big]\\&\propto\sum_{\tilde x}(\mu_{t-1}\tilde x^\top)\,\tilde x\,P\operatorname{diag}(My_t)\\&=\mu_{t-1}\Big(\sum_{\tilde x}\operatorname{diag}(\tilde x)\Big)P\operatorname{diag}(My_t)=\mu_{t-1}P\operatorname{diag}(My_t),\end{aligned}$$
+since $(\mu_{t-1}\tilde x^\top)\tilde x=\mu_{t-1}\operatorname{diag}(\tilde x)$ and the $\operatorname{diag}(\tilde x)$ add up to the identity.[[Strictly the first line needs a little care with the normalisations, since the weights $\PP(X_{t-1}=\tilde x|\dots)$ condition on observations up to $t-1$ only, while the new observation $y_t$ also reweights them. Working with the unnormalised vectors $\PP(X_t=x,\{Y_s=y_s\}_{s\le t})$ throughout makes the recursion exact, and normalising at the end gives the proposition.]]
+</pf>
+
+<role r="reading" a="Proposition 5.16">
+
+It is a simple algorithm: start with $\mu_0$, and at each step multiply by $P\operatorname{diag}(My_t)$, renormalising whenever needed (for numerical stability).
+</role>
+
+<thm k="Example 5.17" d="A two-state example" pg="59">
+Let
+$$P=\begin{pmatrix}0.7&0.3\\0.4&0.6\end{pmatrix},\qquad M=\begin{pmatrix}0.9&0.1\\0.2&0.8\end{pmatrix}.$$
+We know $X_0$ is state $1$, and observe $Y=(1,2,2,1)$. The two update matrices are
+$$P\operatorname{diag}(Me_1)=\begin{pmatrix}0.63&0.06\\0.36&0.12\end{pmatrix},\qquad P\operatorname{diag}(Me_2)=\begin{pmatrix}0.07&0.24\\0.04&0.48\end{pmatrix}.$$
+Multiplying and renormalising:
+
+<table class="bt"><thead><tr><th>time</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th></tr></thead><tbody><tr><td>observation</td><td></td><td>1</td><td>2</td><td>2</td><td>1</td></tr><tr><td>unnormalised, state 1</td><td>1</td><td>0.63</td><td>0.0465</td><td>0.0105</td><td>0.0417</td></tr><tr><td>unnormalised, state 2</td><td>0</td><td>0.06</td><td>0.18</td><td>0.0976</td><td>0.0123</td></tr><tr><td>posterior, state 1</td><td>1</td><td>0.91</td><td>0.21</td><td>0.10</td><td>0.77</td></tr><tr><td>posterior, state 2</td><td>0</td><td>0.09</td><td>0.79</td><td>0.90</td><td>0.23</td></tr></tbody></table>
+</thm>
+<role r="reading" a="Example 5.17">
+
+Each observation pulls the estimate towards the state that tends to emit it ($M$ says state $1$ mostly emits $1$, state $2$ mostly $2$), while $P$ pulls towards wherever the chain tends to go. Figure 5.3 runs the filter for any observations.
+</role>
+
+<role r="question" a="the whole path, not just the present">
+
+The Wonham filter gives the best estimate of $X_t$ from observations up to time $t$. For decoding we usually want the whole path: the single most likely sequence $x_0,x_1,\dots,x_t$ given all the observations. These are different questions, and the answers can disagree.
+</role>
+
+<role r="technique" a="path probabilities multiply">
+
+The same Bayes step, applied to whole paths, says that extending a path by one step multiplies its posterior probability by the factor for that step:
+$$#eq5-3-1 \PP\big(\{X_s=x_s\}_{s\le t}\,\big|\,\{Y_s=y_s\}_{s\le t}\big)\propto\big(x_{t-1}P\operatorname{diag}(My_t)x_t^\top\big)\,\PP\big(\{X_s=x_s\}_{s<t}\,\big|\,\{Y_s=y_s\}_{s<t}\big), \tag{5.3.1}$$
+with a constant independent of the path. So the best path ending in $x$ at time $t$ must extend the best path ending in some state at time $t-1$: dynamic programming.
+</role>
+
+<thm k="Proposition 5.18" nm="The Viterbi algorithm" pg="60" it>
+For each state $x$, let
+$$\pi_t^x=\max_{\{x_s\}_{s<t}}\PP\big(\{X_s=x_s\}_{s<t},X_t=x\,\big|\,\{Y_s=y_s\}_{s\le t}\big)$$
+be the highest posterior probability of a path ending in $x$ at time $t$, and $\chi_t^x=(x_0,\dots,x_{t-1},x)$ a path achieving it. Then $\chi_0^x=(x)$, $\pi_0^x=\mu_0x^\top$, and
+$$\pi_t^x\propto\max_{z\in\X}\big(zP\operatorname{diag}(My_t)x^\top\big)\pi_{t-1}^z,\qquad\chi_t^x=(\chi_{t-1}^{\tilde x},x),$$
+where $\tilde x$ is a $z$ achieving the maximum, and the constant of proportionality doesn't depend on the path.
+</thm>
+<role r="reading" a="Proposition 5.18">
+
+Compare with the Wonham filter: the filter **sums** over the previous state ($\mu_{t-1}P\operatorname{diag}(My_t)$ adds up all ways of arriving), while Viterbi **maximises** over it and remembers which previous state won. At the end, pick the state with the largest $\pi_t^x$ and read off its path. The cost is $O(t|\X|^2)$, instead of the $|\X|^t$ paths a brute-force search would compare.
+</role>
+
+<thm k="Example 5.19" d="Viterbi on the same example" pg="61">
+With the setup of Example 5.17, at time $1$ (observation $1$, from state $1$ only, since $\pi_0=(1,0)$):
+$$\pi_1^1=0.63,\ \chi_1^1=(1,1);\qquad\pi_1^2=0.06,\ \chi_1^2=(1,2).$$
+At time $2$ (observation $2$):
+$$\begin{aligned}\pi_2^1&=\max\{0.07\times0.63,\ 0.04\times0.06\}=\max\{0.0441,0.0024\}=0.0441,&\chi_2^1&=(1,1,1),\\\pi_2^2&=\max\{0.24\times0.63,\ 0.48\times0.06\}=\max\{0.1512,0.0288\}=0.1512,&\chi_2^2&=(1,1,2).\end{aligned}$$
+Continuing,
+
+<table class="bt"><thead><tr><th>time</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th></tr></thead><tbody><tr><td>$\pi^1$</td><td>1</td><td>0.63</td><td>0.0441</td><td>0.00605</td><td>0.0261</td></tr><tr><td>$\pi^2$</td><td>0</td><td>0.06</td><td>0.1512</td><td>0.0726</td><td>0.00871</td></tr><tr><td>$\chi^1$</td><td>(1)</td><td>(1,1)</td><td>(1,1,1)</td><td>(1,1,2,1)</td><td>(1,1,2,2,1)</td></tr><tr><td>$\chi^2$</td><td>(2)</td><td>(1,2)</td><td>(1,1,2)</td><td>(1,1,2,2)</td><td>(1,1,2,2,2)</td></tr></tbody></table>
+
+The most likely path is $(1,1,2,2,1)$.
+</thm>
+<role r="caution" a="corrections to Example 5.19">
+
+The notes write "min" in the recursion; it should be **max**, as in Proposition 5.18 (their numbers do take the maximum). Their entry $\pi_4^1=0.0043$ is an arithmetic slip: from state $2$ it is $0.36\times0.0726=0.0261$, and from state $1$ only $0.63\times0.00605=0.0038$. The path $\chi_4^1=(1,1,2,2,1)$ they give is consistent with the corrected value. With it, the notes' closing remark, that "the most likely path does not end with the most likely state at time $4$", doesn't hold for this example: both the filter ($0.77$) and Viterbi ($0.0261>0.0087$) favour state $1$ at time $4$. The general point is still true, since the two questions differ; For an example, make both states sticky and the channel noisier: with $P=\begin{pmatrix}0.9&0.1\\0.1&0.9\end{pmatrix}$, $M=\begin{pmatrix}0.8&0.2\\0.2&0.8\end{pmatrix}$, $X_0=1$ and observations $(2,1,2,1,2)$, the filter puts probability $0.58$ on state $2$ at the end, but the most likely path is $(1,1,1,1,1,1)$, never leaving state $1$. Alternating observations are best explained as noise, since every switch of state costs a factor $0.1$; but for the final state alone, the last observation tips the balance. Figure 5.3 has this as a preset.
+</role>
+
+@@it-fig5-3@@
+
+<role r="aside" a="Viterbi in practice">
+
+As stated, the algorithm keeps $|\X|$ whole paths in memory. But for an ergodic chain the state at time $t$ has little influence on the best value of $x_s$ for $s\ll t$, so the early parts of all the $\chi_t^x$ soon agree. Those values will never change and can be output and forgotten. The Viterbi algorithm is ubiquitous: in mobile phones, satellite links, speech recognition and DNA sequence analysis. The challenge in applications is that it needs the transition matrix, the codeword structure and the emission matrix; often these must be estimated from limited data, which leads into the large field of **stochastic filtering**.
+</role>

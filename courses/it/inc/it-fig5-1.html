@@ -1,0 +1,12 @@
+<figure class="wide" id="fig5-1">
+  <div class="fig-body">
+    <svg id="it-mc-svg" class="pt" viewBox="0 0 720 330" role="img" aria-label="A two-state Markov chain, a sample path, and how the entropy per symbol converges to the entropy rate."></svg>
+    <div class="controls">
+      <label class="grow" for="it-mc-a">\(\alpha\) = P(a → b) <input type="range" id="it-mc-a" min="0.01" max="0.99" step="0.01" value="0.1"> <output id="it-mc-av"></output></label>
+      <label class="grow" for="it-mc-b">\(\beta\) = P(b → a) <input type="range" id="it-mc-b" min="0.01" max="0.99" step="0.01" value="0.1"> <output id="it-mc-bv"></output></label>
+      <button id="it-mc-new" class="ghost">new sample</button>
+    </div>
+    <div class="readout" id="it-mc-out" aria-live="polite"></div>
+  </div>
+  <figcaption><span class="figtag">Figure 5.1</span>The two-state chain of Example 5.9, started in its stationary distribution. Top: a sample path. Bottom: \(\frac1nH(X_1,\dots,X_n)=\frac1n\big[H(\mu)+(n-1)H(X)\big]\) falls from \(H(X_1)=H(\mu)\) towards the entropy rate \(H(X)\). Sticky chains (small \(\alpha,\beta\)) look like fair coins one symbol at a time but are very predictable given the past.</figcaption>
+</figure>

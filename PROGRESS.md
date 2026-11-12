@@ -48,8 +48,14 @@ Everything ships as ONE artifact (both courses), notes stored in the artifact's 
       gtDrawFSM automata, gtRun). Corrections to the slides are sidenotes (folk theorem minmax vs maximin, finite PD
       "dominant", NE uniqueness, discounted-sum index, SEP typo, v̄/v̲ swap, TFT head-to-head, Hawk-Dove baseline fitness).
 
+- [x] Information Theory Chapters 4–5 (channel capacity, Shannon's second theorem with full proof, Hamming codes;
+      entropy rate, Markov chains, source–channel separation, Wonham filter, Viterbi), 6 figures (it-fig4-1..3,
+      it-fig5-1..3), maps. Corrections as sidenotes, notably Example 5.19 (min→max, π₄¹ = 0.0261 not 0.0043, so the
+      notes' "path disagrees with final state" remark fails there; a disagreeing preset is in Fig 5.3). The notes have
+      no problem sheet for Chapters 4–5.
+
 ## Ideas not done yet
-- PMM Chapters 6–7 (martingales, applications); CLT Chapters 6–9; IT Chapters 4–5.
+- PMM Chapters 6–7 (martingales, applications); CLT Chapters 6–9.
 - GT timeline (Fig 1.1) and automata figure are small on phones; could switch to a vertical layout under 560px.
 - An independent read-through of the CLT chapters for maths slips (the PMM chapters had one).
 - Mobile check of every figure at 390px.

@@ -1,0 +1,12 @@
+<figure class="wide" id="fig4-1">
+  <div class="fig-body">
+    <svg id="it-ch-svg" class="pt" viewBox="0 0 720 300" role="img" aria-label="A binary channel drawn as arrows from inputs to outputs, and the mutual information as a function of the input distribution, with the capacity marked."></svg>
+    <div class="controls">
+      <span class="btn-row" role="group" aria-label="channel" id="it-ch-btns"></span>
+      <label class="grow" for="it-ch-q">noise q <input type="range" id="it-ch-q" min="0" max="1" step="0.01" value="0.1"> <output id="it-ch-qv"></output></label>
+      <label class="grow" for="it-ch-pi">P(X = 1) <input type="range" id="it-ch-pi" min="0" max="1" step="0.01" value="0.3"> <output id="it-ch-piv"></output></label>
+    </div>
+    <div class="readout" id="it-ch-out" aria-live="polite"></div>
+  </div>
+  <figcaption><span class="figtag">Figure 4.1</span>Three binary channels. Left: each input’s arrows, thickness proportional to probability. Right: \(I(X;Y)\) as a function of the input distribution \(\pi=\PP(X=1)\); its highest point is the capacity. For the symmetric channels the best input is uniform; for the Z-channel, where only \(1\)s get corrupted, it pays to send fewer \(1\)s.</figcaption>
+</figure>

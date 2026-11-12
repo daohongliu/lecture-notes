@@ -1,0 +1,8 @@
+<figure class="wide" id="fig4-3">
+  <div class="fig-body">
+    <svg id="it-hm-svg" class="pt" viewBox="0 0 720 330" role="img" aria-label="The Hamming 7,4 code drawn as three overlapping circles; click bits to flip them and watch the syndrome locate the error."></svg>
+    <div class="controls"><span class="btn-row" id="it-hm-data" aria-label="message bits"></span><span class="btn-row"><button id="it-hm-clear" class="ghost">no noise</button></span></div>
+    <div class="readout" id="it-hm-out" aria-live="polite"></div>
+  </div>
+  <figcaption><span class="figtag">Figure 4.3</span>The \([7,4,3]\) Hamming code of Example 4.27. Each circle is one row of \(H\): its four bits must have even parity. Set the message with the buttons; click any bit in the picture to flip it in transit. The circles whose parity fails give the syndrome, which points at exactly one bit, and the decoder flips it back. Flip two bits and the decoder confidently "corrects" the wrong one: distance \(3\) corrects one error, not two.</figcaption>
+</figure>

@@ -1,0 +1,424 @@
+@num 4
+@title Channel Coding: Shannon’s Second Theorem
+@titlehtml Channel coding: <em>Shannon’s second theorem</em>
+@pages 37–50
+@dek Sending messages through noise. Every channel has a capacity, a number of bits per use, and Shannon proved that any rate below it can be sent with as small an error as you like, while no rate above it can. Then the practical side: how to build codes that correct errors, starting with Hamming’s.
+---
+## 4.1 Discrete memoryless channels {37} [d1 i3]
+<role r="question" a="what if the wire is noisy?">
+
+Chapters 2 and 3 were about **storing** information: how few bits are needed to describe a source. Now the problem is **transmitting** it, from one place to another, through a medium that makes mistakes: a radio link with interference, a scratched disc, a memory chip hit by a cosmic ray. The model of such a medium is a **channel**: you put a symbol in, and a possibly different symbol comes out, at random.
+</role>
+
+<thm k="Definition 4.1" nm="Discrete memoryless channel" pg="37">
+A **discrete memoryless channel** (DMC) is a triple $(\X,M,\mathcal Y)$ consisting of
+
+<ul><li>a finite set $\X$, the **input alphabet**;</li><li>a finite set $\mathcal Y$, the **output alphabet**;</li><li>a stochastic $|\X|\times|\mathcal Y|$ matrix $M$, the **emission matrix**. (Stochastic means the entries are non-negative and each row sums to $1$.)</li></ul>
+
+A pair of random variables $X,Y$ on some probability space **realises** the DMC if the conditional distribution of $Y$ given $X$ is $M$: $M=\big(p_{Y|X}(y|x)\big)_{x\in\X,\,y\in\mathcal Y}$.
+</thm>
+<role r="reading" a="Definition 4.1">
+
+Row $x$ of $M$ is the distribution of what comes out when $x$ goes in. "Memoryless" will mean that when the channel is used several times, each use behaves independently, with the same $M$: the noise on one symbol doesn't depend on what happened to the others. The channel says nothing about how $X$ is chosen; that is up to the sender.
+</role>
+
+<thm k="Example 4.2" d="A lossless channel" pg="37">
+Take $\X=\{0,1\}$, $\mathcal Y=\{a,b,c,d,e\}$ and
+$$M=\begin{pmatrix}0.2&0&0.5&0&0.3\\0&0.2&0&0.8&0\end{pmatrix}.$$
+The output is random, but it always identifies the input: $b$ or $d$ means $1$ went in, and $a$, $c$ or $e$ means $0$. A channel is **lossless** if $\mathcal Y$ splits into disjoint sets $\mathcal Y_1,\dots,\mathcal Y_{|\X|}$ with $\PP(Y\in\mathcal Y_i\,|\,X=x_i)=1$ for every $i$. Then $X$ is a function of $Y$, so $H(X|Y)=0$ by part 2 of Theorem 1.19.
+</thm>
+<role r="setup" a="the two extremes">
+
+At the other extreme is a **useless** channel, whose output carries no information about its input: $X$ and $Y$ are independent, which by the same part of Theorem 1.19 means $H(X|Y)=H(X)$. Real channels lie in between.
+</role>
+
+<thm k="Example 4.3" d="Three standard channels" pg="38">
+Let $q\in[0,1]$.
+
+<ol><li>The **binary symmetric channel** (BSC): $\X=\mathcal Y=\{0,1\}$, and each bit is flipped with probability $q$,
+$$M=\begin{pmatrix}1-q&q\\q&1-q\end{pmatrix}.$$</li><li>The **binary erasure channel** (BEC): $\X=\{0,1\}$, $\mathcal Y=\{0,e,1\}$, and each bit is erased (replaced by the symbol $e$) with probability $q$, but never flipped,
+$$M=\begin{pmatrix}1-q&q&0\\0&q&1-q\end{pmatrix}.$$</li><li>The **noisy typewriter**: $\X=\mathcal Y=\{A,\dots,Z\}$, and each letter comes out as itself, the next letter or the previous letter (cyclically, so $Z$ is followed by $A$), each with probability $\frac13$.</li></ol>
+</thm>
+
+## 4.2 Channel capacity {38} [d2 i3]
+<role r="idea" a="how much does the output tell you about the input?">
+
+A good channel is one whose output removes most of your uncertainty about its input. A lossless channel has $H(X|Y)=0$ and a useless one $H(X|Y)=H(X)$, so a natural measure of quality is the reduction in uncertainty,
+$$H(X)-H(X|Y)=I(X;Y),$$
+the mutual information of Chapter 1. But this depends on the input distribution, which the channel doesn't fix: for each choice of $p_X$ we get the output distribution and joint distribution
+$$p_Y(y)=\sum_xp_{Y|X}(y|x)\,p_X(x),\qquad p(x,y)=p_{Y|X}(y|x)\,p_X(x).$$
+The sender may choose $p_X$ as well as possible.
+</role>
+
+<thm k="Definition 4.4" nm="Channel capacity" pg="39">
+The **capacity** of a DMC $(\X,M,\mathcal Y)$ is
+$$C=\sup_{p_X}I(X;Y),$$
+the supremum over all input distributions $p_X$ on $\X$.
+</thm>
+<role r="reading" a="Definition 4.4">
+
+Since $I(X;Y)=H(X)-H(X|Y)\le H(X)\le\log|\X|$, and symmetrically $I(X;Y)=H(Y)-H(Y|X)\le\log|\mathcal Y|$, Theorem 1.19 gives
+$$0\le C\le\min\{\log|\X|,\log|\mathcal Y|\}.$$
+A channel can't carry more bits per use than its input or output symbols can hold. For now $C$ is just a number attached to the channel; Shannon's theorem (Section 4.4) gives it its operational meaning, as the largest rate at which messages can be sent reliably.
+</role>
+
+<thm k="Proposition 4.5" d="Mutual information is concave in the input, convex in the channel" pg="39" it>
+For fixed $p_{Y|X}$, the map $p_X\mapsto I(X;Y)$ is concave. For fixed $p_X$, the map $p_{Y|X}\mapsto I(X;Y)$ is convex.
+</thm>
+
+<pf>
+**Concave in the input.** Write $I(X;Y)=H(Y)-H(Y|X)$. With $p_{Y|X}$ fixed:
+
+<ul><li>$H(Y|X)=\sum_xp_X(x)H(Y|X=x)$, and each $H(Y|X=x)$ depends only on row $x$ of $M$, so $H(Y|X)$ is **linear** in $p_X$;</li><li>$p_Y=p_XM$ is linear in $p_X$, and $H(Y)$ is concave in $p_Y$ (part 6 of Theorem 1.19), so $H(Y)$ is concave in $p_X$ (a concave function of a linear map is concave).</li></ul>
+
+A concave function minus a linear one is concave.
+
+**Convex in the channel.** Write $I(X;Y)=D(p_{X,Y}\|p_Xp_Y)$. With $p_X$ fixed, $p_{X,Y}(x,y)=p_X(x)p_{Y|X}(y|x)$ is linear in $p_{Y|X}$, and so is $p_X(x)p_Y(y)=p_X(x)\sum_{x'}p_X(x')p_{Y|X}(y|x')$.[[The notes say "linear in $p_X$" here; the point is linearity in $p_{Y|X}$, with $p_X$ fixed.]] Divergence is jointly convex in its two arguments (part 5 of Theorem 1.16), and a convex function of a linear map is convex.
+</pf>
+
+<thm k="Remark 4.6" d="The maximum is attained" pg="39">
+Since $p_X\mapsto I(X;Y)$ is concave and continuous, and $p_X$ ranges over a compact set (the probability vectors on $\X$), the supremum in the definition of capacity is a maximum, attained by some input distribution. It can usually be found from a first-order condition.
+</thm>
+<role r="caution" a="Remark 4.6">
+
+The notes also say the maximum is "unique". The maximum **value** is, of course; but a concave function can have a flat top, so the **maximising $p_X$** need not be unique.[[For a BSC with $q=\frac12$, every input distribution gives $I(X;Y)=0=C$.]] Any maximiser will do.
+</role>
+
+<thm k="Example 4.7" d="Capacity of the binary symmetric channel" pg="39">
+For the BSC with flip probability $q$, write $H(q)=-q\log q-(1-q)\log(1-q)$ for the binary entropy. Given $X=x$, the output is either $x$ or the other bit, with probabilities $1-q$ and $q$, so $H(Y|X=x)=H(q)$ for both inputs. Then
+$$\begin{aligned}I(X;Y)&=H(Y)-H(Y|X)\\&=H(Y)-\sum_{x}p_X(x)\,H(Y|X=x)\\&=H(Y)-H(q)\\&\le1-H(q),\end{aligned}$$
+because $Y$ is a bit, so $H(Y)\le1$, with equality iff $Y$ is uniform. Now
+$$p_Y(0)=(1-q)\,p_X(0)+q\,p_X(1),$$
+so a uniform input gives a uniform output, and the bound is attained:
+$$C=1-H(q).$$
+</thm>
+<role r="reading" a="Example 4.7">
+
+Each use of the channel would carry one bit if it were noiseless; the noise costs exactly $H(q)$ bits, the uncertainty in whether a flip happened. At $q=0$ or $q=1$ the capacity is $1$ (a channel that always flips is as good as one that never does: just flip back). At $q=\frac12$ it is $0$: the output is a fair coin whatever goes in. The notes say $p_Y(0)=\frac12$ iff $p_X(0)=\frac12$; that holds for $q\ne\frac12$, and at $q=\frac12$ every input gives a uniform output.
+</role>
+
+<thm k="Example 4.8" d="Capacity of the binary erasure channel" pg="40">
+For the BEC with erasure probability $q$, let $\pi=\PP(X=1)$. The output distribution is
+$$p_Y(0)=(1-\pi)(1-q),\qquad p_Y(e)=q,\qquad p_Y(1)=\pi(1-q).$$
+Expanding the logarithms,
+$$\begin{aligned}H(Y)&=-(1-\pi)(1-q)\log\big((1-\pi)(1-q)\big)-q\log q-\pi(1-q)\log\big(\pi(1-q)\big)\\&=-(1-q)\big[(1-\pi)\log(1-\pi)+\pi\log\pi\big]-(1-q)\log(1-q)-q\log q\\&=(1-q)H(\pi)+H(q).\end{aligned}$$
+Given $X$, the output is erased or not with probabilities $q$ and $1-q$, so $H(Y|X)=H(q)$. Hence
+$$I(X;Y)=(1-q)H(\pi),$$
+which is maximised by $\pi=\frac12$, giving
+$$C=1-q.$$
+</thm>
+<role r="reading" a="Example 4.8">
+
+This one has a satisfying interpretation. A fraction $q$ of the bits are lost, and the receiver *knows which ones*. If the sender also knew, she could simply resend them; the capacity says she can do just as well without knowing. Compare the BSC: for the same $q$, flips are worse than erasures, $1-H(q)<1-q$ for $0<q<\frac12$, because the receiver doesn't know where the damage is.
+</role>
+
+@@it-fig4-1@@
+
+<pause n="The noisy typewriter" q="What is the capacity of the noisy typewriter of Example 4.3? Can you see a way to use it with no errors at all?">
+Given $X$, the output is one of three letters, equally likely, so $H(Y|X)=\log3$ whatever the input. Then $I(X;Y)=H(Y)-\log3\le\log26-\log3=\log\frac{26}3$, with equality when $Y$ is uniform, which happens when $X$ is uniform. So $C=\log\frac{26}{3}\approx3.12$ bits. And it can nearly be achieved with zero error: use only the $8$ letters $A,D,G,J,M,P,S,V$, every third letter, stopping before the wraparound so that $V$'s outputs $U,V,W$ don't meet $A$'s outputs $Z,A,B$. The possible outputs of different inputs are disjoint, so the receiver always knows what was sent. That gives $\log8=3$ bits per use, close to capacity. Shannon's theorem says how to close the remaining gap: with long blocks, and a vanishing (but not zero) error.
+</pause>
+
+## 4.3 Channel codes, rates and errors {40} [d1 i3]
+<role r="setup" a="encode, send, decode">
+
+We want to send one of a fixed set of messages reliably, and we may use the channel several times. So we need an **encoder** that turns the message into a string of input symbols, and a **decoder** that turns the received string of output symbols back into a message, wrong only with small probability. (Notice that $\X$ now means the channel's input alphabet, not the source alphabet of earlier chapters.)
+</role>
+
+<thm k="Definition 4.9" nm="Channel code" pg="40">
+Fix $m,n\ge1$. An **$(m,n)$-channel code** for a DMC $(\X,M,\mathcal Y)$ is a pair $(c,d)$ of maps
+$$c:\{1,\dots,m\}\to\X^n\quad(\text{the encoder}),\qquad d:\mathcal Y^n\to\{1,\dots,m\}\quad(\text{the decoder}).$$
+$\{1,\dots,m\}$ is the **message set**, $c(i)$ the **codeword** of message $i$, and $\{c(i):1\le i\le m\}$ the **codebook**.
+</thm>
+<role r="reading" a="Definition 4.9">
+
+So an $(m,n)$-code sends one of $m$ messages using the channel $n$ times.
+</role>
+
+<thm k="Definition 4.10" nm="Rate" pg="41">
+The (binary) **rate** of an $(m,n)$-channel code is
+$$\rho(c,d)=\frac1n\log m.$$
+</thm>
+<role r="reading" a="Definition 4.10">
+
+A message from a set of size $m$ is worth $\log m$ bits (write it in binary). It takes $n$ channel uses, so the rate is the number of bits of information sent **per channel use**.
+</role>
+
+<thm k="Definition 4.12" nm="Probabilities of error" pg="41">
+Let $(c,d)$ be an $(m,n)$-channel code for a DMC. For each message $i$, the probability of an error when $i$ is sent is
+$$\varepsilon_i=\PP\big(d(\mathbf Y)\ne i\,\big|\,\mathbf X=c(i)\big),$$
+where $\mathbf X=(X_1,\dots,X_n)$, $\mathbf Y=(Y_1,\dots,Y_n)$, and the pairs $(X_j,Y_j)$ are i.i.d. copies of a pair realising the DMC. The code has
+
+<ol><li>**maximal error** $\varepsilon_{\max}=\max_{1\le i\le m}\varepsilon_i$;</li><li>**average error** $\bar\varepsilon=\frac1m\sum_{i=1}^m\varepsilon_i$.</li></ol>
+</thm>
+<role r="reading" a="Definition 4.12">
+
+The i.i.d. pairs say the channel is **memoryless**: given the inputs, each output symbol is drawn from its row of $M$ independently of all the others. In applications $\varepsilon_{\max}$ is what matters: you want *every* message to get through. The average $\bar\varepsilon\le\varepsilon_{\max}$ is the error when the message is chosen uniformly at random. It turns out to be much easier to bound, and a good bound on $\bar\varepsilon$ gives a good bound on $\varepsilon_{\max}$ after throwing away the worst messages, which is how the proof of Shannon's theorem goes.
+</role>
+
+<role r="why" a="the tradeoff everyone believed in">
+
+A **repetition code** already makes the error as small as you like: send each bit $k$ times, and decode by majority vote. But its rate is $\frac1k\to0$. So the real question is the tradeoff between rate and error: which points in the $(\varepsilon_{\max},R)$ plane can be reached? Before Shannon, it was widely believed that pushing the error to zero must push the rate to zero too. Figure 4.2 shows why that is plausible for simple codes, and how wrong it is.
+</role>
+
+@@it-fig4-2@@
+
+## 4.4 Shannon’s second theorem: noisy channel coding {41} [d3 i3]
+
+<thm k="Definition 4.14" nm="Achievable rate" pg="41">
+A rate $R>0$ is **achievable** for a DMC if for every $\varepsilon>0$ there are $m,n$ and an $(m,n)$-channel code $(c,d)$ with
+$$\rho(c,d)>R-\varepsilon\qquad\text{and}\qquad\varepsilon_{\max}<\varepsilon.$$
+</thm>
+<role r="reading" a="Definition 4.14">
+
+There are codes with rates approaching $R$ whose maximal errors approach $0$. It is not at all obvious that any positive rate is achievable.
+</role>
+
+<thm k="Theorem 4.15" nm="Shannon’s second theorem: noisy channel coding" pg="42" it>
+Let $(\X,M,\mathcal Y)$ be a DMC with capacity $C$. A rate $R>0$ is achievable iff $R\le C$.
+</thm>
+<role r="reading" a="Theorem 4.15">
+
+This is the major result of communication theory, and arguably of the whole subject. Every channel has a speed limit $C$, computable for the important channels (Section 4.2). Below it, communication can be made as reliable as you want, without slowing down; above it, errors can't be avoided. The usual analogy is a water pipe: pump water through faster than its capacity and the pipe bursts and water is lost.
+</role>
+
+<role r="idea" a="the counting argument">
+
+Here is the heuristic, which the proof makes rigorous. Send long blocks of length $n$, with the input symbols drawn i.i.d. from a distribution $p_X$.
+
+<ul><li>By the AEP (Chapter 2), the output $\mathbf Y$ is almost always one of about $2^{nH(Y)}$ **typical** output sequences.</li><li>For a given input $\mathbf x$, the noise spreads the output over about $2^{nH(Y|X)}$ sequences: those $\mathbf y$ for which $(\mathbf x,\mathbf y)$ looks typical for the joint distribution. Call this the **fan** of $\mathbf x$.</li><li>To decode reliably, the fans of different codewords mustn't overlap. Each fan has size $2^{nH(Y|X)}$ inside a space of size $2^{nH(Y)}$, so at most
+$$\frac{2^{nH(Y)}}{2^{nH(Y|X)}}=2^{n(H(Y)-H(Y|X))}=2^{nI(X;Y)}$$
+codewords fit.</li></ul>
+
+That many codewords gives rate $\frac1n\log2^{nI(X;Y)}=I(X;Y)$ bits per use, and choosing $p_X$ to maximise $I(X;Y)$ gives $C$. The surprise in Shannon's proof is how to find codewords whose fans don't overlap: **choose them at random**.
+</role>
+
+<thm k="Definition 4.16" nm="Jointly typical sequences" pg="42">
+Let $(X,Y)$ be an $\X\times\mathcal Y$-valued random variable with pmf $p_{X,Y}$. For $n\in\N$ and $\varepsilon>0$, the set of **jointly typical sequences** of length $n$ and tolerance $\varepsilon$ is the set $J_\varepsilon^{(n)}$ of pairs $(\mathbf x,\mathbf y)\in\X^n\times\mathcal Y^n$ such that all three of
+$$\Big|-\tfrac1n\log p_{X,Y}(\mathbf x,\mathbf y)-H(X,Y)\Big|,\qquad\Big|-\tfrac1n\log p_X(\mathbf x)-H(X)\Big|,\qquad\Big|-\tfrac1n\log p_Y(\mathbf y)-H(Y)\Big|$$
+are less than $\varepsilon$. Here $p_X(\mathbf x)=\prod_ip_X(x_i)$, and similarly for the others.
+</thm>
+<role r="reading" a="Definition 4.16">
+
+Each sequence is typical on its own (Definition 2.11), and the pair is typical for the joint distribution. Being jointly typical is how the decoder will recognise "this output could plausibly have come from that input".
+</role>
+
+<thm k="Theorem 4.17" nm="Joint AEP" pg="42" it>
+Let $(X_i,Y_i)$, $i=1,\dots,n$, be i.i.d. copies of $(X,Y)$ (so $X_i$ and $Y_i$ may be dependent, but different $i$ are independent), with $\mathbf X=(X_1,\dots,X_n)$ and $\mathbf Y=(Y_1,\dots,Y_n)$. Let $(\mathbf X',\mathbf Y')$ be similar but with $X_i'$ and $Y_i'$ **independent**, with the same marginals as $X_i$ and $Y_i$. Then for $\varepsilon>0$:
+
+<ol><li>$\lim_{n\to\infty}\PP\big((\mathbf X,\mathbf Y)\in J_\varepsilon^{(n)}\big)=1$;</li><li>$|J_\varepsilon^{(n)}|\le2^{n(H(X,Y)+\varepsilon)}$ for every $n$;</li><li>for all $n$ large enough,
+$$(1-\varepsilon)\,2^{-n(I(X;Y)+3\varepsilon)}\le\PP\big((\mathbf X',\mathbf Y')\in J_\varepsilon^{(n)}\big)\le2^{-n(I(X;Y)-3\varepsilon)},$$
+and the upper bound holds for every $n\ge1$.</li></ol>
+</thm>
+<role r="reading" a="Theorem 4.17">
+
+Parts 1 and 2 are the AEP again, for pairs. Part 3 is the new idea. If you pick an input and an output **independently**, the chance that they happen to look like a matching pair is about $2^{-nI(X;Y)}$, exponentially small whenever $I(X;Y)>0$. So a wrong codeword is very unlikely to be confused with the right one.
+</role>
+
+<pf>
+**Part 1.** By the weak law of large numbers (as in Theorem 2.10), since $-\frac1n\log p_X(\mathbf X)=\frac1n\sum_{i=1}^n\big(-\log p_X(X_i)\big)$ is an average of i.i.d. terms with mean $H(X)$,
+$$-\tfrac1n\log p_X(\mathbf X)\to H(X)\quad\text{in probability},$$
+and similarly for $\mathbf Y$ and for the pair. Given $\varepsilon'>0$, there are $n_1,n_2,n_3$ such that each of the three conditions in Definition 4.16 fails with probability less than $\frac{\varepsilon'}3$ for $n\ge n_1,n_2,n_3$ respectively. By the union bound, for $n\ge\max(n_1,n_2,n_3)$,
+$$\PP\big((\mathbf X,\mathbf Y)\notin J_\varepsilon^{(n)}\big)\le\varepsilon'.$$
+
+**Part 2.** Every jointly typical pair has $p_{X,Y}(\mathbf x,\mathbf y)\ge2^{-n(H(X,Y)+\varepsilon)}$, so
+$$1=\sum_{\X^n\times\mathcal Y^n}p_{X,Y}(\mathbf x,\mathbf y)\ge\sum_{J_\varepsilon^{(n)}}p_{X,Y}(\mathbf x,\mathbf y)\ge|J_\varepsilon^{(n)}|\,2^{-n(H(X,Y)+\varepsilon)}.$$
+
+**Part 3, upper bound.** The independent pair has pmf $p_X(\mathbf x)p_Y(\mathbf y)$. On $J_\varepsilon^{(n)}$, $p_X(\mathbf x)\le2^{-n(H(X)-\varepsilon)}$ and $p_Y(\mathbf y)\le2^{-n(H(Y)-\varepsilon)}$, so with part 2,
+$$\begin{aligned}\PP\big((\mathbf X',\mathbf Y')\in J_\varepsilon^{(n)}\big)&=\sum_{J_\varepsilon^{(n)}}p_X(\mathbf x)\,p_Y(\mathbf y)\\&\le2^{n(H(X,Y)+\varepsilon)}\cdot2^{-n(H(X)-\varepsilon)}\cdot2^{-n(H(Y)-\varepsilon)}\\&=2^{-n(H(X)+H(Y)-H(X,Y)-3\varepsilon)}=2^{-n(I(X;Y)-3\varepsilon)},\end{aligned}$$
+using $I(X;Y)=H(X)+H(Y)-H(X,Y)$.
+
+**Part 3, lower bound.** By part 1, $\PP\big((\mathbf X,\mathbf Y)\in J_\varepsilon^{(n)}\big)\ge1-\varepsilon$ for large $n$, and each term is at most $2^{-n(H(X,Y)-\varepsilon)}$, so
+$$1-\varepsilon\le\sum_{J_\varepsilon^{(n)}}p_{X,Y}(\mathbf x,\mathbf y)\le|J_\varepsilon^{(n)}|\,2^{-n(H(X,Y)-\varepsilon)},$$
+that is, $|J_\varepsilon^{(n)}|\ge(1-\varepsilon)2^{n(H(X,Y)-\varepsilon)}$. Now repeat the upper bound computation with the inequalities reversed: $p_X(\mathbf x)\ge2^{-n(H(X)+\varepsilon)}$ and $p_Y(\mathbf y)\ge2^{-n(H(Y)+\varepsilon)}$ on $J_\varepsilon^{(n)}$, so
+$$\PP\big((\mathbf X',\mathbf Y')\in J_\varepsilon^{(n)}\big)\ge(1-\varepsilon)\,2^{n(H(X,Y)-\varepsilon)}\,2^{-n(H(X)+\varepsilon)}\,2^{-n(H(Y)+\varepsilon)}=(1-\varepsilon)\,2^{-n(I(X;Y)+3\varepsilon)}.$$
+</pf>
+
+<role r="roadmap" a="the proof of Shannon’s theorem">
+
+The proof has two halves. **Achievability** ($R\le C$ can be reached) builds a random code, shows its error is small on average over the randomness, concludes some fixed code is good on average over messages, and then throws away the worse half of the messages to control the maximal error. **The converse** ($R>C$ can't) is a short chain of inequalities ending in Fano's inequality.
+</role>
+
+<pf h="Proof of Theorem 4.15, achievability.">
+**Setup.** Let $p=p_X$ be an input distribution attaining $C=I(X;Y)$ (Remark 4.6). Fix $\varepsilon\in(0,\frac32C)$, so that $C-\frac23\varepsilon>0$, and let $m,n$ be large integers, to be chosen. Let $J=J_{\varepsilon/6}^{(n)}$ be the jointly typical set for $p_{X,Y}=p_{Y|X}p_X$.
+
+**Step 1a: a random code.** Build a random $(2m,n)$-code $(\mathcal C,\mathcal D)$:
+
+<ol><li>draw $2m$ codewords in $\X^n$ independently, each with i.i.d. entries from $p_X$;</li><li>encode message $i$ as the $i$-th codeword;</li><li>decode by **joint typicality**: on receiving $\mathbf Y$, if there is exactly one codeword $\mathbf X$ with $(\mathbf X,\mathbf Y)\in J$, output its message; otherwise (none, or more than one) output $2m$.</li></ol>
+
+**Step 1b: its error.** Imagine drawing the random code, then a message $W$ uniformly from $\{1,\dots,2m\}$, sending its codeword, and decoding to $\hat W$. Let $E_i$ be the event that codeword $i$ and the received $\mathbf Y$ are jointly typical. By symmetry of the construction, every message $i<2m$ has the same error probability, and message $2m$ has a smaller one (it is also the default output). So it is enough to bound the error when $W=1$. An error happens only if the right codeword fails to be jointly typical with the output, or some wrong codeword is. By the union bound,
+$$\PP(\hat W\ne1\,|\,W=1)\le\PP(E_1^c\,|\,W=1)+\sum_{i=2}^{2m}\PP(E_i\,|\,W=1).$$
+
+<ul><li>Codeword $1$ and $\mathbf Y$ are a genuine input–output pair, so by part 1 of the joint AEP, $\PP(E_1^c|W=1)<\frac\varepsilon6$ for large $n$.</li><li>For $i\ne1$, codeword $i$ was drawn independently of codeword $1$, hence of $\mathbf Y$. So $(\text{codeword }i,\mathbf Y)$ is an *independent* pair with the right marginals, and by part 3 of the joint AEP (with tolerance $\frac\varepsilon6$),
+$$\PP(E_i\,|\,W=1)\le2^{-n(I(X;Y)-3\varepsilon/6)}=2^{-n(C-\varepsilon/2)}.$$</li></ul>
+
+Adding up, with $2m-1<2m$ wrong codewords,
+$$\PP(\hat W\ne1\,|\,W=1)<\frac\varepsilon6+2m\cdot2^{-n(C-\varepsilon/2)}.$$
+
+**Choosing $m$ and $n$.** Take $m=\lfloor2^{n(C-2\varepsilon/3)}\rfloor$, so $2m\cdot2^{-n(C-\varepsilon/2)}\le2^{1-n\varepsilon/6}$, and take $n$ so large that $2^{1-n\varepsilon/6}<\frac\varepsilon3$ (and that the AEP bounds above hold). Then
+$$\PP(\hat W\ne W)<\frac\varepsilon6+\frac\varepsilon3=\frac\varepsilon2.$$
+The rate is $\frac1n\log(2m)\ge\frac1n\log2^{n(C-2\varepsilon/3)}=C-\frac{2\varepsilon}3$, using $2m\ge2^{n(C-2\varepsilon/3)}$ (true once $2^{n(C-2\varepsilon/3)}\ge1$).
+
+**Step 1c: a fixed code.** The error probability above is an average over the random code:
+$$\PP(\hat W\ne W)=\sum_{(c,d)}\PP\big(\hat W\ne W\,\big|\,(\mathcal C,\mathcal D)=(c,d)\big)\,\PP\big((\mathcal C,\mathcal D)=(c,d)\big)<\frac\varepsilon2.$$
+An average is at least its smallest term, so some fixed code $(c^*,d^*)$ has $\PP(\hat W\ne W\,|\,(c^*,d^*))<\frac\varepsilon2$. Since $W$ is uniform, this says the average error of $(c^*,d^*)$ is $\bar\varepsilon<\frac\varepsilon2$:
+$$\sum_{i=1}^{2m}\varepsilon_i<2m\cdot\frac\varepsilon2=m\varepsilon.$$
+
+**Step 1d: from average to maximal error.** Sort the messages by $\varepsilon_i$. If the better half (the $m$ messages with the smallest errors) contained one with $\varepsilon_i\ge\varepsilon$, then every message in the worse half would also have error $\ge\varepsilon$, and the worse half alone would contribute at least $m\varepsilon$ to the sum, a contradiction. So every message in the better half has $\varepsilon_i<\varepsilon$. Throw away the worse half: this leaves an $(m,n)$-code with
+$$\varepsilon_{\max}<\varepsilon\qquad\text{and rate}\qquad\frac1n\log m\ge C-\frac{2\varepsilon}3-\frac1n.$$
+For $n$ large the rate exceeds $C-\varepsilon$, so $C$ is achievable, and therefore so is every $R\le C$.
+</pf>
+
+<role r="caution" a="what was not shown">
+
+The proof shows a good code **exists**, but finding it, or even using it, is another matter (Section 4.5). Notice also the trick in step 1c: we never exhibit a good code, we show a random one is good on average, so some code must be at least average. This "probabilistic method" is one of Shannon's great legacies.
+</role>
+
+<pf h="Proof of Theorem 4.15, the converse.">
+Fix $\varepsilon>0$ and suppose that for arbitrarily large $n$ there is an $(m,n)$-code with
+$$#eq4-4-1 \frac{\log m}n>R-\varepsilon\qquad\text{and}\qquad\varepsilon_{\max}<\varepsilon. \tag{4.4.1}$$
+Let $W$ be uniform on $\{1,\dots,m\}$, sent as $\mathbf X=c(W)$, received as $\mathbf Y$ and decoded as $\hat W=d(\mathbf Y)$. Then
+$$\begin{aligned}\log m&=H(W)&&\why{$W$ is uniform}\\&=H(W|\hat W)+I(W;\hat W)\\&\le H(W|\hat W)+I(\mathbf X;\mathbf Y)&&\why{data processing: $W\to\mathbf X\to\mathbf Y\to\hat W$}\\&\le H(W|\hat W)+\sum_{i=1}^nI(X_i;Y_i)&&\why{memoryless channel, see below}\\&\le H(W|\hat W)+nC&&\why{definition of $C$}\\&<1+\bar\varepsilon\log m+nC.&&\why{Fano's inequality}\end{aligned}$$
+For the fourth line: $I(\mathbf X;\mathbf Y)=H(\mathbf Y)-H(\mathbf Y|\mathbf X)$. Since the channel is memoryless, given $\mathbf X$ the outputs are independent with $Y_i$ depending only on $X_i$, so $H(\mathbf Y|\mathbf X)=\sum_iH(Y_i|X_i)$; and $H(\mathbf Y)\le\sum_iH(Y_i)$ by the chain rule (part 3 of Theorem 1.19). Subtracting gives $I(\mathbf X;\mathbf Y)\le\sum_iI(X_i;Y_i)$.[[The notes cite only the information chain rule here; memorylessness is the essential ingredient, since for a channel with memory the inequality can fail.]] For the last line, Fano's inequality (Corollary 1.22) gives $H(W|\hat W)\le1+\PP(W\ne\hat W)\log m$, and $\PP(W\ne\hat W)=\bar\varepsilon$ because $W$ is uniform.
+
+Using $\bar\varepsilon\le\varepsilon_{\max}<\varepsilon$ and rearranging, $(1-\varepsilon)\log m<1+nC$, that is,
+$$#eq4-4-2 \frac{\log m}n<\frac{C+1/n}{1-\varepsilon}. \tag{4.4.2}$$
+With (4.4.1), $R-\varepsilon<\frac{C+1/n}{1-\varepsilon}$. Let $n\to\infty$ and then $\varepsilon\to0$: $R\le C$.
+</pf>
+
+<thm k="Remark 4.19" d="A lower bound on the error above capacity" pg="46">
+The same chain of inequalities, rearranged for $\bar\varepsilon$ instead, says that any code with rate $\rho(c,d)=\frac1n\log m$ has
+$$#eq4-4-3 \bar\varepsilon\ge1-\frac{1+nC}{\log m}=1-\frac{C+1/n}{\rho(c,d)}. \tag{4.4.3}$$
+For large $n$ the right side is close to $1-\frac C{\rho(c,d)}$, which is positive when the rate exceeds capacity.
+</thm>
+
+<thm k="Remark 4.20" d="The weak converse, and the strong one" pg="46">
+So above capacity the average error is bounded away from zero for large $n$. In fact it is positive for **every** $n$: if some code had $\bar\varepsilon=0$, concatenating $k$ copies of it would give an $(m^k,kn)$-code with the same rate and still zero error, contradicting (4.4.3) for $k$ large. This is the **weak converse**. The **strong converse** (not proved here) says much more: if $\frac1n\log m\ge C+\varepsilon$, then $\bar\varepsilon\to1$ as $n\to\infty$. Above capacity, communication fails almost completely.
+</thm>
+
+## 4.5 Channel codes {46} [d1 i2]
+<role r="question" a="how do we find a good code?">
+
+The theorem says good codes exist. How do we find one?
+
+<ul><li>**Search.** For fixed $n$ there are $|\X|^n$ possible codewords and about $|\X|^{mn}$ codebooks. At a rate near capacity, $m\approx|\X|^{nC}$, so there are about $|\X|^{n|\X|^{nC}}$ codebooks to search: doubly exponential, hopeless.</li><li>**Pick one at random**, as in the proof. For large $n$ it is likely to be good. But it is useless in practice: the encoder must store a table of $2^{nR+1}$ codewords, and the decoder must compare the output with all of them, both exponential in $n$.</li></ul>
+</role>
+<role r="history" a="fifty years to catch up">
+
+It took decades after Shannon's 1948 existence proof to find practical codes approaching capacity. Milestones are Justesen's codes (1972), turbo codes (Berrou et al., 1993) and the rediscovery of low-density parity-check codes (MacKay and Neal, 1997). All of them add **redundancy** in a structured way, so that a perturbed message can still be recovered. They fall into two families: **block codes**, which encode each block of information on its own (Hamming, Reed–Muller, Reed–Solomon, BCH codes), and **convolutional codes**, where each output also depends on earlier inputs. Finding good practical codes remains an active research area, and needs a lot of algebra.
+</role>
+
+## 4.6 Block linear codes {47} [d2 i2]
+<role r="idea" a="codewords as points in space">
+
+Hamming's idea is to think of codewords in $\{0,1\}^n$ as **points in a space** and spread them out, so that a few flipped bits leave a received word closer to the codeword that was sent than to any other. Take $|\X|=2$, and work in the vector space $\mathbb F_2^n$ over the field $\mathbb F_2=\{0,1\}$ with arithmetic mod $2$ (so $1+1=0$). The codeword $110$ is the vector $(1,1,0)\in\mathbb F_2^3$, a corner of the unit cube.
+</role>
+
+<thm k="Definition 4.21" nm="Hamming distance" pg="47">
+The **Hamming distance** between $\mathbf x,\mathbf y\in\mathbb F_2^n$ is the number of entries in which they differ. Equivalently it is $\sum_i|x_i-y_i|$, computed as an ordinary integer. The **Hamming weight** $|\mathbf x|$ is the distance from $\mathbf 0$, the number of $1$s in $\mathbf x$.
+</thm>
+<role r="reading" a="Definition 4.21">
+
+It is the number of bit flips needed to turn one word into the other. Formally it agrees with the $\ell^1$ distance, and with the *squared* Euclidean distance (since $|x_i-y_i|^2=|x_i-y_i|$ for bits), but we are not working over $\R$, so take such analogies with care.
+</role>
+
+<role r="payoff" a="distance d corrects fewer than d/2 errors">
+
+Suppose every two codewords are at distance at least $d$. If fewer than $\frac d2$ bits are flipped, that is at most $\lfloor\frac{d-1}2\rfloor$, the received word is still strictly closer to the codeword that was sent than to any other (by the triangle inequality), so decoding to the **nearest codeword** recovers it.[[The notes say "less than $\lfloor d/2\rfloor$ errors". For $d=3$ that would be $0$ errors; the correct count is fewer than $d/2$, i.e. up to $\lfloor(d-1)/2\rfloor$, which is $1$ for $d=3$.]] And up to $d-1$ errors can at least be **detected**, since they can't turn one codeword into another.
+</role>
+
+<role r="setup" a="linear codes">
+
+Suppose there are at most $2^k$ messages, written as vectors $\mathbf s\in\mathbb F_2^k$ (for instance by writing message numbers in binary). Encode by multiplication by a $k\times n$ **generator matrix** $G$ over $\mathbb F_2$:
+$$\mathbf w=\mathbf sG.$$
+The codewords form the set $\mathcal C=\{\mathbf sG:\mathbf s\in\mathbb F_2^k\}$, a $k$-dimensional subspace of $\mathbb F_2^n$ (if $G$ has rank $k$). $G$ is in **standard form** if $G=[I_k\,|\,P]$ for a $k\times(n-k)$ matrix $P$: then the codeword starts with the message itself, followed by $n-k$ check bits. Row operations on $G$ don't change $\mathcal C$, so we may use Gaussian elimination. Remember throughout: $1+1=0$.
+</role>
+
+<thm k="Definition 4.22" nm="[n,k,d] code" pg="48">
+A linear code as above, with codewords of length $n$, $2^k$ codewords, and minimum distance $d$ between distinct codewords, is an **$[n,k,d]_2$ code**.
+</thm>
+
+<thm k="Proposition 4.23" nm="Singleton bound" pg="48" it>
+Every $[n,k,d]_2$ code has $d\le n-k+1$. (Komamiya 1953, Joshi 1958; usually called the Singleton bound.)
+</thm>
+
+<pf>
+Delete the first $d-1$ entries of every codeword. Two distinct codewords differ in at least $d$ places, so they still differ in at least one of the remaining $n-d+1$ places: the shortened codewords are all distinct. There are $2^k$ of them, inside a set of $2^{n-d+1}$ strings, so $2^k\le2^{n-d+1}$, that is, $d\le n-k+1$.
+</pf>
+
+<role r="reading" a="Proposition 4.23">
+
+Each extra unit of distance costs at least one bit of message: redundancy can't be cheated.
+</role>
+
+<role r="setup" a="parity check matrices">
+
+An $(n-k)\times n$ matrix $H$ is a **parity check matrix** for $G$ if its kernel is the code: $\mathbf wH^\top=\mathbf 0$ exactly when $\mathbf w\in\mathcal C$. In particular $GH^\top=0$. If $G=[I_k\,|\,P]$ is in standard form, then
+$$H=[P^\top\,|\,I_{n-k}]$$
+is a parity check matrix (over $\mathbb F_2$, $-P^\top=P^\top$). Check: $GH^\top=I_kP+P\,I_{n-k}=P+P=0$. And $H$ has rank $n-k$ (it contains $I_{n-k}$), so by rank–nullity its kernel has dimension $k$, the same as $\mathcal C$, and so equals it. The point of $H$ is fast checking: $\mathbf w$ is a codeword iff $\mathbf wH^\top=\mathbf 0$, and for a received word the vector $\mathbf wH^\top$, called the **syndrome**, says what went wrong.
+</role>
+
+<thm k="Example 4.24" d="A single parity bit" pg="48">
+Take $n=3$, $k=2$,
+$$G=\begin{pmatrix}1&0&1\\0&1&1\end{pmatrix},\qquad H=\begin{pmatrix}1&1&1\end{pmatrix}.$$
+The codewords are $000,101,011,110$, and every one satisfies $\mathbf wH^\top=w_1+w_2+w_3=0$: the last bit is a **parity check** on the first two. The minimum distance is $2$, so one flipped bit is detected but can't be corrected.
+</thm>
+
+<role r="technique" a="minimum distance = minimum weight">
+
+For a linear code, the difference of two codewords is a codeword, so
+$$d=\min_{\mathbf w\ne\mathbf w'\in\mathcal C}|\mathbf w-\mathbf w'|=\min_{\mathbf s\ne\mathbf s'}|(\mathbf s-\mathbf s')G|=\min_{\hat{\mathbf w}\in\mathcal C,\ \hat{\mathbf w}\ne\mathbf 0}|\hat{\mathbf w}|.$$
+The minimum distance is the smallest weight of a nonzero codeword. Instead of $\binom{2^k}2$ pairs, check $2^k-1$ words, or better, use the next result.
+</role>
+
+<thm k="Proposition 4.25" d="Minimum distance from the columns of H" pg="48" it>
+The minimum distance of a linear code equals the smallest number of linearly dependent columns of a parity check matrix $H$ (the smallest $r$ such that some $r$ columns of $H$ sum to zero).
+</thm>
+
+<pf>
+Write $\mathbf h_1,\dots,\mathbf h_n$ for the columns of $H$. For any $\mathbf w\in\mathbb F_2^n$,
+$$H\mathbf w^\top=\sum_{i=1}^nw_i\mathbf h_i=\sum_{i:\,w_i=1}\mathbf h_i.$$
+So $\mathbf w$ is a codeword iff the columns at the positions of its $1$s sum to $\mathbf 0$. A nonzero codeword of weight $r$ therefore gives $r$ linearly dependent columns, and conversely any $r$ columns that sum to zero (over $\mathbb F_2$, a dependency is just a subset summing to zero) give a codeword of weight $r$: put $1$s in those positions. Hence the smallest weight of a nonzero codeword equals the smallest number of dependent columns, and by the remark above that is $d$.
+</pf>
+
+<thm k="Definition 4.26" nm="Hamming codes" pg="48">
+For $m\ge2$, let $n=2^m-1$ and $k=n-m$, and let $H$ be the $m\times n$ matrix whose columns are **all the nonzero vectors** in $\mathbb F_2^m$, in some order. The code with this parity check matrix is the **Hamming code**, an $[2^m-1,\,2^m-1-m,\,3]_2$ code.
+</thm>
+<role r="reading" a="Definition 4.26">
+
+Why $d=3$: no column is zero, and no two columns are equal (over $\mathbb F_2$, two vectors are dependent only if equal), so no one or two columns sum to zero; but some three do (for instance $100$, $010$ and $110$). By Proposition 4.25, $d=3$, so the Hamming code corrects any single error. Better still, decoding is easy: if one bit, in position $i$, is flipped, the syndrome is $H(\mathbf w+\mathbf e_i)^\top=\mathbf h_i$, the $i$-th column, which names the position. (The notes say "all pairwise linearly independent vectors", which over $\mathbb F_2$ means the same thing.)
+</role>
+
+<thm k="Example 4.27" d="The [7,4,3] Hamming code" pg="49">
+For $m=3$ we get Hamming's $[7,4,3]_2$ code, with
+$$G=\begin{pmatrix}1&0&0&0&1&1&0\\0&1&0&0&1&0&1\\0&0&1&0&0&1&1\\0&0&0&1&1&1&1\end{pmatrix},\qquad H=\begin{pmatrix}1&1&0&1&1&0&0\\1&0&1&1&0&1&0\\0&1&1&1&0&0&1\end{pmatrix}.$$
+$G=[I_4\,|\,P]$ is in standard form and $H=[P^\top\,|\,I_3]$. Four message bits are sent with three check bits, rate $\frac47$, and any single flipped bit is corrected. It is the basis of error correction in many memory (RAM) circuits.
+</thm>
+
+@@it-fig4-3@@
+
+<thm k="Example 4.28" d="The extended Hamming code" pg="49">
+Append to each codeword of the $[7,4,3]$ code an overall parity bit, so that every codeword has an even number of $1$s. (In terms of $H$: add a column of zeros and then a row of $1$s.) The result is an $[8,4,4]_2$ code: odd-weight codewords of weight $3$ get an extra $1$ and become weight $4$. In standard form
+$$G=[I_4\,|\,J-I_4],\qquad H=[J-I_4\,|\,I_4],$$
+where $J$ is the all-ones matrix. It is a **SECDED** code: single error correcting, double error detecting.
+</thm>
+<role r="caution" a="Example 4.28">
+
+The notes say "the code words all have weight $4$". The nonzero codewords have weight $4$ except one, the all-ones word of weight $8$; the **minimum** weight is $4$, which is what matters.
+</role>
+
+<thm k="Example 4.29" d="Dual codes and Walsh–Hadamard codes" pg="49">
+If $H$ is a parity check matrix of a code, using $H$ as a generator gives the **dual code**. The dual of the extended Hamming code is the (augmented) **Walsh–Hadamard code**, a $[2^k,k+1,2^{k-1}]_2$ code: very large distance, very low rate. Its codewords are (nearly) orthogonal, which lets many users share one channel in CDMA standards such as 3G.
+</thm>
+
+<thm k="Example 4.30" d="Hsiao codes" pg="49">
+Hsiao (1970) modifies the Hamming construction so that every column of $H$ has an odd number of $1$s, which makes encoding and decoding cheaper in hardware for larger codes.
+</thm>
+
+<thm k="Example 4.31" d="Reed–Muller and polar codes" pg="49">
+**Reed–Muller codes**, $[2^m,\sum_{i\le r}\binom mi,2^{m-r}]_2$ codes built from polynomials over $\mathbb F_2$, and the closely related **polar codes**, are the basis of error correction in the 5G mobile standard.
+</thm>
+
+
+<pause n="Is Hamming good enough?" q="The $[7,4,3]$ code sent through a BSC with $q=0.01$ decodes correctly whenever at most one of the seven bits is flipped. What is its block error probability? How does its rate compare with capacity?">
+Correct decoding needs $0$ or $1$ flips: probability $(0.99)^7+7(0.01)(0.99)^6\approx0.9321+0.0659=0.99797$, so the block error is about $0.002$. The rate is $\frac47\approx0.571$, while $C=1-H(0.01)\approx1-0.081=0.919$. So Hamming's code is far below capacity, and its error isn't tiny either. Shannon's theorem promises codes with rate $0.9$ *and* error $10^{-9}$, if you're willing to use long blocks. Figure 4.2 puts these numbers on a picture.
+</pause>

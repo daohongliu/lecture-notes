@@ -1,0 +1,17 @@
+<figure class="wide" id="fig5-3">
+  <div class="fig-body">
+    <svg id="it-vt-svg" class="pt" viewBox="0 0 720 330" role="img" aria-label="A trellis of hidden states over time, with the Wonham filter's probabilities and the Viterbi algorithm's best paths."></svg>
+    <div class="controls">
+      <span class="btn-row" role="group" aria-label="preset" id="it-vt-btns"></span>
+      <span class="btn-row" id="it-vt-obs" aria-label="observations"></span>
+    </div>
+    <div class="controls">
+      <label class="grow" for="it-vt-a">P(1 → 2) <input type="range" id="it-vt-a" min="0.01" max="0.99" step="0.01" value="0.3"> <output id="it-vt-av"></output></label>
+      <label class="grow" for="it-vt-b">P(2 → 1) <input type="range" id="it-vt-b" min="0.01" max="0.99" step="0.01" value="0.4"> <output id="it-vt-bv"></output></label>
+      <label class="grow" for="it-vt-e">P(state 1 emits 2) <input type="range" id="it-vt-e" min="0.01" max="0.49" step="0.01" value="0.1"> <output id="it-vt-ev"></output></label>
+      <label class="grow" for="it-vt-f">P(state 2 emits 1) <input type="range" id="it-vt-f" min="0.01" max="0.49" step="0.01" value="0.2"> <output id="it-vt-fv"></output></label>
+    </div>
+    <div class="readout" id="it-vt-out" aria-live="polite"></div>
+  </div>
+  <figcaption><span class="figtag">Figure 5.3</span>Decoding a hidden Markov chain. Columns are times, rows the two hidden states; observations are along the top (click one to toggle it, or use \(+\) and \(-\)). Bars show the Wonham filter’s posterior \(\mu_t\). Thin arrows are Viterbi’s back-pointers (each node’s best predecessor), and the thick path is the most likely whole path. The defaults are Examples 5.17 and 5.19.</figcaption>
+</figure>
