@@ -1,0 +1,115 @@
+@num 3
+@title Codes in practice, and channel capacity
+@source Problem Sheet 3 · MT26
+@dek Huffman codes for a uniform source, an arithmetic code by hand, two channel capacities, Shannon codes against optimal block codes, twenty questions with fixed and random questions, variable-to-fixed codes and an implementation of Tunstall’s code, when the entropy bound is attained exactly, and betting on horses. Needs Chapters 3 and 4.
+---
+## Section A · Warm-up
+
+<qn n="1" t="Huffman codes for a uniform source">
+Let $|\X|=100$ and $p$ the uniform distribution on $\X$. How many codewords of each length $l=1,2,\dots$ does a binary Huffman code have?
+
+<details class="hint"><summary>hint</summary>Run the first few rounds of Huffman's algorithm: the $100$ leaves pair off into $50$ nodes of weight $\frac2{100}$, and so on. Compare $100$ with the nearest powers of $2$. A complete binary tree with $100$ leaves whose depths differ by at most one has leaves at only two depths; how many at each?</details>
+
+<p class="uses">Uses Section 3.5 (Huffman's algorithm and Proposition 3.10). Figure 3.2 runs the algorithm on smaller examples.</p>
+</qn>
+
+<qn n="2" t="An arithmetic code by hand">
+Let $\X=\{A,B,C\}$ with $p(A)=0.3$, $p(B)=0.5$, $p(C)=0.2$, and build an arithmetic code with these probabilities, in this order. Compute the interval associated with the input string $ABBA$, and the first $5$ symbols of the string associated with the number $\frac1\pi$.
+
+<details class="hint"><summary>hint</summary>Each symbol zooms into a sub-interval: $A$ is the first $30\%$ of the current interval, $B$ the next $50\%$, $C$ the last $20\%$. For the second part run the zoom in reverse: at each step, see which third of the current interval contains $\frac1\pi\approx0.31831$, output that symbol, and zoom in.</details>
+
+<p class="uses">Uses Section 3.7; Figure 3.3 does exactly this zooming.</p>
+</qn>
+
+<qn n="3" t="A channel that adds noise mod 11">
+Consider a DMC with $\X=\mathcal Y=\{0,1,\dots,10\}$ where $Y=(X+Z)\bmod11$, with $Z$ independent of $X$ and $p_Z(i)=\frac13$ for $i\in\{1,2,3\}$. Find the capacity of this channel and an input distribution achieving it.
+
+<details class="hint"><summary>hint</summary>Given $X=x$, the output is $x+Z$, so $H(Y|X)=H(Z)$ whatever the input distribution. That leaves maximising $H(Y)$; which input makes $Y$ uniform? Compare the noisy typewriter in Section 4.2.</details>
+
+<p class="uses">Uses Definition 4.4 and the method of Example 4.7.</p>
+</qn>
+
+## Section B · To be handed in
+
+<qn n="4" t="Shannon codes for blocks, and an optimal block code">
+Let $\X=\{A,B\}$ with $p(A)=1-2^{-3}$ and $p(B)=2^{-3}$, and binary output alphabet $\mathcal Y=\{0,1\}$.
+
+<ol class="parts"><li>Construct the binary Shannon codes for blocks of length $1$, $2$ and $3$.</li><li>For each of these codes, determine whether it is optimal.</li><li>Construct an optimal block code for blocks of length $3$. Compute its average length per source symbol and compare it with $H(X)$, where $X\sim p$.</li></ol>
+
+<details class="hint"><summary>hint</summary>A Shannon code gives a block $\mathbf x$ a codeword of length $\lceil-\log_2p(\mathbf x)\rceil$, read off the binary expansion of the cumulative probability (Section 3.3). For optimality, compare its expected length with that of a Huffman code for the same blocks; for blocks of length $1$, ask whether any code with two codewords can do better than one bit each.</details>
+
+<p class="uses">Uses Sections 3.2, 3.3 and 3.5; Proposition 3.6 explains the gap between a Shannon code and the entropy.</p>
+</qn>
+
+<qn n="5" t="Twenty questions, fixed and random">
+Let $X$ be uniform on a finite set $\X$ with $|\X|=2^n$. Given subsets $A_1,A_2,\dots$ of $\X$, we ask the questions "is $X\in A_1$?", "is $X\in A_2$?", and so on.
+
+<ol class="parts"><li>We may choose the subsets, but not depending on earlier answers. How many questions are needed to determine $X$? What is the most efficient way to do it? (Viewing the questions as a map from $\X$ to $\{\text{Yes},\text{No}\}^*$, you can also ask how to choose them to minimise the expected number of questions for $X$ with any given distribution.)</li><li>Now draw $A_1,A_2,\dots$ i.i.d. uniformly from all subsets of $\X$. Fix $x,y\in\X$, and condition on $X=x$.<ol class="parts"><li>What is the probability that $x$ and $y$ are indistinguishable after the first $k$ questions?</li><li>What is the expected number of elements of $\X\setminus\{x\}$ that are indistinguishable from $x$ after the first $k$ questions?</li></ol></li></ol>
+
+<details class="hint"><summary>hint</summary>Part 1: the answers form a binary codeword for $X$, so this is a coding question; the bound is $H(X)$. Part 2: a uniformly random subset contains each element independently with probability $\frac12$, so each question separates $x$ from $y$ with probability $\frac12$. Then use linearity of expectation.</details>
+
+<p class="uses">Uses Theorem 3.2 and the code–tree correspondence of Lemma 3.9. Part 2 is the "random code" idea behind Theorem 4.15, in miniature.</p>
+</qn>
+
+<qn n="6" t="A channel where one input is best avoided">
+Consider the DMC with $|\X|=|\mathcal Y|=3$ and
+$$M=\begin{pmatrix}2/3&1/3&0\\1/3&1/3&1/3\\0&1/3&2/3\end{pmatrix}.$$
+
+<ol class="parts"><li>Calculate the capacity of this DMC.</li><li>Give an intuitive argument for why the capacity is achieved by a distribution that puts zero probability on one input symbol.</li></ol>
+
+<details class="hint"><summary>hint</summary>The channel is unchanged by swapping inputs $1\leftrightarrow3$ and outputs $1\leftrightarrow3$, and $I(X;Y)$ is concave in $p_X$ (Proposition 4.5), so you may assume a maximiser of the form $(a,1-2a,a)$. Write $I(X;Y)=H(Y)-H(Y|X)$ as a function of $a$ and maximise; check the endpoint. For part 2: what does the middle input's row look like?</details>
+
+<p class="uses">Uses Proposition 4.5 and Remark 4.6. Figure 4.1 shows the same kind of maximisation for binary channels.</p>
+</qn>
+
+<qn n="7" t="Variable-to-fixed codes can't beat the entropy">
+Let $|\X|=m$. A variable-to-fixed code takes a set $W_d\subseteq\X^*$ of strings and encodes each by a binary block of fixed length $d$. Its efficiency is
+$$R(W_d)=\frac d{\E[L(W_d)]},$$
+where $\E[L(W_d)]$ is the expected length of a string from $W_d$. Let $X_1^n=(X_i)_{i=1}^n$ be i.i.d. with pmf $p$. Let $Y$ be the random variable with values in $W_d$ given by the first string of $W_d$ that $X_1^n$ starts with, and $L=L(W_d)$ its length. Assume $n$ exceeds the maximal length of strings in $W_d$.
+
+<ol class="parts"><li>Show that $H(Y)\le d$.</li><li>Note that $Y=(X_1,\dots,X_L)$ and that $H(X_1^n)=H(Y,L,X_{L+1}^n)$. Show that
+$$H(X_{L+1}^n\,|\,L)=(n-\E[L])H(X),$$
+and hence that $H(Y)=\E[L]\,H(X)$.</li><li>Hence show that $R(W_d)\ge H(X)$.</li></ol>
+
+It is possible to show that $R(W_d^*)<H(X)+1$ for large enough $d$, using ideas from renewal theory.
+
+<details class="hint"><summary>hint</summary>Part 1: $Y$ takes at most $2^d$ values. Part 2: $L$ is a function of $Y$, so $H(X_1^n)=H(Y)+H(X_{L+1}^n|Y)$; whether $L=l$ depends only on the first $l$ symbols, so given $L=l$ the remaining $n-l$ symbols are still i.i.d. with pmf $p$. Part 3: combine parts 1 and 2.</details>
+
+<p class="uses">Uses the chain rule (Theorem 1.19) and Section 3.8.</p>
+</qn>
+
+<qn n="8" t="Implementing Tunstall’s code">
+Write an implementation of Tunstall's code. It should take a vector of probabilities over $m$ input symbols and a length $d$ for the binary encoding, and return a dictionary of source strings and their binary encodings. Also write code to encode and decode a message with the dictionary, right-padding the input with underscores if needed.
+
+For submission, use the $27$-letter alphabet and probabilities of Sheet 1, Question 6, to build an optimal variable-to-fixed code with $d=8$ bit outputs. State the length of the encodings, and whether right-padding is needed, for the inputs
+
+<ul><li>‘HELLO’</li><li>‘THE RAIN IN SPAIN FALLS MAINLY ON THE PLAIN’</li><li>‘YESTERDAY’</li></ul>
+
+<details class="hint"><summary>hint</summary>Keep the current leaves in a priority queue keyed by probability; repeatedly replace the most likely leaf $w$ by its $m$ children $wx$ while the number of leaves stays at most $2^d$ (Theorem 3.14 is why this is optimal). Encode greedily: since the leaves form a complete tree, exactly one leaf is a prefix of the remaining input, unless the input runs out first, which is when padding is needed.</details>
+
+<p class="uses">Uses Section 3.8, Example 3.13 and Theorem 3.14; Figure 3.4 grows the tree for a small alphabet.</p>
+</qn>
+
+## Section C · Extension
+
+<qn n="9" t="When the entropy bound is attained">
+For $\X=\{1,\dots,m\}$ with pmf $p$, give a necessary and sufficient condition on $p$ for there to be a $d$-ary code with average length per symbol exactly $H_d(X)$.
+
+<details class="hint"><summary>hint</summary>Look at when equality holds in Theorem 3.2, and check that the lengths it forces satisfy the Kraft–McMillan inequality.</details>
+
+<p class="uses">Uses Theorem 3.2 and Theorem 2.5.</p>
+</qn>
+
+<qn n="10" t="Information theory and gambling">
+In a race between $m$ horses, horse $i$ wins with probability $p_i$. A bet of £1 on horse $i$ returns £$o(i)$ if it wins, and nothing otherwise. A gambler spreads all his wealth over the horses, betting a fraction $b(i)\ge0$ on horse $i$, with $\sum_{i=1}^mb(i)=1$, and repeats this race after race. Starting from $S_0=1$, his wealth after $n$ races is
+$$S_n=\prod_{i=1}^nb(X_i)\,o(X_i),$$
+where $X_i$ is the winner of race $i$.
+
+<ol class="parts"><li>If the $X_i$ are i.i.d., show that wealth grows exponentially, in the sense that
+$$\lim_{n\to\infty}\frac1n\log\frac{S_n}{2^{nW(b,p)}}=0\quad\text{almost surely},$$
+and determine $W(b,p)$.</li><li>Let $W^*(p)=\max\big\{W(b,p):b(i)\ge0,\ \sum_ib(i)=1\big\}$. Find the $b$ that achieves the maximum.</li><li>(Informal.) Regard $q_i=\frac1{o(i)}$ as the "probabilities" the bookmaker implicitly assigns to the outcomes. Considering the cases $\sum_iq_i=1$, $\sum_iq_i<1$ and $\sum_iq_i>1$, discuss whether the game is fair.</li></ol>
+
+<details class="hint"><summary>hint</summary>Part 1: $\frac1n\log S_n=\frac1n\sum_i\log\big(b(X_i)o(X_i)\big)$; use the strong law of large numbers. Part 2: Lagrange multipliers give a candidate; to prove it is optimal, write $W(b,p)=\sum_ip_i\log o(i)-H(p)-D(p\|b)$ and use that divergence is non-negative (Theorem 1.16). Part 3: in the first case, compare $W^*$ with a divergence between $p$ and $q$.</details>
+
+<p class="uses">Uses Definitions 1.1 and 1.4 and Theorem 1.16; this is "Kelly betting".</p>
+</qn>

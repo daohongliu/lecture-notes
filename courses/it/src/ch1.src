@@ -397,6 +397,7 @@ $H(X)=H(2X)$ is true: $x\mapsto2x$ is injective, so part 4 gives equality. $H(X)
 
 <sheet n="1" qs="4,5,6,7,8,9">Questions 4 to 9 are all about the properties in this section. Question 7 is the maximum entropy principle, a constrained version of part 1 of Theorem 1.19.</sheet>
 <sheet n="2" qs="6,9">Question 6 is a "grouping" identity for mixtures. Question 9 extends entropy to densities; its hint is Gibbs' inequality for densities.</sheet>
+<sheet n="3" qs="10">Betting on horses: the best long-run growth rate of wealth is an entropy, and the cost of betting with the wrong probabilities is a divergence.</sheet>
 
 ## 1.3 Fano’s inequality {17} [d2 i2]
 <role r="question" a="guessing X from Y">

@@ -114,6 +114,8 @@ This one has a satisfying interpretation. A fraction $q$ of the bits are lost, a
 
 @@it-fig4-1@@
 
+<sheet n="3" qs="3,6">Two capacities: a channel that adds noise mod $11$ (Question 3, like the noisy typewriter below), and a three-input channel where the best input distribution avoids one symbol (Question 6).</sheet>
+
 <pause n="The noisy typewriter" q="What is the capacity of the noisy typewriter of Example 4.3? Can you see a way to use it with no errors at all?">
 Given $X$, the output is one of three letters, equally likely, so $H(Y|X)=\log3$ whatever the input. Then $I(X;Y)=H(Y)-\log3\le\log26-\log3=\log\frac{26}3$, with equality when $Y$ is uniform, which happens when $X$ is uniform. So $C=\log\frac{26}{3}\approx3.12$ bits. And it can nearly be achieved with zero error: use only the $8$ letters $A,D,G,J,M,P,S,V$, every third letter, stopping before the wraparound so that $V$'s outputs $U,V,W$ don't meet $A$'s outputs $Z,A,B$. The possible outputs of different inputs are disjoint, so the receiver always knows what was sent. That gives $\log8=3$ bits per use, close to capacity. Shannon's theorem says how to close the remaining gap: with long blocks, and a vanishing (but not zero) error.
 </pause>
@@ -267,6 +269,8 @@ $$\sum_{i=1}^{2m}\varepsilon_i<2m\cdot\frac\varepsilon2=m\varepsilon.$$
 $$\varepsilon_{\max}<\varepsilon\qquad\text{and rate}\qquad\frac1n\log m\ge C-\frac{2\varepsilon}3-\frac1n.$$
 For $n$ large the rate exceeds $C-\varepsilon$, so $C$ is achievable, and therefore so is every $R\le C$.
 </pf>
+
+<sheet n="3" qs="5">Part 2 of Question 5, random yes/no questions, is the random-coding idea of this proof in miniature.</sheet>
 
 <role r="caution" a="what was not shown">
 

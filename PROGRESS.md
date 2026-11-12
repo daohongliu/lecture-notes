@@ -52,7 +52,7 @@ Everything ships as ONE artifact (both courses), notes stored in the artifact's 
       entropy rate, Markov chains, source–channel separation, Wonham filter, Viterbi), 6 figures (it-fig4-1..3,
       it-fig5-1..3), maps. Corrections as sidenotes, notably Example 5.19 (min→max, π₄¹ = 0.0261 not 0.0043, so the
       notes' "path disagrees with final state" remark fails there; a disagreeing preset is in Fig 5.3). The notes have
-      no problem sheet for Chapters 4–5.
+      Problem Sheet 3 (MT26) added later, with prompts in Chapters 1, 3 and 4.
 
 ## Ideas not done yet
 - PMM Chapters 6–7 (martingales, applications); CLT Chapters 6–9.

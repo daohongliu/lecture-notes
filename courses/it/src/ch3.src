@@ -291,6 +291,7 @@ Merge $0.1$ and $0.2$ into $0.3$. Now $(0.4,0.3,0.3)$: merge the two $0.3$s into
 </pause>
 
 <sheet n="2" qs="7,8">Huffman codes by hand, binary against quaternary (Question 7), and against Morse code (Question 8).</sheet>
+<sheet n="3" qs="1,4,9">Huffman codes for a uniform source (Question 1), Shannon codes against optimal block codes (Question 4), and exactly when the entropy bound is attained (Question 9).</sheet>
 
 ## 3.6 Elias’ code {33} [d2 i2]
 <role r="setup" a="no sorting needed">
@@ -349,6 +350,7 @@ The same nested-interval picture works in reverse: Problem Sheet 2, Question 5 t
 </role>
 
 <sheet n="2" qs="5">Simulating a biased coin with a fair one, by binary expansions.</sheet>
+<sheet n="3" qs="2">An arithmetic code by hand, encoding $ABBA$ and decoding $1/\pi$.</sheet>
 
 ## 3.8 Variable-to-fixed codes {34} [d2 i1]
 <role r="question" a="turning the problem around">
@@ -412,3 +414,5 @@ View $T$ as a subtree of the infinite $m$-ary tree $T_\infty$, chosen by selecti
 
 Further results can be proved. For instance, if $L$ is the length of the input string encoded by one $d$-bit output, then $d/\E[L]\ge H(X)$: at least $H(X)$ output bits per input symbol, the same bound as for fixed-to-variable codes. For Example 3.13, $3/3.2831\approx0.914$, against $H(0.7)\approx0.881$. Other variable-to-fixed methods include block arithmetic codes (Boncelet, 1993), with advantages like those of arithmetic codes, and the Lempel–Ziv (1977/78) and Lempel–Ziv–Welch (1984) methods, which are **adaptive**: they learn the statistics of the source as they go, and need no knowledge of the distribution at all.
 </role>
+
+<sheet n="3" qs="7,8">Variable-to-fixed codes can't beat the entropy (Question 7), and an implementation of Tunstall's code (Question 8).</sheet>
