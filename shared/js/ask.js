@@ -105,15 +105,80 @@ function askShowCtx() {
   $('.ask-ctx-l', ASKP).appendChild(a);
   if (c.sel) { const q = document.createElement('div'); q.className = 'ask-ctx-sel'; q.textContent = '“' + askClip(c.sel.replace(/\s+/g, ' '), 160) + '”'; $('.ask-ctx-l', ASKP).appendChild(q); }
 }
+/* keep the reader's place when the page column changes width */
+function askReadAnchor(range) {
+  if (range) { const n = range.startContainer; const el = n.nodeType === 1 ? n : n.parentElement; if (el) return el; }
+  const v = currentView && document.getElementById(currentView); if (!v) return null;
+  const tb = $('.topbar'), y0 = (tb ? tb.getBoundingClientRect().bottom : 0) + 30;
+  /* the first content block whose bottom is below the reading line; descend one level into tall blocks */
+  const pick = list => { for (const el of list) { const r = el.getBoundingClientRect(); if (r.height && r.bottom > y0) return el; } return null; };
+  let el = pick($$('.ch-head, .sec-block > *, .view.sheet .sq', v).filter(x => !x.closest('.toc-side, .minimap, .cmap')));
+  for (let d = 0; d < 8 && el && el.getBoundingClientRect().top < y0 - 60 && el.children.length; d++) { const inner = pick(Array.from(el.children).filter(x => getComputedStyle(x).position !== 'absolute')); if (!inner) break; el = inner; }
+  return el;
+}
+function askKeepPlace(range, change) {
+  const a = askReadAnchor(range), top = a ? a.getBoundingClientRect().top : 0;
+  change();
+  if (!a) return;
+  const fix = () => { const d = a.getBoundingClientRect().top - top; if (Math.abs(d) > 1) window.scrollBy(0, d); };
+  fix();
+  const v = currentView && document.getElementById(currentView);
+  requestAnimationFrame(() => { if (v) fixWide([v]); fix(); });
+}
 function askOpen(range) {
-  ASKP.hidden = false; document.body.classList.add('ask-open'); askBtn.setAttribute('aria-pressed', 'true');
   ASK.ctx = askContext(range || null);
+  if (ASKP.hidden) askKeepPlace(range, () => { ASKP.hidden = false; document.body.classList.add('ask-open'); });
+  askBtn.setAttribute('aria-pressed', 'true');
   askShowCtx();
   askChip.hidden = true;
   setTimeout(() => askTa.focus({ preventScroll: true }), 30);
   askSample();
 }
-function askClose() { ASKP.hidden = true; document.body.classList.remove('ask-open'); askBtn.setAttribute('aria-pressed', 'false'); }
+function askClose() {
+  askKeepPlace(null, () => { ASKP.hidden = true; document.body.classList.remove('ask-open'); });
+  askBtn.setAttribute('aria-pressed', 'false');
+}
+/* resizing: drag the left edge; the width is remembered in this browser */
+const ASK_W_KEY = 'partb-ask-width';
+function askSetWidth(w, keep) {
+  const max = Math.max(320, Math.round(innerWidth * .7));
+  w = Math.max(300, Math.min(max, Math.round(w)));
+  const apply = () => document.documentElement.style.setProperty('--askw', w + 'px');
+  if (keep && !ASKP.hidden) askKeepPlace(null, apply); else apply();
+  return w;
+}
+try { const w = +localStorage.getItem(ASK_W_KEY); if (w) askSetWidth(w); } catch (_) {}
+const askGrip = document.createElement('div');
+askGrip.className = 'ask-grip'; askGrip.setAttribute('role', 'separator'); askGrip.setAttribute('aria-orientation', 'vertical'); askGrip.setAttribute('aria-label', 'Resize panel'); askGrip.tabIndex = 0;
+ASKP.appendChild(askGrip);
+let askDrag = null;
+askGrip.addEventListener('pointerdown', e => {
+  if (innerWidth <= 900) return;
+  e.preventDefault(); askGrip.setPointerCapture(e.pointerId);
+  askDrag = { anchor: askReadAnchor(null) }; askDrag.top = askDrag.anchor ? askDrag.anchor.getBoundingClientRect().top : 0;
+  document.body.classList.add('ask-resizing');
+});
+askGrip.addEventListener('pointermove', e => {
+  if (!askDrag) return;
+  askSetWidth(innerWidth - e.clientX, false);
+  if (askDrag.anchor) { const d = askDrag.anchor.getBoundingClientRect().top - askDrag.top; if (Math.abs(d) > 1) window.scrollBy(0, d); }
+});
+const askDragEnd = () => {
+  if (!askDrag) return;
+  const a = askDrag.anchor, top = askDrag.top; askDrag = null;
+  document.body.classList.remove('ask-resizing');
+  try { localStorage.setItem(ASK_W_KEY, String(ASKP.offsetWidth)); } catch (_) {}
+  const v = currentView && document.getElementById(currentView);
+  requestAnimationFrame(() => { if (v) fixWide([v]); if (a) { const d = a.getBoundingClientRect().top - top; if (Math.abs(d) > 1) window.scrollBy(0, d); } });
+};
+askGrip.addEventListener('pointerup', askDragEnd); askGrip.addEventListener('pointercancel', askDragEnd);
+askGrip.addEventListener('keydown', e => {
+  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+  e.preventDefault();
+  const w = askSetWidth(ASKP.offsetWidth + (e.key === 'ArrowLeft' ? 40 : -40), true);
+  try { localStorage.setItem(ASK_W_KEY, String(w)); } catch (_) {}
+});
+askGrip.addEventListener('dblclick', () => { askSetWidth(420, true); try { localStorage.removeItem(ASK_W_KEY); } catch (_) {} });
 askBtn.addEventListener('click', () => {
   if (!ASKP.hidden && !askSelRange()) { askClose(); return; }
   askOpen(askSelRange());
@@ -209,7 +274,7 @@ async function askSend() {
   if (turns[1] && turns[1].role !== 'user') turns.splice(1, 1);
   try {
     const res = await sample(turns, {
-      cache: false, signal: ASK.ctl.signal, modelTier: ASK.deep ? 'complex' : 'default',
+      cache: false, signal: ASK.ctl.signal, model: 'claude-opus-5-5', modelTier: 'complex', effort: ASK.deep ? 'high' : 'medium',
       onText: ({ text }) => { raw = text; const now = Date.now(); if (now - rT > 120) { rT = now; askRender(out, raw, false); } }
     });
     raw = res.text; askRender(out, raw, true);

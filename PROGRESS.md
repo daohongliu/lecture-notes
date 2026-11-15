@@ -56,7 +56,7 @@ Everything ships as ONE artifact (both courses), notes stored in the artifact's 
 
 - [x] Ask Claude side panel (`shared/js/ask.js`, sample capability): highlight text → "Ask Claude" chip, or the "ask" button;
       sends the selection, the enclosing block (statement+proof), neighbouring blocks in the section and the location, with maths
-      recovered as TeX from `data-tex`. Chat kept in memory; "think harder" = complex tier. Publish with capabilities {sample:{}}.
+      recovered as TeX from `data-tex`. Chat kept in memory; model claude-opus-5-5 at effort medium ("think harder" = high), modelTier complex as fallback. Resizable (drag left edge, width in localStorage), reading position kept on open/close/resize via askKeepPlace. Publish with capabilities {sample:{}}.
 
 ## Ideas not done yet
 - PMM Chapters 6–7 (martingales, applications); CLT Chapters 6–9.
