@@ -484,7 +484,7 @@ def main():
     shell = (TPL / 'shell-top.html').read_text().replace('%%PILLS%%', hubp + ''.join(pills))
     hub = (TPL / 'hub.html').read_text().replace('%%COURSES%%', ''.join(hubs))
     body = shell + hub + '\n'.join(views) + (TPL / 'shell-bottom.html').read_text()
-    core = (REPO / 'shared' / 'js' / 'core.js').read_text() + (REPO / 'shared' / 'js' / 'features.js').read_text()
+    core = (REPO / 'shared' / 'js' / 'core.js').read_text() + (REPO / 'shared' / 'js' / 'features.js').read_text() + (REPO / 'shared' / 'js' / 'ask.js').read_text()
     out = head + body + '<script>\n(function () {\n' + core + '\n' + '\n'.join(js) + '\nwalkStrip();\nroute();\n})();\n</script>\n'
     ids = re.findall(r'\sid="([^"]+)"', out)
     dup = sorted({i for i in ids if ids.count(i) > 1})

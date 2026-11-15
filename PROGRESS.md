@@ -54,6 +54,10 @@ Everything ships as ONE artifact (both courses), notes stored in the artifact's 
       notes' "path disagrees with final state" remark fails there; a disagreeing preset is in Fig 5.3). The notes have
       Problem Sheet 3 (MT26) added later, with prompts in Chapters 1, 3 and 4.
 
+- [x] Ask Claude side panel (`shared/js/ask.js`, sample capability): highlight text → "Ask Claude" chip, or the "ask" button;
+      sends the selection, the enclosing block (statement+proof), neighbouring blocks in the section and the location, with maths
+      recovered as TeX from `data-tex`. Chat kept in memory; "think harder" = complex tier. Publish with capabilities {sample:{}}.
+
 ## Ideas not done yet
 - PMM Chapters 6–7 (martingales, applications); CLT Chapters 6–9.
 - GT timeline (Fig 1.1) and automata figure are small on phones; could switch to a vertical layout under 560px.
