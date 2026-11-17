@@ -403,7 +403,9 @@ function placeCmap() {
   const wide = window.innerWidth >= 1300 && document.body.classList.contains('has-toc');
   if (!data || !wide) { cmap.hidden = true; cmapBtn.hidden = true; return; }
   const page = $('.page').getBoundingClientRect(), mmr = mm.getBoundingClientRect();
-  const free = (mmr.left || window.innerWidth) - page.right - 18;
+  let edge = mmr.left || window.innerWidth;
+  document.querySelectorAll('.side-panel:not([hidden]), .ask-panel:not([hidden]), .notes-drawer:not([hidden])').forEach(el => { const l = el.getBoundingClientRect().left; if (l > 0) edge = Math.min(edge, l); });
+  const free = edge - page.right - 18;
   const docked = free >= 175;
   document.body.classList.toggle('cmap-docked', docked);
   cmapBtn.hidden = docked;
@@ -587,3 +589,6 @@ document.addEventListener('keydown', e => {
   if ((e.key === 'k' && (e.metaKey || e.ctrlKey)) || (e.key === '/' && !typing)) { e.preventDefault(); openSearch(); }
 });
 setTimeout(buildIndex, 50);
+
+/* re-place the chapter map whenever a side panel opens, closes or resizes */
+new MutationObserver(() => requestAnimationFrame(placeCmap)).observe(document.body, { attributes: true, attributeFilter: ['class'] });

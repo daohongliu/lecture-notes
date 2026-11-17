@@ -168,6 +168,7 @@ const askDragEnd = () => {
   const a = askDrag.anchor, top = askDrag.top; askDrag = null;
   document.body.classList.remove('ask-resizing');
   try { localStorage.setItem(ASK_W_KEY, String(ASKP.offsetWidth)); } catch (_) {}
+  placeCmap();
   const v = currentView && document.getElementById(currentView);
   requestAnimationFrame(() => { if (v) fixWide([v]); if (a) { const d = a.getBoundingClientRect().top - top; if (Math.abs(d) > 1) window.scrollBy(0, d); } });
 };

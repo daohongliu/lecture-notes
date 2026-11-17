@@ -540,7 +540,7 @@ details.pause summary::before { flex: none; }
 .side-ib .thm, .side-ib aside.bg, .side-ib figure, .side-ib .disp { margin: .3rem 0; max-width: 100%; }
 .side-ib .pg, .side-ib .qed { display: none; }
 .side-ib figure .fig-body { display: none; }
-@media (min-width: 1300px) { body.side-open .page { margin-right: min(30rem, 40vw); margin-left: calc(var(--tocw) + 1.6rem); } body.side-open .sidenote { display: none; } body.side-open .view figure.wide { max-width: var(--col); } }
+@media (min-width: 1300px) { body.side-open .toc-side { left: max(10px, env(safe-area-inset-left, 0px)); } body.side-open .page { margin-right: min(30rem, 40vw); margin-left: calc(var(--tocw) + 1.6rem); } body.side-open .sidenote { display: none; } body.side-open .view figure.wide { max-width: var(--col); } }
 .nd-where { font-size: .88rem; color: var(--ink-soft); font-style: italic; margin: .6rem 0 .4rem; }
 .nd-empty { font-size: .95rem; color: var(--ink-soft); }
 .nd-g { font-family: var(--sc); letter-spacing: .05em; font-size: .85rem; color: var(--ink-soft); margin: 1.1rem 0 .3rem; }
@@ -936,6 +936,13 @@ body.ask-open { padding-right: min(var(--askw, 420px), 100vw); }
 @media (min-width: 901px) { body.ask-open .minimap, body.ask-open .cmap-btn, body.ask-open .toc-btn { right: calc(min(var(--askw, 420px), 100vw) + 10px); } body.ask-open .cmap { right: calc(min(var(--askw, 420px), 100vw) + 10px); } }
 #ask-btn[aria-pressed="true"] { background: var(--blue); color: var(--paper); border-color: var(--blue); }
 body.ask-open .minimap { display: none !important; }
+@media (min-width: 1300px) {
+  body.ask-open { --avail: calc(100vw - min(var(--askw, 420px), 100vw) - var(--tocw) - 1.6rem);
+    --col: clamp(30rem, calc(var(--avail) - var(--gut) - var(--snw) - var(--sng) - 1rem), 50rem);
+    --pw: calc(var(--gut) + var(--col) + var(--sng) + var(--snw) + 1rem);
+    --pml: calc(var(--tocw) + 1.6rem + max(0px, (var(--avail) - var(--pw)) / 2)); }
+  body.ask-open.side-open .page { margin-right: 0; }
+}
 .ask-grip { position: absolute; left: -5px; top: 0; bottom: 0; width: 10px; cursor: col-resize; z-index: 2; touch-action: none; }
 .ask-grip::after { content: ""; position: absolute; left: 4px; top: 50%; width: 2px; height: 2.6rem; margin-top: -1.3rem; border-radius: 2px; background: var(--rule); transition: background .15s; }
 .ask-grip:hover::after, .ask-grip:focus-visible::after, body.ask-resizing .ask-grip::after { background: var(--blue); }
