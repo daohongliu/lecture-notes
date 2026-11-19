@@ -515,7 +515,7 @@ details.pause summary::before { flex: none; }
   .toc-btn { display: none; }
   /* three columns: contents | text with margin notes | minimap. The text column takes what is left, within reason. */
   :root { --tocw: 17.5rem; --mmw: 4.75rem; --gut: 6.2rem; --snw: 13rem; --sng: 2.6rem;
-          --avail: calc(100vw - var(--tocw) - 1.6rem - var(--mmw));
+          --avail: calc(100vw - var(--sbw, 0px) - var(--tocw) - 1.6rem - var(--mmw));
           --col: clamp(36rem, calc(var(--avail) - var(--gut) - var(--snw) - var(--sng) - 1rem), 56rem);
           --pml: calc(var(--tocw) + 1.6rem + max(0px, (var(--avail) - var(--pw)) / 2)); }
   .toc-side { width: var(--tocw); }
@@ -906,6 +906,8 @@ svg .gt-val tspan { paint-order: stroke; stroke: var(--paper); stroke-width: 3px
 .ask-panel { overscroll-behavior: contain; position: fixed; top: calc(var(--topbar-h, 2.6rem) + env(safe-area-inset-top, 0px)); right: 0; bottom: 0; width: min(var(--askw, 420px), 100vw); z-index: 60; background: var(--paper); border-left: 1px solid var(--rule); box-shadow: -8px 0 30px rgba(0,0,0,.08); display: flex; flex-direction: column; font-family: var(--serif); }
 .ask-panel[hidden] { display: none; }
 body.ask-open { padding-right: min(var(--askw, 420px), 100vw); }
+/* nothing on the page may push it sideways: a sideways scroll would slide the text under the fixed panels */
+html, body { overflow-x: clip; }
 /* the chat sits below the top bar, like the beside panel, so the bar keeps the full width */
 @media (min-width: 901px) { body.ask-open .topbar { margin-right: calc(-1 * min(var(--askw, 420px), 100vw)); } }
 @media (max-width: 900px) { body.ask-open { padding-right: 0; } .ask-panel { top: auto; height: 62vh; width: 100vw; border-left: none; border-top: 1px solid var(--rule); box-shadow: 0 -8px 30px rgba(0,0,0,.12); } }
@@ -964,7 +966,7 @@ body.ask-open { padding-right: min(var(--askw, 420px), 100vw); }
 #ask-btn[aria-pressed="true"] { background: var(--blue); color: var(--paper); border-color: var(--blue); }
 body.ask-open .minimap { display: none !important; }
 @media (min-width: 1300px) {
-  body.ask-open { --avail: calc(100vw - min(var(--askw, 420px), 100vw) - var(--tocw) - 1.6rem);
+  body.ask-open { --avail: calc(100vw - var(--sbw, 0px) - min(var(--askw, 420px), 100vw) - var(--tocw) - 1.6rem);
     --col: clamp(30rem, calc(var(--avail) - var(--gut) - var(--snw) - var(--sng) - 1rem), 56rem);
     --pw: calc(var(--gut) + var(--col) + var(--sng) + var(--snw) + 1rem);
     --pml: calc(var(--tocw) + 1.6rem + max(0px, (var(--avail) - var(--pw)) / 2)); }
