@@ -516,7 +516,7 @@ details.pause summary::before { flex: none; }
   /* three columns: contents | text with margin notes | minimap. The text column takes what is left, within reason. */
   :root { --tocw: 17.5rem; --mmw: 4.75rem; --gut: 6.2rem; --snw: 13rem; --sng: 2.6rem;
           --avail: calc(100vw - var(--tocw) - 1.6rem - var(--mmw));
-          --col: clamp(36rem, calc(var(--avail) - var(--gut) - var(--snw) - var(--sng) - 1rem), 50rem);
+          --col: clamp(36rem, calc(var(--avail) - var(--gut) - var(--snw) - var(--sng) - 1rem), 56rem);
           --pml: calc(var(--tocw) + 1.6rem + max(0px, (var(--avail) - var(--pw)) / 2)); }
   .toc-side { width: var(--tocw); }
   body.has-toc .page { margin-left: var(--pml); }
@@ -965,10 +965,21 @@ body.ask-open { padding-right: min(var(--askw, 420px), 100vw); }
 body.ask-open .minimap { display: none !important; }
 @media (min-width: 1300px) {
   body.ask-open { --avail: calc(100vw - min(var(--askw, 420px), 100vw) - var(--tocw) - 1.6rem);
-    --col: clamp(30rem, calc(var(--avail) - var(--gut) - var(--snw) - var(--sng) - 1rem), 50rem);
+    --col: clamp(30rem, calc(var(--avail) - var(--gut) - var(--snw) - var(--sng) - 1rem), 56rem);
     --pw: calc(var(--gut) + var(--col) + var(--sng) + var(--snw) + 1rem);
     --pml: calc(var(--tocw) + 1.6rem + max(0px, (var(--avail) - var(--pw)) / 2)); }
   body.ask-open.side-open .page { margin-right: 0; }
+}
+/* when space is tight (a panel open, a smaller screen), the margin-note column is given to the text:
+   notes become numbered markers that open in place, as on a phone. features.js sets body.sn-inline. */
+@media (min-width: 1300px) {
+  body.sn-inline { --snw: 0px; --sng: 0px;
+    --col: clamp(30rem, calc(var(--avail) - var(--gut) - 1rem), 56rem);
+    --pw: calc(var(--gut) + var(--col) + 1rem);
+    --pml: calc(var(--tocw) + 1.6rem + max(0px, (var(--avail) - var(--pw)) / 2)); }
+  body.sn-inline .sidenote { display: none; float: none; width: auto; margin: 0; }
+  body.sn-inline .sn-toggle:checked + .sidenote { display: block; margin: .6rem 0 .8rem; padding: .1rem 0 .1rem .9rem; border-left: 1.5px solid var(--rule); }
+  body.sn-inline .sn-ref { cursor: pointer; }
 }
 /* chat and "beside the text" open together: they share the right-hand column, the pinned results on top and the chat below,
    so neither covers the other or the text. The chat's grip resizes both. */

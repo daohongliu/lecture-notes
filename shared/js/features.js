@@ -329,6 +329,7 @@ showView = function (id) {
   $$('.topbar .pills a').forEach(a => a.setAttribute('aria-current', String(a.getAttribute('href') === '#' + currentView)));
   buildToc(v);
   walkStrip();
+  if (typeof placeNotes === 'function') placeNotes();
   if (v && v.classList.contains('course-home')) markRead(v);
   addPinButtons(v);
   r.then(() => { updateToc(); addPinButtons(v); });
@@ -450,6 +451,20 @@ document.body.appendChild(cmap); document.body.appendChild(cmapBtn);
 let CM = null, cmOpen = false;
 function chNum(id) { const m = /(?:^|-)(?:r|s|h|fig|alg|ch|eq)(\d+)/.exec(id.replace(/^(clt|it|gt)-/, '')); return m ? +m[1] : null; }
 function wrapText(t, w, px) { const words = t.split(' '), lines = []; let cur = ''; const cw = px * .5; words.forEach(x => { const nx = cur ? cur + ' ' + x : x; if (nx.length * cw > w && cur) { lines.push(cur); cur = x; } else cur = nx; }); if (cur) lines.push(cur); return lines; }
+/* margin notes keep their own column only when the text can still be comfortably wide beside it */
+function placeNotes() {
+  const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16, W = innerWidth;
+  const askP = document.querySelector('.ask-panel');
+  const right = document.body.classList.contains('ask-open') && askP ? askP.offsetWidth : 4.75 * rem;
+  const avail = W - 17.5 * rem - 1.6 * rem - right;
+  const v = typeof currentView !== 'undefined' && currentView && document.getElementById(currentView);
+  const hasNotes = !!(v && v.querySelector('.sidenote'));
+  const tight = W >= 1300 && (!hasNotes || document.body.classList.contains('side-open') || avail - 6.2 * rem - 1 * rem - 15.6 * rem < 44 * rem);
+  if (document.body.classList.contains('sn-inline') !== tight) document.body.classList.toggle('sn-inline', tight);
+}
+window.addEventListener('resize', placeNotes);
+new MutationObserver(() => placeNotes()).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+placeNotes();
 const CMAP_ON = false;
 function placeCmap() {
   const v = currentView && document.getElementById(currentView);

@@ -321,6 +321,8 @@ def read_src(path):
 
 def compile_body(body):
     body = re.sub(r'@@([\w-]+)@@', lambda m: ph((ROOT / 'inc' / (m.group(1) + '.html')).read_text()), body)
+    # [[...]] is shorthand for a margin note, same as <sn>...</sn>
+    body = re.sub(r'\[\[(.+?)\]\](?!\])', r'<sn>\1</sn>', body, flags=re.S)
     return name_proofs(sidenotes(unph(process(convert_math(body)))))
 
 def name_proofs(h):

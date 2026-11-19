@@ -71,6 +71,9 @@ Everything ships as ONE artifact (both courses), notes stored in the artifact's 
       mToNative) / EDGE.end (pointer over a formula during a native drag, edgeTrack) hold {box, leaf, prefix|suffix}; mPart picks
       the pieces, drawn as .msel-edge overlays; askTarget stretches the range over those formulas and askTex writes only the part.
       mLeafChars recovers \mathcal/\mathbb/\mathbf from the glyph's font, and multi-letter operators become \limsup etc.
+- [x] Wider text: --col max 56rem (was 50). The margin-note column is reserved only when the chapter has notes and there's room for
+      a 44rem column beside it; otherwise body.sn-inline (placeNotes in features.js) gives the space to the text and notes open in place.
+- [x] Fixed: [[...]] margin notes in CLT/IT/GT were never converted (28 showed as literal brackets); compile_body now turns them into <sn>.
 - [x] Chat + "beside" open together (≥901px): they stack in the right column (beside on top, 44vh; chat below); the chat grip resizes both.
 - [x] Chapter maps switched off at David's request (CMAP_ON = false in features.js; data still built).
 - [x] Minimap click jumps the window to sit centred under the pointer (mmScrollForSlider), then drags, as in VS Code.

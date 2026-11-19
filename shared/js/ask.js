@@ -148,7 +148,7 @@ function panelGrip(panel, o) {
   const setW = (w, keep) => {
     const max = Math.max(o.min + 20, Math.round(innerWidth * .7));
     w = Math.max(o.min, Math.min(max, Math.round(w)));
-    const apply = () => document.documentElement.style.setProperty(o.cssVar, w + 'px');
+    const apply = () => { document.documentElement.style.setProperty(o.cssVar, w + 'px'); if (typeof placeNotes === 'function') placeNotes(); };
     if (keep && !panel.hidden) askKeepPlace(null, apply); else apply();
     return w;
   };
