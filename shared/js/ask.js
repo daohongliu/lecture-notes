@@ -1,6 +1,6 @@
 
 /* ---------- Ask Claude: a side panel that sees the selection and its context ---------- */
-const ASK = { sample: undefined, turns: [], ctx: null, ctl: null, busy: false, deep: false };
+const ASK = { sample: undefined, turns: [], ctx: null, ctl: null, busy: false, model: 'claude-opus-5-5', effort: 'medium' };
 let askSampleP = null;
 function askSample() {
   if (!askSampleP) askSampleP = (window.claude && typeof window.claude.use === 'function') ? window.claude.use('sample').catch(() => null) : Promise.resolve(null);
@@ -88,7 +88,7 @@ ASKP.className = 'ask-panel ask-ui'; ASKP.hidden = true; ASKP.setAttribute('aria
 ASKP.innerHTML = '<div class="ask-head"><span class="ask-title">Ask Claude</span><button type="button" class="ask-new" title="Start a new conversation">new chat</button><button type="button" class="ask-x" aria-label="Close">×</button></div>' +
   '<div class="ask-log" aria-live="polite"><p class="ask-hint">Highlight anything on the page and press <b>Ask</b>, or just type. Inside a formula, click a symbol or drag across symbols to pick part of it; click the pick again to widen it. Claude sees the passage you are reading, the section around it, and your highlight.</p></div>' +
   '<div class="ask-ctx" hidden><div class="ask-ctx-l"></div><button type="button" class="ask-ctx-x" title="Don’t attach this">×</button></div>' +
-  '<form class="ask-form"><textarea rows="3" placeholder="Ask about this…" aria-label="Your question"></textarea><div class="ask-row"><label class="ask-deep"><input type="checkbox"> think harder</label><span class="ask-sp"></span><button type="button" class="ask-stop" hidden>stop</button><button type="submit" class="ask-send">ask</button></div></form>';
+  '<form class="ask-form"><textarea rows="3" placeholder="Ask about this…" aria-label="Your question"></textarea><div class="ask-row"><select class="ask-model" aria-label="Model" title="Model"><option value="claude-opus-5-5">Opus 5.5</option><option value="claude-sonnet-5-5">Sonnet 5.5</option><option value="claude-haiku-5-5">Haiku 5.5</option><option value="claude-fable-5-1">Fable 5.1</option></select><select class="ask-effort" aria-label="Effort" title="Effort: how long Claude thinks before answering"><option value="low">low effort</option><option value="medium">medium effort</option><option value="high">high effort</option></select><span class="ask-sp"></span><button type="button" class="ask-stop" hidden>stop</button><button type="submit" class="ask-send">ask</button></div></form>';
 document.body.appendChild(ASKP);
 const askLog = $('.ask-log', ASKP), askTa = $('textarea', ASKP), askCtxBox = $('.ask-ctx', ASKP);
 const askChip = document.createElement('button');
@@ -204,7 +204,14 @@ $('.ask-new', ASKP).addEventListener('click', () => {
   if (ASK.ctl) ASK.ctl.abort();
   ASK.turns = []; askLog.innerHTML = ''; ASK.ctx = askContext(null); askShowCtx(); askTa.focus();
 });
-$('.ask-deep input', ASKP).addEventListener('change', e => { ASK.deep = e.target.checked; });
+/* model and effort: Opus 5.5 at medium effort unless changed; the choice is remembered in this browser */
+const ASK_TIER = { 'claude-opus-5-5': 'complex', 'claude-fable-5-1': 'complex', 'claude-sonnet-5-5': 'default', 'claude-haiku-5-5': 'quick' };
+const ASK_MNAME = { 'claude-opus-5-5': 'Opus 5.5', 'claude-sonnet-5-5': 'Sonnet 5.5', 'claude-haiku-5-5': 'Haiku 5.5', 'claude-fable-5-1': 'Fable 5.1' };
+ASK.model = 'claude-opus-5-5'; ASK.effort = 'medium';
+try { const m = localStorage.getItem('partb-ask-model'), e = localStorage.getItem('partb-ask-effort'); if (m && ASK_TIER[m]) ASK.model = m; if (/^(low|medium|high)$/.test(e || '')) ASK.effort = e; } catch (_) {}
+$('.ask-model', ASKP).value = ASK.model; $('.ask-effort', ASKP).value = ASK.effort;
+$('.ask-model', ASKP).addEventListener('change', e => { ASK.model = e.target.value; try { localStorage.setItem('partb-ask-model', ASK.model); } catch (_) {} });
+$('.ask-effort', ASKP).addEventListener('change', e => { ASK.effort = e.target.value; try { localStorage.setItem('partb-ask-effort', ASK.effort); } catch (_) {} });
 $('.ask-stop', ASKP).addEventListener('click', () => ASK.ctl && ASK.ctl.abort());
 askTa.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('.ask-form', ASKP).requestSubmit(); } if (e.key === 'Escape') askClose(); });
 $('.ask-form', ASKP).addEventListener('submit', e => { e.preventDefault(); askSend(); });
@@ -552,10 +559,11 @@ async function askSend() {
   if (turns[1] && turns[1].role !== 'user') turns.splice(1, 1);
   try {
     const res = await sample(turns, {
-      cache: false, signal: ASK.ctl.signal, model: 'claude-opus-5-5', modelTier: 'complex', effort: ASK.deep ? 'high' : 'medium',
+      cache: false, signal: ASK.ctl.signal, model: ASK.model, modelTier: ASK_TIER[ASK.model], effort: ASK.effort,
       onText: ({ text }) => { raw = text; const now = Date.now(); if (now - rT > 120) { rT = now; askRender(out, raw, false); } }
     });
     raw = res.text; askRender(out, raw, true);
+    if (!res.modelApplied && res.modelTierApplied) askNote('(' + ASK_MNAME[ASK.model] + ' wasn’t available here, so Claude’s ' + ({ quick: 'fast', default: 'standard', complex: 'most capable' }[res.modelTierApplied] || res.modelTierApplied) + ' model answered instead.)');
     if (res.truncated) askNote('(The answer was cut short.)');
     ASK.turns.push({ role: 'assistant', content: raw });
   } catch (e) {
@@ -578,7 +586,7 @@ function askMd(src) {
   let s = src.replace(/\$\$([\s\S]+?)\$\$/g, (_, t) => keep(t, true)).replace(/\\\[([\s\S]+?)\\\]/g, (_, t) => keep(t, true))
     .replace(/\\\(([\s\S]+?)\\\)/g, (_, t) => keep(t, false)).replace(/(^|[^\\$])\$([^$\n]+?)\$/g, (_, a, t) => a + keep(t, false));
   s = askEsc(s);
-  const inline = t => t.replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<i>$2</i>');
+  const inline = t => t.replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*(?=\S)([\s\S]+?)\*\*/g, '<b>$1</b>').replace(/__(?=\S)([\s\S]+?)__/g, '<b>$1</b>').replace(/(^|[^*\w])\*(?=\S)([^*\n]+?)\*(?!\w)/g, '$1<i>$2</i>').replace(/(^|[^\w])_(?=\S)([^_\n]+?)_(?!\w)/g, '$1<i>$2</i>');
   const lines = s.split('\n'), html = []; let list = null, para = [];
   const flushP = () => { if (para.length) { html.push('<p>' + inline(para.join(' ')) + '</p>'); para = []; } };
   const flushL = () => { if (list) { html.push('<' + list.t + '>' + list.items.map(i => '<li>' + inline(i) + '</li>').join('') + '</' + list.t + '>'); list = null; } };

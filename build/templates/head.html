@@ -927,7 +927,8 @@ body.ask-open { padding-right: min(var(--askw, 420px), 100vw); }
 .ask-form textarea:focus { outline: 2px solid var(--blue-wash); border-color: var(--blue); }
 .ask-row { display: flex; align-items: center; gap: .5rem; margin-top: .4rem; }
 .ask-sp { flex: 1; }
-.ask-deep { font-family: var(--mono); font-size: .72rem; color: var(--ink-soft); display: flex; align-items: center; gap: .3rem; cursor: pointer; }
+.ask-model, .ask-effort { font-family: var(--mono); font-size: .72rem; color: var(--ink); background: var(--paper); border: 1px solid var(--rule); border-radius: 4px; padding: .2rem .3rem; cursor: pointer; max-width: 9.5rem; }
+.ask-model:focus-visible, .ask-effort:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
 .ask-send { color: var(--paper); background: var(--blue); border-color: var(--blue); }
 .ask-send:disabled { opacity: .5; cursor: default; }
 .ask-stop[hidden] { display: none; }
