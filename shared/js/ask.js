@@ -1,6 +1,6 @@
 
 /* ---------- Ask Claude: a side panel that sees the selection and its context ---------- */
-const ASK = { sample: undefined, turns: [], ctx: null, ctl: null, busy: false, model: 'claude-opus-5-5', effort: 'medium' };
+const ASK = { sample: undefined, turns: [], msgs: [], chatId: null, chatCreated: 0, ctx: null, ctl: null, busy: false, model: 'claude-opus-5-5', effort: 'medium' };
 let askSampleP = null;
 function askSample() {
   if (!askSampleP) askSampleP = (window.claude && typeof window.claude.use === 'function') ? window.claude.use('sample').catch(() => null) : Promise.resolve(null);
@@ -85,8 +85,9 @@ function askWhere(v, top) {
 /* ---------- the panel ---------- */
 const ASKP = document.createElement('aside');
 ASKP.className = 'ask-panel ask-ui'; ASKP.hidden = true; ASKP.setAttribute('aria-label', 'Ask Claude');
-ASKP.innerHTML = '<div class="ask-head"><span class="ask-title">Ask Claude</span><button type="button" class="ask-new" title="Start a new conversation">new chat</button><button type="button" class="ask-x" aria-label="Close">×</button></div>' +
+ASKP.innerHTML = '<div class="ask-head"><span class="ask-title">Ask Claude</span><button type="button" class="ask-histb" title="Earlier conversations" aria-pressed="false">history</button><button type="button" class="ask-new" title="Start a new conversation">new chat</button><button type="button" class="ask-x" aria-label="Close">×</button></div>' +
   '<div class="ask-log" aria-live="polite"><p class="ask-hint">Highlight anything on the page and press <b>Ask</b>, or just type. Inside a formula, click a symbol or drag across symbols to pick part of it; click the pick again to widen it. Claude sees the passage you are reading, the section around it, and your highlight.</p></div>' +
+  '<div class="ask-hist" hidden><div class="ask-hist-top"><input type="search" class="ask-hist-q" placeholder="Search earlier chats…" aria-label="Search earlier chats"></div><div class="ask-hist-list" role="list"></div></div>' +
   '<div class="ask-ctx" hidden><div class="ask-ctx-l"></div><button type="button" class="ask-ctx-x" title="Don’t attach this">×</button></div>' +
   '<form class="ask-form"><textarea rows="3" placeholder="Ask about this…" aria-label="Your question"></textarea><div class="ask-row"><select class="ask-model" aria-label="Model" title="Model"><option value="claude-opus-5-5">Opus 5.5</option><option value="claude-sonnet-5-5">Sonnet 5.5</option><option value="claude-haiku-5-5">Haiku 5.5</option><option value="claude-fable-5-1">Fable 5.1</option></select><select class="ask-effort" aria-label="Effort" title="Effort: how long Claude thinks before answering"><option value="low">low effort</option><option value="medium">medium effort</option><option value="high">high effort</option></select><span class="ask-sp"></span><button type="button" class="ask-stop" hidden>stop</button><button type="submit" class="ask-send">ask</button></div></form>';
 document.body.appendChild(ASKP);
@@ -202,8 +203,140 @@ $('.ask-x', ASKP).addEventListener('click', askClose);
 $('.ask-ctx-x', ASKP).addEventListener('click', () => { ASK.ctx = null; askShowCtx(); });
 $('.ask-new', ASKP).addEventListener('click', () => {
   if (ASK.ctl) ASK.ctl.abort();
-  ASK.turns = []; askLog.innerHTML = ''; ASK.ctx = askContext(null); askShowCtx(); askTa.focus();
+  histShow(false); askNewChat(); ASK.ctx = askContext(null); askShowCtx(); askTa.focus();
 });
+function askNewChat() { ASK.turns = []; ASK.msgs = []; ASK.chatId = null; ASK.chatCreated = 0; askLog.innerHTML = ''; }
+
+/* ---------- chat history ----------
+   Each conversation is saved after every answer: in this artifact's database, in this viewer's private space
+   (data/users/<id>/…, which nobody else can read), or in this browser's storage when the database isn't available.
+   Two documents per chat: a small one for the list, and one with the messages. */
+const HIST = { db: null, uid: null, ready: null, chain: Promise.resolve(), cache: null };
+const HIST_LS = 'partb-ask-chats';
+function histInit() {
+  if (!HIST.ready) HIST.ready = (async () => {
+    try {
+      if (!window.claude || typeof window.claude.use !== 'function') return;
+      const [db, u] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+      const uid = u ? await u.id() : null;
+      if (db && uid) { HIST.db = db; HIST.uid = uid; }
+    } catch (_) {}
+  })();
+  return HIST.ready;
+}
+const histRoot = () => HIST.db.doc('data/users/' + HIST.uid + '/ask');
+function lsRead() { try { return JSON.parse(localStorage.getItem(HIST_LS) || '{}') || {}; } catch (_) { return {}; } }
+function lsWrite(o) {
+  const ids = Object.keys(o).sort((a, b) => (o[b].meta.updated || 0) - (o[a].meta.updated || 0));
+  ids.slice(40).forEach(i => delete o[i]);
+  try { localStorage.setItem(HIST_LS, JSON.stringify(o)); } catch (_) {}
+}
+async function histList() {
+  await histInit();
+  if (HIST.db) {
+    try { const snap = await histRoot().collection('chats').orderBy('updated', 'desc').limit(200).get(); return snap.docs.map(d => Object.assign({ id: d.id }, d.data())); }
+    catch (_) {}
+  }
+  const o = lsRead(); return Object.keys(o).map(id => Object.assign({ id }, o[id].meta)).sort((a, b) => b.updated - a.updated);
+}
+async function histGet(id) {
+  await histInit();
+  if (HIST.db) { try { const d = await histRoot().collection('bodies').doc(id).get(); if (d.exists) return d.data(); } catch (_) {} }
+  const o = lsRead(); return o[id] ? o[id].body : null;
+}
+/* a stored chat must stay under the 256 KB document limit: older questions keep only the question, not the attached passage */
+function histBody() {
+  const body = { msgs: ASK.msgs.slice(), turns: ASK.turns.slice() };
+  let n = 0;
+  while (JSON.stringify(body).length > 200000 && n < body.turns.length - 2) {
+    const t = body.turns[n];
+    if (t.role === 'user' && t.content.length > 600) body.turns[n] = { role: 'user', content: '(context omitted)\nHIS QUESTION:\n' + (t.content.split('HIS QUESTION:\n').pop() || '') };
+    n++;
+  }
+  return body;
+}
+function histSave() {
+  if (!ASK.msgs.length) return;
+  if (!ASK.chatId) { ASK.chatId = Date.now().toString(36) + Math.random().toString(36).slice(2, 7); ASK.chatCreated = Date.now(); }
+  const first = ASK.msgs.find(m => m.role === 'user');
+  const meta = { title: askClip((first && first.q || 'Chat').replace(/\s+/g, ' '), 90), where: (first && first.tag) || '', view: currentView || '', created: ASK.chatCreated, updated: Date.now(), n: ASK.msgs.length };
+  const id = ASK.chatId, body = histBody();
+  HIST.cache = null;
+  HIST.chain = HIST.chain.then(async () => {
+    await histInit();
+    if (HIST.db) {
+      try { await histRoot().collection('bodies').doc(id).set(body); await histRoot().collection('chats').doc(id).set(meta); return; }
+      catch (e) { if (e && e.code === 'quota_exceeded') askNote('History is full: delete some old chats to keep saving new ones.', 'err'); }
+    }
+    const o = lsRead(); o[id] = { meta, body }; lsWrite(o);
+  }).catch(() => {});
+}
+function histDelete(id) {
+  HIST.cache = null;
+  HIST.chain = HIST.chain.then(async () => {
+    await histInit();
+    if (HIST.db) { try { await histRoot().collection('chats').doc(id).delete(); await histRoot().collection('bodies').doc(id).delete(); } catch (_) {} }
+    const o = lsRead(); if (o[id]) { delete o[id]; lsWrite(o); }
+  });
+  return HIST.chain;
+}
+const histPanel = $('.ask-hist', ASKP), histListEl = $('.ask-hist-list', ASKP), histQ = $('.ask-hist-q', ASKP), histBtn = $('.ask-histb', ASKP);
+function histAgo(t) {
+  const d = (Date.now() - t) / 1000;
+  if (d < 60) return 'just now'; if (d < 3600) return Math.round(d / 60) + ' min ago'; if (d < 86400) return Math.round(d / 3600) + ' h ago';
+  if (d < 86400 * 7) return Math.round(d / 86400) + ' d ago';
+  return new Date(t).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: new Date(t).getFullYear() === new Date().getFullYear() ? undefined : 'numeric' });
+}
+function histRenderList() {
+  const q = histQ.value.trim().toLowerCase(), list = (HIST.cache || []).filter(c => !q || (c.title + ' ' + c.where).toLowerCase().includes(q));
+  histListEl.innerHTML = '';
+  if (!HIST.cache) { histListEl.innerHTML = '<p class="ask-note">Loading…</p>'; return; }
+  if (!list.length) { histListEl.innerHTML = '<p class="ask-note">' + (HIST.cache.length ? 'No chats match.' : 'No earlier chats yet. Each conversation is saved here after Claude answers.') + '</p>'; return; }
+  list.forEach(c => {
+    const row = document.createElement('div'); row.className = 'ask-hrow' + (c.id === ASK.chatId ? ' cur' : ''); row.setAttribute('role', 'listitem');
+    const open = document.createElement('button'); open.type = 'button'; open.className = 'ask-hopen';
+    const t = document.createElement('span'); t.className = 'ask-ht'; t.textContent = c.title;
+    const m = document.createElement('span'); m.className = 'ask-hm'; m.textContent = [c.where, histAgo(c.updated), Math.ceil((c.n || 0) / 2) + ' question' + (Math.ceil((c.n || 0) / 2) === 1 ? '' : 's')].filter(Boolean).join(' · ');
+    open.append(t, m); open.addEventListener('click', () => histOpen(c.id));
+    const del = document.createElement('button'); del.type = 'button'; del.className = 'ask-hdel'; del.textContent = '×'; del.title = 'Delete this chat'; del.setAttribute('aria-label', 'Delete chat: ' + c.title);
+    del.addEventListener('click', () => {
+      if (!del.classList.contains('sure')) { del.classList.add('sure'); del.textContent = 'delete?'; setTimeout(() => { del.classList.remove('sure'); del.textContent = '×'; }, 3000); return; }
+      HIST.cache = (HIST.cache || []).filter(x => x.id !== c.id); histRenderList(); histDelete(c.id);
+      if (ASK.chatId === c.id) ASK.chatId = null;
+    });
+    row.append(open, del); histListEl.appendChild(row);
+  });
+}
+async function histShow(on) {
+  histPanel.hidden = !on; askLog.hidden = on; $('.ask-form', ASKP).hidden = on; if (on) askCtxBox.hidden = true; else askShowCtx();
+  histBtn.setAttribute('aria-pressed', on ? 'true' : 'false'); histBtn.textContent = on ? 'back' : 'history';
+  if (!on) return;
+  histQ.value = ''; histRenderList();
+  await HIST.chain;
+  HIST.cache = await histList(); histRenderList();
+  histQ.focus({ preventScroll: true });
+}
+async function histOpen(id) {
+  if (ASK.busy && ASK.ctl) ASK.ctl.abort();
+  const body = await histGet(id);
+  if (!body) { askNote('That chat couldn’t be loaded.', 'err'); return; }
+  askNewChat();
+  const meta = (HIST.cache || []).find(c => c.id === id) || {};
+  ASK.chatId = id; ASK.chatCreated = meta.created || Date.now();
+  ASK.msgs = (body.msgs || []).slice(); ASK.turns = (body.turns || []).slice();
+  const outs = [];
+  ASK.msgs.forEach(m => {
+    if (m.role === 'user') { const ub = askBubble('user', m.q); if (m.tag) { const t = document.createElement('span'); t.className = 'ask-tag'; t.textContent = m.tag; ub.prepend(t); } }
+    else { const b = askBubble('assistant', ''); b.innerHTML = askMd(m.text || ''); outs.push(b); }
+  });
+  if (outs.length) typeset(outs);
+  ASK.ctx = askContext(null);
+  histShow(false);
+  askLog.scrollTop = askLog.scrollHeight;
+}
+histBtn.addEventListener('click', () => histShow(histPanel.hidden));
+histQ.addEventListener('input', histRenderList);
+histQ.addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); histShow(false); } });
 /* model and effort: Opus 5.5 at medium effort unless changed; the choice is remembered in this browser */
 const ASK_TIER = { 'claude-opus-5-5': 'complex', 'claude-fable-5-1': 'complex', 'claude-sonnet-5-5': 'default', 'claude-haiku-5-5': 'quick' };
 const ASK_MNAME = { 'claude-opus-5-5': 'Opus 5.5', 'claude-sonnet-5-5': 'Sonnet 5.5', 'claude-haiku-5-5': 'Haiku 5.5', 'claude-fable-5-1': 'Fable 5.1' };
@@ -548,8 +681,10 @@ async function askSend() {
   askTa.value = '';
   const hint = $('.ask-hint', askLog); if (hint) hint.remove();
   const ub = askBubble('user', q);
-  if (c) { const t = document.createElement('span'); t.className = 'ask-tag'; t.textContent = (c.sel ? 'highlight · ' : '') + c.label; ub.prepend(t); }
+  const tag = c ? (c.sel ? 'highlight · ' : '') + c.label : '';
+  if (c) { const t = document.createElement('span'); t.className = 'ask-tag'; t.textContent = tag; ub.prepend(t); }
   ASK.turns.push({ role: 'user', content: askPack(c, q) });
+  ASK.msgs.push({ role: 'user', q, tag });
   ASK.ctx = null; askShowCtx();
   const out = askBubble('assistant', ''); out.innerHTML = '<span class="ask-think">Thinking…</span>';
   ASK.busy = true; ASK.ctl = new AbortController();
@@ -565,14 +700,14 @@ async function askSend() {
     raw = res.text; askRender(out, raw, true);
     if (!res.modelApplied && res.modelTierApplied) askNote('(' + ASK_MNAME[ASK.model] + ' wasn’t available here, so Claude’s ' + ({ quick: 'fast', default: 'standard', complex: 'most capable' }[res.modelTierApplied] || res.modelTierApplied) + ' model answered instead.)');
     if (res.truncated) askNote('(The answer was cut short.)');
-    ASK.turns.push({ role: 'assistant', content: raw });
+    ASK.turns.push({ role: 'assistant', content: raw }); ASK.msgs.push({ role: 'assistant', text: raw }); histSave();
   } catch (e) {
     const code = e && e.code;
-    if (e && e.text) { raw = e.text; askRender(out, raw, true); ASK.turns.push({ role: 'assistant', content: raw }); }
+    if (e && e.text) { raw = e.text; askRender(out, raw, true); ASK.turns.push({ role: 'assistant', content: raw }); ASK.msgs.push({ role: 'assistant', text: raw }); histSave(); }
     else out.remove();
     if (code === 'refused') out.remove();
     if (code !== 'cancelled') askNote(ASK_ERR[code] || ASK_ERR.upstream_error, 'err');
-    if (!(e && e.text)) ASK.turns.pop();
+    if (!(e && e.text)) { ASK.turns.pop(); ASK.msgs.pop(); }
   } finally {
     ASK.busy = false; ASK.ctl = null; $('.ask-stop', ASKP).hidden = true; $('.ask-send', ASKP).disabled = false;
   }

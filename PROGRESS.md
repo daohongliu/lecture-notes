@@ -56,7 +56,9 @@ Everything ships as ONE artifact (both courses), notes stored in the artifact's 
 
 - [x] Ask Claude side panel (`shared/js/ask.js`, sample capability): highlight text → "Ask Claude" chip, or the "ask" button;
       sends the selection, the enclosing block (statement+proof), neighbouring blocks in the section and the location, with maths
-      recovered as TeX from `data-tex`. Chat kept in memory; model and effort pickers in the panel (default Opus 5.5 / medium, remembered in localStorage partb-ask-model/-effort; modelTier from the model as fallback, with a note when the named model did not answer). Resizable (drag left edge, width in localStorage), reading position kept on open/close/resize via askKeepPlace. Publish with capabilities {sample:{}}.
+      recovered as TeX from `data-tex`. Chat kept in memory; model and effort pickers in the panel (default Opus 5.5 / medium, remembered in localStorage partb-ask-model/-effort; modelTier from the model as fallback, with a note when the named model did not answer). Resizable (drag left edge, width in localStorage), reading position kept on open/close/resize via askKeepPlace. Publish with capabilities {sample:{}, db:{}, user:{}} (db+user are for chat history).
+      Chat history: saved after each answer to db at data/users/<uid>/ask/{chats,bodies}/<id> (meta for the list, body with msgs+turns,
+      trimmed under 256 KB); falls back to localStorage 'partb-ask-chats' (40 most recent). "history" button lists, searches, reopens, deletes.
       Formula picking: SVG maths can't be selected natively, so click a symbol / drag across symbols / click again (or Alt+↑) to widen;
       hit-testing is geometric over g[data-mml-node] leaves; the pick is linearised back to LaTeX (mLin) and sent with the whole formula's TeX.
 
