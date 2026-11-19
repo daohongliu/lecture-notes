@@ -325,7 +325,7 @@ showView = function (id) {
   const r = _showView(id);
   const v = document.getElementById(currentView);
   document.body.dataset.course = (v && v.dataset.course) || '';
-  document.title = v ? (v.classList.contains('hub') ? 'Part B' : v.dataset.title + ' · ' + (COURSE_NAME[v.dataset.course] || '')) : document.title;
+  document.title = v ? (v.classList.contains('hub') ? 'Lecture Notes' : v.dataset.title + ' · ' + (COURSE_NAME[v.dataset.course] || '')) : document.title;
   $$('.topbar .pills a').forEach(a => a.setAttribute('aria-current', String(a.getAttribute('href') === '#' + currentView)));
   buildToc(v);
   walkStrip();
