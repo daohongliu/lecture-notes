@@ -360,3 +360,27 @@ A few remarks on the definition.
 </role>
 
 <sheet n="1" qs="2">You will want a Chernoff bound, stated in Section 3.3.</sheet>
+
+## 1.7 Exercises {17} [d2 i1]
+
+The exercises at the end of this chapter of the lecture notes. Most were set on the problem sheets, so for those there is just a pointer; the rest are stated in full.
+
+<qn n="1.1" id="ex1-1" label="Exercise 1.1" t="Rectangles and hyper-rectangles">
+Set as Problem Sheet 1, Question 1, where the statement and hints are. Part (a) of the notes’ version, the rectangle algorithm for an arbitrary distribution $\D$ on $\R^2$, is the sheet’s optional part.
+</qn>
+
+<qn n="1.2" id="ex1-2" label="Exercise 1.2" t="Parity: small circuits, huge DNF">
+Let $f:\{0,1\}^n\to\{0,1\}$ be the parity function $f(z_1,\dots,z_n)=z_1\oplus z_2\oplus\dots\oplus z_n$, which is $1$ exactly when an odd number of the inputs are $1$.
+<ol class="parts"><li>A boolean circuit with $n$ inputs is a directed acyclic graph with exactly $n$ source nodes, holding the inputs $z_1,\dots,z_n$, and one sink node, the output. Every internal node is labelled $\wedge$, $\vee$ (in-degree exactly $2$) or $\neg$ (in-degree exactly $1$) and computes that operation of its inputs. The **size** of the circuit is its number of edges and its **depth** is the length of the longest path from a source to the sink. Show that $f$ has a circuit of size $O(n)$ and depth $O(\log n)$.</li><li>Show that writing $f$ in disjunctive normal form needs at least $2^{n-1}$ terms.</li></ol>
+
+<p class="uses">Section 1.2 quotes the result.</p>
+</qn>
+
+<qn n="1.3" id="ex1-3" label="Exercise 1.3" t="The confidence parameter is cheap">
+Set as Problem Sheet 1, Question 2, where the statement and hints are.
+</qn>
+
+<qn n="1.4" id="ex1-4" label="Exercise 1.4" t="Proper learning of threshold functions is hard">
+Set as Problem Sheet 1, Question 3, where the statement and hints are.
+</qn>
+

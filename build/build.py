@@ -221,7 +221,8 @@ def process(s):
         if tag == 'pause':
             lead = a.get('lead', 'Exercise').rstrip('.')
             nm = a.get('n', '')
-            return ph(f'<details class="pause ex"><summary><span class="lead">{lead}</span><span class="exname">{nm}</span></summary>'
+            pid = 'ex-' + re.sub(r'[^a-z0-9]+', '-', re.sub(r'<[^>]+>|\$[^$]*\$', '', nm).lower()).strip('-') if nm else ''
+            return ph(f'<details class="pause ex"' + (f' id="{pid}"' if pid and pid != 'ex-' else '') + '><summary><span class="lead">{lead}</span><span class="exname">{nm}</span></summary>'
                       f'<div class="ex-q">{a.get("q", "")}</div><details class="ex-a"><summary>show answer</summary><div>{body}</div></details></details>')
         if tag == 'sheet':
             n = a.get('n', '1'); qs = [q.strip() for q in a.get('qs', '').split(',') if q.strip()]
@@ -232,7 +233,8 @@ def process(s):
         if tag == 'qn':
             n = a.get('n', '')
             t = a.get('t', '')
-            return ph(f'<div class="sq" id="SHEETID-{n.lower()}" data-label="Question {n}" data-name="{t}"><div class="sq-n">{n}</div><div class="sq-b">' + (f'<p class="sq-t">{t}</p>' if t else '') + f'{body}</div></div>')
+            qid = a.get('id') or f'SHEETID-{n.lower()}'
+            return ph(f'<div class="sq" id="{qid}" data-label="{a.get("label", "Question " + n)}" data-name="{t}"><div class="sq-n">{n}</div><div class="sq-b">' + (f'<p class="sq-t">{t}</p>' if t else '') + f'{body}</div></div>')
         if tag == 'pm':
             return ph(payoff_matrix(a, body))
         if tag == 'bg':
@@ -292,13 +294,16 @@ def autolink(s):
             return f'<a class="xref" href="#{sid}">{m.group(1)}Sheet {n}</a>' + (m.group(3) + q if q else '')
         if 'You are reading' not in t:
             t = re.sub(r'\b((?:Problem )?)Sheet (\d+)((?:,\s*|\s+)[Qq]uestions? )?(\w+)?(?: ·)?', lambda m: sh(m) if m.group(4) or not m.group(3) else m.group(0), t)
+        # "Exercise 2.4" (the notes' end-of-chapter exercises) and Exercise "A noisy bit" (named exercises in the text)
+        t = re.sub(r'\bExercise (\d+)\.(\d+)\b', lambda m: (lambda i: f'<a class="xref" href="#{i}">{m.group(0)}</a>' if (i in IDS or i[len(P):] in IDS) else m.group(0))(f'{P}ex{m.group(1)}-{m.group(2)}'), t)
+        t = re.sub(r'\bExercise (&quot;|"|\'|“|‘)([^"\'”’<]+)(&quot;|"|\'|”|’)', lambda m: (lambda i: f'<a class="xref" href="#{i}">{m.group(0)}</a>' if (i in IDS or i[len(P):] in IDS) else m.group(0))(P + 'ex-' + re.sub(r'[^a-z0-9]+', '-', m.group(2).lower()).strip('-')), t)
         t = re.sub(r'\bChapter (\d)\b(?!\.\d)', lambda m: f'<a class="chref" href="#{P}ch{m.group(1)}">Chapter {m.group(1)}</a>' if f'{P}ch{m.group(1)}' in EXIST else m.group(0), t)
         out.append(t)
     res = ''.join(out)
     # a margin label that just names the result above it needs no link to it
     return re.sub(r'(<span class="role-a">)<a class="xref" href="#[^"]+">([^<]+)</a>(</span>)', r'\1\2\3', res)
 
-GEN_ID = re.compile(r'^(ch\d|r\d|s\d|eq\d|fig\d|bg-|h\d+-|sheet\d|alg\d|ex-)')
+GEN_ID = re.compile(r'^(ch\d|r\d|s\d|eq\d|fig\d|bg-|h\d+-|sheet\d|alg\d|ex-|ex\d)')
 def prefix_ids(html_, p):
     if not p: return html_
     f = lambda pre: (lambda m: m.group(1) + (m.group(2) if m.group(2).startswith(p) or not GEN_ID.match(m.group(2)) else p + m.group(2)) + '"')

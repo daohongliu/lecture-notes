@@ -275,3 +275,26 @@ Figure 3.3 shows $n+1=4$ points in $\R^3$ in general position. Every one of the 
 <sheet n="3" qs="1">Figure 3.3 is part 1 for $n=3$.</sheet>
 
 @@clt-fig3-3@@
+
+## 3.6 Exercises {37} [d2 i1]
+
+The exercises at the end of this chapter of the lecture notes. Most were set on the problem sheets, so for those there is just a pointer; the rest are stated in full.
+
+<qn n="3.1" id="ex3-1" label="Exercise 3.1" t="Halfspaces in Rⁿ have VC dimension n + 1">
+Set as Problem Sheet 3, Question 1, where the statement and hints are.
+</qn>
+
+<qn n="3.2" id="ex3-2" label="Exercise 3.2" t="Meeting the Sauer–Shelah bound">
+Set as Problem Sheet 2, Question 3, where the statement and hints are.
+</qn>
+
+<qn n="3.3" id="ex3-3" label="Exercise 3.3" t="Convex sets in the unit square">
+Set as Problem Sheet 2, Question 2, where the statement and hints are.
+</qn>
+
+<qn n="3.4" id="ex3-4" label="Exercise 3.4" t="Flipping labels keeps the VC dimension">
+For a hypothesis class $\H$ and a boolean function $c$, let $\H\oplus c=\{h\oplus c:h\in\H\}$, where $h\oplus c$ is $1$ exactly where $h$ and $c$ disagree. Show that $\VCD(\H\oplus c)=\VCD(\H)$.
+
+<p class="uses">Used in the proof of Theorem 3.8.</p>
+</qn>
+

@@ -19,7 +19,12 @@ function toast(msg) {
 function tagTex(nodes) {
   try {
     MathJax.startup.document.getMathItemsWithin(nodes).forEach(it => {
-      const c = it.typesetRoot; if (c && c.dataset && !c.dataset.tex) { c.dataset.tex = it.math; if (it.display) c.dataset.disp = '1'; }
+      const c = it.typesetRoot; if (c && c.dataset && !c.dataset.tex) {
+        c.dataset.tex = it.math; if (it.display) c.dataset.disp = '1';
+        /* the hidden MathML copy is display:block and breaks text selection (and triple-click) around the formula,
+           so it is hidden in CSS and screen readers get the TeX as a label instead */
+        const svg = c.querySelector('svg'); if (svg) { svg.removeAttribute('aria-hidden'); svg.setAttribute('aria-label', it.math); }
+      }
     });
   } catch (_) {}
 }
@@ -381,12 +386,18 @@ function updateMinimap() {
 }
 function scheduleMinimap(ms) { clearTimeout(mmT); mmT = setTimeout(layoutMinimap, ms == null ? 120 : ms); }
 let mmDrag = null;
+/* the page position that puts the top of the window at height `top` in the strip */
+function mmScrollForSlider(top) {
+  const vh = window.innerHeight * MM.sy, span = Math.max(0, MM.docH - window.innerHeight);
+  if (MM.CH > MM.H) return MM.top0 + Math.min(1, Math.max(0, top / Math.max(1, MM.H - vh))) * span;
+  return MM.top0 + Math.min(span, Math.max(0, top / MM.sy));
+}
 mm.addEventListener('pointerdown', e => {
   if (!MM) return; e.preventDefault();
   const r = mm.getBoundingClientRect(), y = e.clientY - r.top, vt = (window.scrollY - MM.top0) * MM.sy - MM.off, vh = window.innerHeight * MM.sy;
   if (y >= vt && y <= vt + vh) { mmDrag = { y0: e.clientY, s0: window.scrollY }; }
-  else { /* click outside the window: centre the window on that point of the map */
-    window.scrollTo(0, MM.top0 + (y + MM.off) / MM.sy - window.innerHeight / 2);
+  else { /* click outside the window: as in VS Code, the window jumps so it is centred under the pointer, then drags from there */
+    window.scrollTo(0, mmScrollForSlider(y - vh / 2));
     mmDrag = { y0: e.clientY, s0: window.scrollY };
   }
   mm.setPointerCapture(e.pointerId);

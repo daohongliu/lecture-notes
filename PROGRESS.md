@@ -60,6 +60,12 @@ Everything ships as ONE artifact (both courses), notes stored in the artifact's 
       Formula picking: SVG maths can't be selected natively, so click a symbol / drag across symbols / click again (or Alt+↑) to widen;
       hit-testing is geometric over g[data-mml-node] leaves; the pick is linearised back to LaTeX (mLin) and sent with the whole formula's TeX.
 
+- [x] Text selection across maths: mjx-assistive-mml (display:block) hidden, since it broke triple-click and drag selections
+      at each formula; the svg gets aria-label = TeX instead. Formulas inside a selection get .mjx-insel (tint). A drag that starts
+      in a formula and leaves it turns into a native selection anchored on the far side of the formula (mToNative).
+- [x] CLT: the notes' end-of-chapter exercises are sections 1.7, 2.4, 3.6, 4.3 (ids clt-exN-M via <qn id label>); the ones set on
+      sheets point there, the rest (1.2, 2.1, 2.2, 3.4, 4.2) are stated in full. "Exercise N.M" and Exercise "Name" (pause ids ex-slug) autolink.
+- [x] Minimap click jumps the window to sit centred under the pointer (mmScrollForSlider), then drags, as in VS Code.
 - [x] All right-hand panels resizable via panelGrip() in ask.js (Ask: --askw, "beside the text": --sidew, both in localStorage).
 - [x] Minimap works like VS Code: fixed scale (sy = max(sx·1.15, 0.055)), so the viewport window is a constant size; short
       chapters give a short map, long ones slide under the strip proportionally; dragging the window follows the pointer.

@@ -121,3 +121,32 @@ This suggests a trade-off between running time and data. It doesn't prove one: s
 @@clt-fig2-2@@
 
 <sheet n="2" qs="1"></sheet>
+
+## 2.4 Exercises {25} [d2 i1]
+
+The exercises at the end of this chapter of the lecture notes. Most were set on the problem sheets, so for those there is just a pointer; the rest are stated in full.
+
+<qn n="2.1" id="ex2-1" label="Exercise 2.1" t="DNF formulas can memorise">
+Let $(x_1,y_1),\dots,(x_m,y_m)$ be labelled examples with $x_i\in\X_n=\{0,1\}^n$ and $y_i\in\{0,1\}$, and suppose no instance appears with both labels: there are no $i,j$ with $x_i=x_j$ but $y_i\ne y_j$. Show that there is a DNF formula of length $O(m)$ consistent with all the examples.
+
+<p class="uses">Section 2.1 quotes it, to show why Occam’s razor needs the hypothesis to be short.</p>
+</qn>
+
+<qn n="2.2" id="ex2-2" label="Exercise 2.2" t="Hypotheses that grow with the data">
+Formulate Remark 2.3 as a precise mathematical statement and prove it. When $\H_{n,m}$ replaces $\H_n$ in (2.3), $m$ appears on both sides of the inequality: justify that some $m$, still polynomial in $n$, $\size(c)$, $\frac1\delta$ and $\frac1\eps$, satisfies the modified inequality.
+
+<p class="uses">Uses Theorem 2.2 and Remark 2.3; the exercise “Why $\beta<1$ is enough” after Remark 2.3 is the key step.</p>
+</qn>
+
+<qn n="2.3" id="ex2-3" label="Exercise 2.3" t="Learning parities">
+Set as Problem Sheet 1, Question 4, where the statement and hints are.
+</qn>
+
+<qn n="2.4" id="ex2-4" label="Exercise 2.4" t="Hypotheses as Turing machines">
+Set as Problem Sheet 1, Question 5, where the statement and hints are.
+</qn>
+
+<qn n="2.5" id="ex2-5" label="Exercise 2.5" t="Learning decision lists">
+Set as Problem Sheet 2, Question 1, where the statement and hints are.
+</qn>
+

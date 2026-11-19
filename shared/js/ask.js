@@ -216,6 +216,17 @@ function askSelRange() {
   if (!s.toString().trim() && !(r.cloneContents().querySelector && r.cloneContents().querySelector('mjx-container'))) return null;
   return r;
 }
+/* the browser can't paint a selection over rendered maths, so formulas inside the selection get a tint */
+let askInSel = [];
+function askMarkSel() {
+  askInSel.forEach(x => x.classList.remove('mjx-insel')); askInSel = [];
+  const s = window.getSelection(); if (!s || s.isCollapsed || !s.rangeCount) return;
+  const r = s.getRangeAt(0), root = r.commonAncestorContainer.nodeType === 1 ? r.commonAncestorContainer : r.commonAncestorContainer.parentElement;
+  if (!root || root.closest('.ask-panel')) return;
+  const own = root.closest('mjx-container'); const list = own ? [own] : Array.from(root.querySelectorAll('mjx-container'));
+  list.forEach(m => { if (r.intersectsNode(m)) { m.classList.add('mjx-insel'); askInSel.push(m); } });
+}
+document.addEventListener('selectionchange', () => requestAnimationFrame(askMarkSel));
 let askSelT = null;
 document.addEventListener('selectionchange', () => {
   clearTimeout(askSelT);
@@ -366,14 +377,35 @@ document.addEventListener('pointerdown', e => {
   const again = MSEL && MSEL.box === box && MSEL.nodes.some(n => n === leaf || n.contains(leaf));
   mDrag = { box, a: leaf, x: e.clientX, y: e.clientY, again, moved: false };
 }, true);
+function mCaret(x, y) {
+  if (document.caretPositionFromPoint) { const c = document.caretPositionFromPoint(x, y); return c && { node: c.offsetNode, off: c.offset }; }
+  if (document.caretRangeFromPoint) { const r = document.caretRangeFromPoint(x, y); return r && { node: r.startContainer, off: r.startOffset }; }
+  return null;
+}
+/* a drag that starts in a formula and leaves it becomes an ordinary text selection, with the whole formula in it */
+function mToNative(e) {
+  const box = mDrag.box, c = mCaret(e.clientX, e.clientY); if (!c || box.contains(c.node) || ASKP.contains(c.node)) return false;
+  /* anchor on whichever side of the formula keeps it inside the selection */
+  const par = box.parentNode, i = Array.prototype.indexOf.call(par.childNodes, box);
+  const r = document.createRange(); r.selectNode(box);
+  const after = r.comparePoint(c.node, c.off) >= 0;
+  if (MSEL) mselClear();
+  window.getSelection().setBaseAndExtent(par, after ? i : i + 1, c.node, c.off);
+  mDrag.native = true; return true;
+}
+/* stop the browser starting its own selection from inside the picture (pointerdown's preventDefault doesn't always) */
+document.addEventListener('mousedown', e => { if (e.button === 0 && mBoxOf(e.target)) e.preventDefault(); }, true);
 document.addEventListener('pointermove', e => {
   if (!mDrag) return;
   if (Math.hypot(e.clientX - mDrag.x, e.clientY - mDrag.y) > 4) mDrag.moved = true;
   if (mDrag.touch || !mDrag.moved) return;
+  if (mDrag.native) { mToNative(e); return; }
+  const r = mDrag.box.getBoundingClientRect(), out = e.clientX < r.left - 6 || e.clientX > r.right + 6 || e.clientY < r.top - 6 || e.clientY > r.bottom + 6;
+  if (out && mToNative(e)) return;
   const b = mLeafAt(e.clientX, e.clientY, mDrag.box); if (b) mselSet(mDrag.box, mSpan(mDrag.a, b, mDrag.box));
 });
 document.addEventListener('pointerup', () => {
-  const d = mDrag; mDrag = null; if (!d || (d.touch && d.moved)) return;
+  const d = mDrag; mDrag = null; if (!d || (d.touch && d.moved) || d.native) return;
   if (d.moved) return;
   if (d.again || (d.touch && MSEL && MSEL.box === d.box && MSEL.nodes.some(n => n === d.a || n.contains(d.a)))) mWiden();
   else mselSet(d.box, [d.a]);
@@ -494,4 +526,4 @@ function askRender(el, raw, final) {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && !ASKP.hidden && document.activeElement && ASKP.contains(document.activeElement)) askClose();
 });
-window.__askDebug = { mselTex: () => mselTex(), ctx: () => ASK.ctx };
+window.__askDebug = { mselTex: () => mselTex(), ctx: () => ASK.ctx, drag: () => mDrag && { native: mDrag.native, moved: mDrag.moved, box: mDrag.box.dataset.tex } };

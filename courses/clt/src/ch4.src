@@ -139,3 +139,22 @@ then $S$ is not shattered, so the VC dimension is below $m$. The left side is $2
 With $T=O(\frac{\log m}{\gamma^2})$ rounds, the output has VC dimension $O\big(\frac{d\log m}{\gamma^2}\log\frac{\log m}{\gamma^2}\big)$, which grows only logarithmically in $m$. Since Theorem 3.8 needs $m$ to grow roughly linearly in the VC dimension, a large enough polynomial $m$ makes AdaBoost a PAC learner. So weak learnability implies PAC learnability.[[Finite VC dimension of the weak hypotheses is not a strong requirement, but it isn't necessary either: AdaBoost can be shown to generalise without it, through margin-based arguments.]]
 
 </role>
+
+## 4.3 Exercises {44} [d2 i1]
+
+The exercises at the end of this chapter of the lecture notes. Most were set on the problem sheets, so for those there is just a pointer; the rest are stated in full.
+
+<qn n="4.1" id="ex4-1" label="Exercise 4.1" t="Properties of AdaBoost">
+Set as Problem Sheet 3, Question 2, where the statement and hints are.
+</qn>
+
+<qn n="4.2" id="ex4-2" label="Exercise 4.2" t="The VC bound for thresholds of weak hypotheses">
+The notes ask for “a formal proof of the statement right after Lemma 4.3”. That is most likely the claim that ends the proof: for a suitable constant $c_0$, (4.10) holds for all $m\ge c_0kd\log k$, so that $\VCD(\mathrm{THRESHOLDS}_k(\H))=O(kd\log k)$. (It could instead mean the generalisation bound for AdaBoost that follows, from Lemma 4.3 and Theorem 3.8.)
+
+<p class="uses">Finishes the proof of Lemma 4.3.</p>
+</qn>
+
+<qn n="4.3" id="ex4-3" label="Exercise 4.3" t="Weak learning with dictators">
+Set as Problem Sheet 3, Question 3, where the statement and hints are.
+</qn>
+
