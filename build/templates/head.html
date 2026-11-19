@@ -903,9 +903,11 @@ svg .gt-val tspan { paint-order: stroke; stroke: var(--paper); stroke-width: 3px
 @media (max-width: 560px) { table.pm td { min-width: 3.4rem; } table.pm.pm-edit td { min-width: 3.9rem; } table.pm.pm-edit input { width: 2.4rem; } }
 
 /* ---------- Ask Claude panel ---------- */
-.ask-panel { overscroll-behavior: contain; position: fixed; top: 0; right: 0; bottom: 0; width: min(var(--askw, 420px), 100vw); z-index: 60; background: var(--paper); border-left: 1px solid var(--rule); box-shadow: -8px 0 30px rgba(0,0,0,.08); display: flex; flex-direction: column; font-family: var(--serif); }
+.ask-panel { overscroll-behavior: contain; position: fixed; top: calc(var(--topbar-h, 2.6rem) + env(safe-area-inset-top, 0px)); right: 0; bottom: 0; width: min(var(--askw, 420px), 100vw); z-index: 60; background: var(--paper); border-left: 1px solid var(--rule); box-shadow: -8px 0 30px rgba(0,0,0,.08); display: flex; flex-direction: column; font-family: var(--serif); }
 .ask-panel[hidden] { display: none; }
 body.ask-open { padding-right: min(var(--askw, 420px), 100vw); }
+/* the chat sits below the top bar, like the beside panel, so the bar keeps the full width */
+@media (min-width: 901px) { body.ask-open .topbar { margin-right: calc(-1 * min(var(--askw, 420px), 100vw)); } }
 @media (max-width: 900px) { body.ask-open { padding-right: 0; } .ask-panel { top: auto; height: 62vh; width: 100vw; border-left: none; border-top: 1px solid var(--rule); box-shadow: 0 -8px 30px rgba(0,0,0,.12); } }
 .ask-head { display: flex; align-items: center; gap: .5rem; padding: .7rem .9rem; border-bottom: 1px solid var(--rule); }
 .ask-title { font-family: var(--sc); font-size: 1.05rem; letter-spacing: .02em; flex: 1; }
