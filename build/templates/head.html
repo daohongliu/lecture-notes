@@ -527,7 +527,7 @@ details.pause summary::before { flex: none; }
 .xacts { display: inline-flex; gap: .7rem; align-items: baseline; }
 .xbeside, .side-x { background: none; border: 0; padding: 0; color: var(--ink-soft); cursor: pointer; font-size: .74rem; }
 .xbeside:hover, .side-x:hover { color: var(--blue); }
-.side-panel, .notes-drawer { position: fixed; z-index: 55; right: 0; top: calc(var(--topbar-h, 2.6rem) + env(safe-area-inset-top, 0px)); bottom: 0; width: min(30rem, 92vw);
+.side-panel, .notes-drawer { position: fixed; z-index: 55; right: 0; top: calc(var(--topbar-h, 2.6rem) + env(safe-area-inset-top, 0px)); bottom: 0; width: min(var(--sidew, 30rem), 92vw);
   background: var(--paper); border-left: 1.3px solid var(--ink-soft); box-shadow: -5px 0 0 var(--dot); overflow-y: auto; overscroll-behavior: contain;
   padding: 0 1.1rem 2rem; font-size: 1rem; line-height: 1.5; }
 .notes-drawer { z-index: 56; }
@@ -540,7 +540,7 @@ details.pause summary::before { flex: none; }
 .side-ib .thm, .side-ib aside.bg, .side-ib figure, .side-ib .disp { margin: .3rem 0; max-width: 100%; }
 .side-ib .pg, .side-ib .qed { display: none; }
 .side-ib figure .fig-body { display: none; }
-@media (min-width: 1300px) { body.side-open .toc-side { left: max(10px, env(safe-area-inset-left, 0px)); } body.side-open .page { margin-right: min(30rem, 40vw); margin-left: calc(var(--tocw) + 1.6rem); } body.side-open .sidenote { display: none; } body.side-open .view figure.wide { max-width: var(--col); } }
+@media (min-width: 1300px) { body.side-open .toc-side { left: max(10px, env(safe-area-inset-left, 0px)); } body.side-open .page { margin-right: min(var(--sidew, 30rem), 70vw); margin-left: calc(var(--tocw) + 1.6rem); } body.side-open .sidenote { display: none; } body.side-open .view figure.wide { max-width: var(--col); } }
 .nd-where { font-size: .88rem; color: var(--ink-soft); font-style: italic; margin: .6rem 0 .4rem; }
 .nd-empty { font-size: .95rem; color: var(--ink-soft); }
 .nd-g { font-family: var(--sc); letter-spacing: .05em; font-size: .85rem; color: var(--ink-soft); margin: 1.1rem 0 .3rem; }
@@ -714,7 +714,7 @@ mjx-container .why, mjx-container .why * { fill: var(--ink-soft); color: var(--i
 
 
 /* minimap */
-.minimap { display: none; position: fixed; z-index: 25; right: 10px; top: calc(var(--topbar-h, 2.6rem) + env(safe-area-inset-top, 0px) + 14px); bottom: 14px; width: calc(var(--mmw, 4.75rem) - 1.2rem); cursor: pointer; user-select: none; touch-action: none; }
+.minimap { display: none; overflow: hidden; position: fixed; z-index: 25; right: 10px; top: calc(var(--topbar-h, 2.6rem) + env(safe-area-inset-top, 0px) + 14px); bottom: 14px; width: calc(var(--mmw, 4.75rem) - 1.2rem); cursor: pointer; user-select: none; touch-action: none; }
 .minimap canvas { display: block; }
 .mm-view { position: absolute; left: -3px; right: -3px; top: 0; background: color-mix(in srgb, var(--blue) 12%, transparent); border: 1px solid color-mix(in srgb, var(--blue) 45%, transparent); border-radius: 3px; pointer-events: none; }
 @media (min-width: 1300px) { body.has-toc .minimap { display: block; } body.side-open .minimap, body:has(.notes-drawer:not([hidden])) .minimap { display: none; } }
@@ -947,7 +947,12 @@ body.ask-open .minimap { display: none !important; }
 .ask-grip::after { content: ""; position: absolute; left: 4px; top: 50%; width: 2px; height: 2.6rem; margin-top: -1.3rem; border-radius: 2px; background: var(--rule); transition: background .15s; }
 .ask-grip:hover::after, .ask-grip:focus-visible::after, body.ask-resizing .ask-grip::after { background: var(--blue); }
 body.ask-resizing { cursor: col-resize; user-select: none; }
+/* the "beside the text" panel scrolls itself, so its grip is pinned to the viewport along the panel's edge */
+.side-panel > .ask-grip { position: fixed; left: auto; right: calc(min(var(--sidew, 30rem), 92vw) - 5px); top: calc(var(--topbar-h, 2.6rem) + env(safe-area-inset-top, 0px)); bottom: 0; }
 @media (max-width: 900px) { .ask-grip { display: none; } }
-@media print { .ask-panel, .ask-chip { display: none !important; } }
+/* a piece of a formula picked for asking */
+.msel-hi { position: absolute; z-index: 20; pointer-events: none; border-radius: 3px; background: color-mix(in srgb, var(--blue) 16%, transparent); outline: 1.5px solid color-mix(in srgb, var(--blue) 60%, transparent); }
+.view mjx-container[data-tex] svg { cursor: text; }
+@media print { .ask-panel, .ask-chip, .msel-hi { display: none !important; } }
 
 </style>

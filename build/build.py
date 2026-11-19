@@ -266,7 +266,7 @@ def autolink(s):
         if t.startswith('<'):
             low = t.lower()
             if re.match(r'<(span|a|summary|text|tspan)\b', low) and not t.endswith('/>'):
-                block = bool(re.match(r'<a\b', low)) or 'class="head"' in low or 'class="figtag"' in low or (stack and stack[-1])
+                block = bool(re.match(r'<a\b', low)) or 'class="head"' in low or 'class="figtag"' in low or 'class="algo-k"' in low or 'class="eqno"' in low or (bool(stack) and stack[-1])
                 stack.append(block)
             elif re.match(r'</(span|a|summary|text|tspan)>', low):
                 if stack: stack.pop()
@@ -280,9 +280,23 @@ def autolink(s):
                 res += re.sub(r'\d+\.\d+', lambda mm: f'<a class="xref" href="#{target_id(kind, mm.group(0))}">{mm.group(0)}</a>', rest)
             return res
         t = XREF.sub(lk, t)
+        # equation numbers like (1.2) or (4.4.1), when that equation exists in this course
+        t = re.sub(r'(?<![\w\\)\]^_])\((\d+)\.(\d+)(?:\.(\d+))?\)', lambda m: (lambda i: f'<a class="xref" href="#{i}">{m.group(0)}</a>' if i in IDS else m.group(0))(P + 'eq' + '-'.join(x for x in m.groups() if x)), t)
+        # "Problem Sheet 2, Question 3", "Sheet 1, question 5", "Sheet 3"
+        def sh(m):
+            n, q = m.group(2), m.group(4)
+            sid = f'{P}sheet{n}'
+            if sid not in IDS or m.group(0).endswith(' ·'): return m.group(0)
+            if q and f'{sid}-{q.lower()}' in IDS:
+                return f'<a class="xref" href="#{sid}">{m.group(1)}Sheet {n}</a>{m.group(3)}<a class="xref" href="#{sid}-{q.lower()}">{q}</a>'
+            return f'<a class="xref" href="#{sid}">{m.group(1)}Sheet {n}</a>' + (m.group(3) + q if q else '')
+        if 'You are reading' not in t:
+            t = re.sub(r'\b((?:Problem )?)Sheet (\d+)((?:,\s*|\s+)[Qq]uestions? )?(\w+)?(?: ·)?', lambda m: sh(m) if m.group(4) or not m.group(3) else m.group(0), t)
         t = re.sub(r'\bChapter (\d)\b(?!\.\d)', lambda m: f'<a class="chref" href="#{P}ch{m.group(1)}">Chapter {m.group(1)}</a>' if f'{P}ch{m.group(1)}' in EXIST else m.group(0), t)
         out.append(t)
-    return ''.join(out)
+    res = ''.join(out)
+    # a margin label that just names the result above it needs no link to it
+    return re.sub(r'(<span class="role-a">)<a class="xref" href="#[^"]+">([^<]+)</a>(</span>)', r'\1\2\3', res)
 
 GEN_ID = re.compile(r'^(ch\d|r\d|s\d|eq\d|fig\d|bg-|h\d+-|sheet\d|alg\d|ex-)')
 def prefix_ids(html_, p):
@@ -468,8 +482,8 @@ def build_course(cid, conf):
     return prefix_ids(html_, P), '<span class="pillgroup" data-course="' + cid + '">' + ''.join(pills) + '</span>', js, hub
 
 def autolink_course(s, p, exist):
-    global P, EXIST
-    P = p; EXIST = exist
+    global P, EXIST, IDS
+    P = p; EXIST = exist; IDS = set(re.findall(r'\sid="([^"]+)"', s))
     return autolink(s)
 
 def main():

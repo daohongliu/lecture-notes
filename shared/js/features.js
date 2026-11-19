@@ -315,19 +315,24 @@ const mmv = h('div', 'mm-view'); mm.appendChild(mmv);
 document.body.appendChild(mm);
 let MM = null, mmT = 0;
 const MM_BOX = 'figure, .thm, .proof, aside.bg, details.pause, .sq, .algo, .sheet-prompt, header.ch-head';
+/* As in VS Code: the miniature is drawn at a fixed scale, so the outline of the window is always the same size.
+   A short chapter makes a short map; a long one is taller than the strip and slides under it as you read. */
 function layoutMinimap() {
   MM = null;
   const v = currentView && document.getElementById(currentView);
   if (!v || !document.body.classList.contains('has-toc') || getComputedStyle(mm).display === 'none') return;
   const W = mm.clientWidth, H = mm.clientHeight; if (!W || !H) return;
-  const dpr = Math.min(2, window.devicePixelRatio || 1);
-  mmc.width = W * dpr; mmc.height = H * dpr; mmc.style.width = W + 'px'; mmc.style.height = H + 'px';
-  const g = mmc.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
   const cs = getComputedStyle(document.body), col = n => cs.getPropertyValue(n).trim();
   const vr = v.getBoundingClientRect(), top0 = vr.top + window.scrollY, docH = Math.max(1, v.scrollHeight);
   const ref = v.querySelector('.sec-block > p, .view > p') || v;
   const rr = ref.getBoundingClientRect(), x0 = rr.left, colW = rr.width;
-  const sx = (W - 6) / (colW * 1.38), sy = H / docH;
+  const sx = (W - 6) / (colW * 1.38);
+  /* one fixed vertical scale, whatever the chapter length: a screenful of text is about a sixteenth of a screen in the map */
+  const sy = Math.max(sx * 1.15, 0.055);
+  const CH = Math.ceil(docH * sy);
+  let dpr = Math.min(2, window.devicePixelRatio || 1); while (dpr > .5 && CH * dpr > 30000) dpr /= 2;
+  mmc.width = W * dpr; mmc.height = CH * dpr; mmc.style.width = W + 'px'; mmc.style.height = CH + 'px';
+  const g = mmc.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, CH);
   const X = x => 3 + (x - x0) * sx, Y = y => (y + window.scrollY - top0) * sy;
   const rect = (r, fill, alpha) => { g.globalAlpha = alpha; g.fillStyle = fill; g.fillRect(X(r.left), Y(r.top), Math.max(1, r.width * sx), Math.max(1, r.height * sy)); };
   const boxes = $$(MM_BOX, v).filter(e => !e.parentElement.closest(MM_BOX) || e.matches('.proof'));
@@ -362,23 +367,36 @@ function layoutMinimap() {
     if (isH2 && sec) { g.globalAlpha = 1; g.fillStyle = col('--paper'); const t = sec.textContent.trim(), tw = g.measureText(t).width; const ty = Y(r.top + r.height / 2); g.fillRect(W - tw - 6, ty - 5, tw + 5, 10); g.fillStyle = col('--ink'); g.fillText(t, W - tw - 3.5, ty + .5); }
   });
   g.globalAlpha = 1;
-  MM = { top0, sy, docH };
+  MM = { top0, sy, docH, CH, H, off: 0 };
   updateMinimap();
 }
 function updateMinimap() {
   if (!MM) return;
-  const y = (window.scrollY - MM.top0) * MM.sy, hh = Math.max(8, window.innerHeight * MM.sy);
-  mmv.style.transform = 'translateY(' + y.toFixed(1) + 'px)'; mmv.style.height = hh.toFixed(1) + 'px';
+  const vh = window.innerHeight * MM.sy, y = (window.scrollY - MM.top0) * MM.sy;
+  /* when the map is taller than the strip, slide it so the window moves proportionally through it */
+  const span = MM.docH - window.innerHeight, t = span > 0 ? Math.min(1, Math.max(0, (window.scrollY - MM.top0) / span)) : 0;
+  MM.off = MM.CH > MM.H ? t * (MM.CH - MM.H) : 0;
+  mmc.style.transform = 'translateY(' + (-MM.off).toFixed(1) + 'px)';
+  mmv.style.transform = 'translateY(' + (y - MM.off).toFixed(1) + 'px)'; mmv.style.height = vh.toFixed(1) + 'px';
 }
 function scheduleMinimap(ms) { clearTimeout(mmT); mmT = setTimeout(layoutMinimap, ms == null ? 120 : ms); }
 let mmDrag = null;
 mm.addEventListener('pointerdown', e => {
   if (!MM) return; e.preventDefault();
-  const r = mm.getBoundingClientRect(), y = e.clientY - r.top, vt = (window.scrollY - MM.top0) * MM.sy, vh = window.innerHeight * MM.sy;
-  mmDrag = (y >= vt && y <= vt + vh) ? y - vt : vh / 2;
-  mm.setPointerCapture(e.pointerId); mmMove(e);
+  const r = mm.getBoundingClientRect(), y = e.clientY - r.top, vt = (window.scrollY - MM.top0) * MM.sy - MM.off, vh = window.innerHeight * MM.sy;
+  if (y >= vt && y <= vt + vh) { mmDrag = { y0: e.clientY, s0: window.scrollY }; }
+  else { /* click outside the window: centre the window on that point of the map */
+    window.scrollTo(0, MM.top0 + (y + MM.off) / MM.sy - window.innerHeight / 2);
+    mmDrag = { y0: e.clientY, s0: window.scrollY };
+  }
+  mm.setPointerCapture(e.pointerId);
 });
-function mmMove(e) { if (mmDrag == null || !MM) return; const r = mm.getBoundingClientRect(); window.scrollTo(0, MM.top0 + (e.clientY - r.top - mmDrag) / MM.sy); }
+/* dragging the window: it follows the pointer, as in VS Code, so a drag of the strip's height crosses the whole chapter */
+function mmMove(e) {
+  if (!mmDrag || !MM) return;
+  const span = MM.docH - window.innerHeight, track = Math.max(1, Math.min(MM.CH, MM.H) - window.innerHeight * MM.sy);
+  window.scrollTo(0, mmDrag.s0 + (e.clientY - mmDrag.y0) * Math.max(0, span) / track);
+}
 mm.addEventListener('pointermove', mmMove);
 mm.addEventListener('pointerup', () => { mmDrag = null; });
 window.addEventListener('scroll', () => requestAnimationFrame(updateMinimap), { passive: true });

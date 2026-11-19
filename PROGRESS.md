@@ -57,6 +57,14 @@ Everything ships as ONE artifact (both courses), notes stored in the artifact's 
 - [x] Ask Claude side panel (`shared/js/ask.js`, sample capability): highlight text → "Ask Claude" chip, or the "ask" button;
       sends the selection, the enclosing block (statement+proof), neighbouring blocks in the section and the location, with maths
       recovered as TeX from `data-tex`. Chat kept in memory; model claude-opus-5-5 at effort medium ("think harder" = high), modelTier complex as fallback. Resizable (drag left edge, width in localStorage), reading position kept on open/close/resize via askKeepPlace. Publish with capabilities {sample:{}}.
+      Formula picking: SVG maths can't be selected natively, so click a symbol / drag across symbols / click again (or Alt+↑) to widen;
+      hit-testing is geometric over g[data-mml-node] leaves; the pick is linearised back to LaTeX (mLin) and sent with the whole formula's TeX.
+
+- [x] All right-hand panels resizable via panelGrip() in ask.js (Ask: --askw, "beside the text": --sidew, both in localStorage).
+- [x] Minimap works like VS Code: fixed scale (sy = max(sx·1.15, 0.055)), so the viewport window is a constant size; short
+      chapters give a short map, long ones slide under the strip proportionally; dragging the window follows the pointer.
+- [x] Autolink: fixed stack bug (refs inside sidenotes/margin labels/sheet prompts weren't linked); equation numbers like (4.4.1)
+      and "Sheet N, Question M" mentions now link when the target exists.
 
 ## Ideas not done yet
 - PMM Chapters 6–7 (martingales, applications); CLT Chapters 6–9.

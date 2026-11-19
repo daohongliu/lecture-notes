@@ -85,7 +85,7 @@ function askWhere(v, top) {
 const ASKP = document.createElement('aside');
 ASKP.className = 'ask-panel ask-ui'; ASKP.hidden = true; ASKP.setAttribute('aria-label', 'Ask Claude');
 ASKP.innerHTML = '<div class="ask-head"><span class="ask-title">Ask Claude</span><button type="button" class="ask-new" title="Start a new conversation">new chat</button><button type="button" class="ask-x" aria-label="Close">×</button></div>' +
-  '<div class="ask-log" aria-live="polite"><p class="ask-hint">Highlight anything on the page and press <b>Ask</b>, or just type: Claude sees the passage you are reading, the section around it, and your highlight.</p></div>' +
+  '<div class="ask-log" aria-live="polite"><p class="ask-hint">Highlight anything on the page and press <b>Ask</b>, or just type. Inside a formula, click a symbol or drag across symbols to pick part of it; click the pick again to widen it. Claude sees the passage you are reading, the section around it, and your highlight.</p></div>' +
   '<div class="ask-ctx" hidden><div class="ask-ctx-l"></div><button type="button" class="ask-ctx-x" title="Don’t attach this">×</button></div>' +
   '<form class="ask-form"><textarea rows="3" placeholder="Ask about this…" aria-label="Your question"></textarea><div class="ask-row"><label class="ask-deep"><input type="checkbox"> think harder</label><span class="ask-sp"></span><button type="button" class="ask-stop" hidden>stop</button><button type="submit" class="ask-send">ask</button></div></form>';
 document.body.appendChild(ASKP);
@@ -103,7 +103,8 @@ function askShowCtx() {
   $('.ask-ctx-l', ASKP).innerHTML = '';
   const a = document.createElement('div'); a.className = 'ask-ctx-where'; a.textContent = (c.sel ? 'Highlight in ' : 'Looking at ') + c.label;
   $('.ask-ctx-l', ASKP).appendChild(a);
-  if (c.sel) { const q = document.createElement('div'); q.className = 'ask-ctx-sel'; q.textContent = '“' + askClip(c.sel.replace(/\s+/g, ' '), 160) + '”'; $('.ask-ctx-l', ASKP).appendChild(q); }
+  if (c.pick) { const q = document.createElement('div'); q.className = 'ask-ctx-sel'; q.textContent = '\\(' + c.pick + '\\)'; $('.ask-ctx-l', ASKP).appendChild(q); typeset([q]); }
+  else if (c.sel) { const q = document.createElement('div'); q.className = 'ask-ctx-sel'; q.textContent = '“' + askClip(c.sel.replace(/\s+/g, ' '), 160) + '”'; $('.ask-ctx-l', ASKP).appendChild(q); }
 }
 /* keep the reader's place when the page column changes width */
 function askReadAnchor(range) {
@@ -125,8 +126,9 @@ function askKeepPlace(range, change) {
   const v = currentView && document.getElementById(currentView);
   requestAnimationFrame(() => { if (v) fixWide([v]); fix(); });
 }
-function askOpen(range) {
+function askOpen(range, t) {
   ASK.ctx = askContext(range || null);
+  if (ASK.ctx && t && t.sel) { ASK.ctx.sel = t.sel; ASK.ctx.pick = t.pick; }
   if (ASKP.hidden) askKeepPlace(range, () => { ASKP.hidden = false; document.body.classList.add('ask-open'); });
   askBtn.setAttribute('aria-pressed', 'true');
   askShowCtx();
@@ -138,51 +140,62 @@ function askClose() {
   askKeepPlace(null, () => { ASKP.hidden = true; document.body.classList.remove('ask-open'); });
   askBtn.setAttribute('aria-pressed', 'false');
 }
-/* resizing: drag the left edge; the width is remembered in this browser */
-const ASK_W_KEY = 'partb-ask-width';
-function askSetWidth(w, keep) {
-  const max = Math.max(320, Math.round(innerWidth * .7));
-  w = Math.max(300, Math.min(max, Math.round(w)));
-  const apply = () => document.documentElement.style.setProperty('--askw', w + 'px');
-  if (keep && !ASKP.hidden) askKeepPlace(null, apply); else apply();
-  return w;
+/* resizing: every right-hand panel (Ask Claude, "beside the text", notes) has a grip on its left edge;
+   the width is remembered in this browser, and the reading position is held while it changes */
+function panelGrip(panel, o) {
+  const setW = (w, keep) => {
+    const max = Math.max(o.min + 20, Math.round(innerWidth * .7));
+    w = Math.max(o.min, Math.min(max, Math.round(w)));
+    const apply = () => document.documentElement.style.setProperty(o.cssVar, w + 'px');
+    if (keep && !panel.hidden) askKeepPlace(null, apply); else apply();
+    return w;
+  };
+  try { const w = +localStorage.getItem(o.key); if (w) setW(w); } catch (_) {}
+  const grip = document.createElement('div');
+  grip.className = 'ask-grip'; grip.setAttribute('role', 'separator'); grip.setAttribute('aria-orientation', 'vertical'); grip.setAttribute('aria-label', 'Resize panel'); grip.tabIndex = 0;
+  grip.title = 'Drag to resize · double-click to reset';
+  panel.appendChild(grip);
+  let drag = null;
+  const settle = (a, top) => {
+    placeCmap();
+    const v = currentView && document.getElementById(currentView);
+    requestAnimationFrame(() => { if (v && typeof fixWide === 'function') fixWide([v]); if (a) { const d = a.getBoundingClientRect().top - top; if (Math.abs(d) > 1) window.scrollBy(0, d); } });
+  };
+  grip.addEventListener('pointerdown', e => {
+    if (innerWidth <= 900) return;
+    e.preventDefault(); grip.setPointerCapture(e.pointerId);
+    drag = { anchor: askReadAnchor(null) }; drag.top = drag.anchor ? drag.anchor.getBoundingClientRect().top : 0;
+    document.body.classList.add('ask-resizing');
+  });
+  grip.addEventListener('pointermove', e => {
+    if (!drag) return;
+    setW(innerWidth - e.clientX, false);
+    if (drag.anchor) { const d = drag.anchor.getBoundingClientRect().top - drag.top; if (Math.abs(d) > 1) window.scrollBy(0, d); }
+  });
+  const end = () => {
+    if (!drag) return;
+    const a = drag.anchor, top = drag.top; drag = null;
+    document.body.classList.remove('ask-resizing');
+    try { localStorage.setItem(o.key, String(panel.offsetWidth)); } catch (_) {}
+    settle(a, top);
+  };
+  grip.addEventListener('pointerup', end); grip.addEventListener('pointercancel', end);
+  grip.addEventListener('keydown', e => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    e.preventDefault();
+    const w = setW(panel.offsetWidth + (e.key === 'ArrowLeft' ? 40 : -40), true);
+    try { localStorage.setItem(o.key, String(w)); } catch (_) {}
+    settle(null, 0);
+  });
+  grip.addEventListener('dblclick', () => { setW(o.def, true); try { localStorage.removeItem(o.key); } catch (_) {} settle(null, 0); });
+  return setW;
 }
-try { const w = +localStorage.getItem(ASK_W_KEY); if (w) askSetWidth(w); } catch (_) {}
-const askGrip = document.createElement('div');
-askGrip.className = 'ask-grip'; askGrip.setAttribute('role', 'separator'); askGrip.setAttribute('aria-orientation', 'vertical'); askGrip.setAttribute('aria-label', 'Resize panel'); askGrip.tabIndex = 0;
-ASKP.appendChild(askGrip);
-let askDrag = null;
-askGrip.addEventListener('pointerdown', e => {
-  if (innerWidth <= 900) return;
-  e.preventDefault(); askGrip.setPointerCapture(e.pointerId);
-  askDrag = { anchor: askReadAnchor(null) }; askDrag.top = askDrag.anchor ? askDrag.anchor.getBoundingClientRect().top : 0;
-  document.body.classList.add('ask-resizing');
-});
-askGrip.addEventListener('pointermove', e => {
-  if (!askDrag) return;
-  askSetWidth(innerWidth - e.clientX, false);
-  if (askDrag.anchor) { const d = askDrag.anchor.getBoundingClientRect().top - askDrag.top; if (Math.abs(d) > 1) window.scrollBy(0, d); }
-});
-const askDragEnd = () => {
-  if (!askDrag) return;
-  const a = askDrag.anchor, top = askDrag.top; askDrag = null;
-  document.body.classList.remove('ask-resizing');
-  try { localStorage.setItem(ASK_W_KEY, String(ASKP.offsetWidth)); } catch (_) {}
-  placeCmap();
-  const v = currentView && document.getElementById(currentView);
-  requestAnimationFrame(() => { if (v) fixWide([v]); if (a) { const d = a.getBoundingClientRect().top - top; if (Math.abs(d) > 1) window.scrollBy(0, d); } });
-};
-askGrip.addEventListener('pointerup', askDragEnd); askGrip.addEventListener('pointercancel', askDragEnd);
-askGrip.addEventListener('keydown', e => {
-  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
-  e.preventDefault();
-  const w = askSetWidth(ASKP.offsetWidth + (e.key === 'ArrowLeft' ? 40 : -40), true);
-  try { localStorage.setItem(ASK_W_KEY, String(w)); } catch (_) {}
-});
-askGrip.addEventListener('dblclick', () => { askSetWidth(420, true); try { localStorage.removeItem(ASK_W_KEY); } catch (_) {} });
+panelGrip(ASKP, { cssVar: '--askw', key: 'partb-ask-width', def: 420, min: 300 });
+document.querySelectorAll('.side-panel, .notes-drawer').forEach(p => panelGrip(p, { cssVar: '--sidew', key: 'partb-side-width', def: 480, min: 300 }));
 askBtn.addEventListener('click', () => {
-  if (!ASKP.hidden && !askSelRange()) { askClose(); return; }
-  askOpen(askSelRange());
+  const t = askTarget();
+  if (!ASKP.hidden && !t) { askClose(); return; }
+  askOpen(t && t.range, t);
 });
 $('.ask-x', ASKP).addEventListener('click', askClose);
 $('.ask-ctx-x', ASKP).addEventListener('click', () => { ASK.ctx = null; askShowCtx(); });
@@ -208,7 +221,8 @@ document.addEventListener('selectionchange', () => {
   clearTimeout(askSelT);
   askSelT = setTimeout(() => {
     const r = askSelRange();
-    if (!r) { askChip.hidden = true; return; }
+    if (r && MSEL) mselClear();
+    if (!r) { if (!MSEL) askChip.hidden = true; return; }
     const rects = r.getClientRects(), last = rects[rects.length - 1] || r.getBoundingClientRect();
     askChip.hidden = false;
     const w = askChip.offsetWidth || 90;
@@ -218,11 +232,163 @@ document.addEventListener('selectionchange', () => {
 });
 askChip.addEventListener('mousedown', e => e.preventDefault());
 askChip.addEventListener('click', () => {
-  const r = askSelRange();
-  if (!ASKP.hidden && ASK.turns.length && r) { ASK.ctx = askContext(r); askShowCtx(); askChip.hidden = true; askTa.focus(); return; }
-  askOpen(r);
+  const t = askTarget(), r = t && t.range;
+  if (!ASKP.hidden && ASK.turns.length && r) { ASK.ctx = askContext(r); if (ASK.ctx && t.sel) { ASK.ctx.sel = t.sel; ASK.ctx.pick = t.pick; } askShowCtx(); askChip.hidden = true; askTa.focus(); return; }
+  askOpen(r, t);
 });
-window.addEventListener('scroll', () => { if (!askChip.hidden) askChip.hidden = true; }, { passive: true });
+window.addEventListener('scroll', () => { if (MSEL) mselChip(); else if (!askChip.hidden) askChip.hidden = true; }, { passive: true });
+
+/* ---------- picking part of a formula ----------
+   Rendered maths is a picture, so the browser cannot select inside it. Instead: click a symbol to pick it,
+   drag across symbols to pick everything between them, click the pick again (or press Alt+↑) to widen it
+   to the enclosing piece. The pick is sent to Claude as LaTeX, together with the whole formula. */
+let MSEL = null;  /* { box: mjx-container, nodes: [g…] } */
+const mselHi = document.createElement('div'); mselHi.className = 'msel-hi ask-ui'; mselHi.hidden = true; document.body.appendChild(mselHi);
+const MNODE = 'g[data-mml-node]';
+const M_SKIP = /^(math|mrow|TeXAtom|mstyle|mpadded|semantics|mtd|inferred)$/;
+const mKind = g => g.getAttribute('data-mml-node');
+function mLeafChars(g) {
+  let t = '';
+  g.querySelectorAll('use[data-c], path[data-c], text').forEach(u => {
+    if (u.closest(MNODE) !== g && !['mi', 'mo', 'mn', 'mtext', 'ms'].includes(mKind(g))) return;
+    if (u.tagName === 'text') t += u.textContent; else t += String.fromCodePoint(parseInt(u.getAttribute('data-c'), 16));
+  });
+  return t.normalize('NFKC').replace(/\u2061/g, '');
+}
+const M_TEX = { '∞': '\\infty', '≤': '\\le', '≥': '\\ge', '≠': '\\ne', '∈': '\\in', '∉': '\\notin', '⊆': '\\subseteq', '⊂': '\\subset', '∪': '\\cup', '∩': '\\cap', '⋃': '\\bigcup', '⋂': '\\bigcap',
+  '∑': '\\sum', '∏': '\\prod', '∫': '\\int', '→': '\\to', '⇒': '\\Rightarrow', '⟹': '\\implies', '⟺': '\\iff', '↦': '\\mapsto', '×': '\\times', '·': '\\cdot', '⋅': '\\cdot', '∘': '\\circ', '∖': '\\setminus',
+  '∀': '\\forall', '∃': '\\exists', '¬': '\\neg', '∧': '\\wedge', '∨': '\\vee', '∅': '\\emptyset', '∂': '\\partial', '∇': '\\nabla', '±': '\\pm', '≈': '\\approx', '≡': '\\equiv', '∼': '\\sim', '∣': '\\mid', '‖': '\\|', '…': '\\dots', '⋯': '\\cdots',
+  'α': '\\alpha', 'β': '\\beta', 'γ': '\\gamma', 'δ': '\\delta', 'ε': '\\epsilon', 'ϵ': '\\epsilon', 'ζ': '\\zeta', 'η': '\\eta', 'θ': '\\theta', 'λ': '\\lambda', 'μ': '\\mu', 'ν': '\\nu', 'ξ': '\\xi', 'π': '\\pi', 'ρ': '\\rho', 'σ': '\\sigma', 'τ': '\\tau', 'φ': '\\phi', 'ϕ': '\\phi', 'χ': '\\chi', 'ψ': '\\psi', 'ω': '\\omega',
+  'Γ': '\\Gamma', 'Δ': '\\Delta', 'Θ': '\\Theta', 'Λ': '\\Lambda', 'Σ': '\\Sigma', 'Φ': '\\Phi', 'Ψ': '\\Psi', 'Ω': '\\Omega' };
+const mTexChars = t => Array.from(t).map(c => M_TEX[c] ? M_TEX[c] + ' ' : c).join('').replace(/ +/g, ' ').trim();
+const mKids = g => Array.from(g.children).filter(c => c.matches(MNODE));
+function mLin(g) {
+  const k = mKind(g), K = mKids(g), L = x => x ? mLin(x) : '', B = x => { const t = L(x).trim(); return t.length === 1 ? t : '{' + t + '}'; };
+  if (['mi', 'mo', 'mn', 'ms'].includes(k)) return mTexChars(mLeafChars(g));
+  if (k === 'mtext') return '\\text{' + mLeafChars(g) + '}';
+  if (k === 'mspace') return ' ';
+  if (k === 'mphantom') return '';
+  if (k === 'msub' || k === 'munder') return L(K[0]) + '_' + B(K[1]);
+  if (k === 'msup' || k === 'mover') return L(K[0]) + '^' + B(K[1]);
+  if (k === 'msubsup' || k === 'munderover') return L(K[0]) + '_' + B(K[1]) + '^' + B(K[2]);
+  if (k === 'mfrac') return '\\frac' + B(K[0]) + B(K[1]);
+  if (k === 'msqrt') return '\\sqrt{' + K.map(mLin).join(' ') + '}';
+  if (k === 'mroot') return '\\sqrt[' + L(K[1]) + ']{' + L(K[0]) + '}';
+  if (k === 'mtable') return K.map(mLin).join(' \\\\ ');
+  if (k === 'mtr' || k === 'mlabeledtr') return K.map(mLin).join(' & ');
+  return K.map(mLin).join(' ').replace(/ +/g, ' ');
+}
+function mselTex() {
+  if (!MSEL) return '';
+  const n = MSEL.nodes, k = n.length === 1 ? mKind(n[0]) : '';
+  const sep = n.length > 1 && mKind(n[0].parentElement.closest(MNODE)) === 'mtr' ? ' & ' : ' ';
+  return n.map(mLin).join(sep).replace(/ +/g, ' ').trim();
+}
+function mselText() {
+  const t = mselTex(), full = (MSEL.box.dataset.tex || '').trim();
+  return 'the part ' + '$' + t + '$' + (full ? ' of the formula $' + full + '$' : '') + ' (this is the part he picked out of the rendered formula; written back as LaTeX, so the notation may differ slightly from the source)';
+}
+function mselRect() {
+  let L = 1e9, T = 1e9, R = -1e9, Bm = -1e9;
+  MSEL.nodes.forEach(g => { const r = g.getBoundingClientRect(); if (!r.width && !r.height) return; L = Math.min(L, r.left); T = Math.min(T, r.top); R = Math.max(R, r.right); Bm = Math.max(Bm, r.bottom); });
+  if (R < L) { const r = MSEL.box.getBoundingClientRect(); return r; }
+  return { left: L, top: T, right: R, bottom: Bm, width: R - L, height: Bm - T };
+}
+function mselDraw() {
+  if (!MSEL || !document.contains(MSEL.box)) { mselClear(); return; }
+  const r = mselRect();
+  Object.assign(mselHi.style, { left: (r.left + scrollX - 2) + 'px', top: (r.top + scrollY - 2) + 'px', width: (r.width + 4) + 'px', height: (r.height + 4) + 'px' });
+  mselHi.hidden = false; mselChip();
+}
+function mselChip() {
+  if (!MSEL) return;
+  const r = mselRect();
+  if (r.bottom < 0 || r.top > innerHeight) { askChip.hidden = true; return; }
+  askChip.hidden = false;
+  const w = askChip.offsetWidth || 90;
+  askChip.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.right - w / 2)) + 'px';
+  askChip.style.top = Math.min(innerHeight - 44, r.bottom + 8) + 'px';
+}
+function mselClear() { MSEL = null; mselHi.hidden = true; }
+function mselSet(box, nodes) { MSEL = { box, nodes }; mselDraw(); }
+/* the leaf under a point, if it lies in this formula */
+function mLeafAt(x, y, box) {
+  /* hit-test by geometry: the browser reports the whole <svg> as the target */
+  let best = null, bd = 1e9;
+  box.querySelectorAll('g[data-mml-node="mi"], g[data-mml-node="mo"], g[data-mml-node="mn"], g[data-mml-node="mtext"], g[data-mml-node="ms"]').forEach(g => {
+    const r = g.getBoundingClientRect(); if (!r.width) return;
+    const dx = x < r.left ? r.left - x : x > r.right ? x - r.right : 0, dy = y < r.top ? r.top - y : y > r.bottom ? y - r.bottom : 0;
+    const d = Math.hypot(dx, dy * 1.5) + (dx || dy ? 0 : -1 / (1 + r.width * r.height));
+    if (d < bd) { bd = d; best = g; }
+  });
+  return bd < 24 ? best : null;
+}
+function mPath(g, box) { const p = []; for (let x = g; x && box.contains(x); x = x.parentElement) if (x.matches && x.matches(MNODE)) p.unshift(x); return p; }
+/* everything between two picked symbols: their nearest common piece, or a run of its children */
+function mSpan(a, b, box) {
+  if (a === b) return [a];
+  const pa = mPath(a, box), pb = mPath(b, box);
+  let i = 0; while (i < pa.length && i < pb.length && pa[i] === pb[i]) i++;
+  const lca = pa[i - 1]; if (!lca) return [a];
+  if (M_SKIP.test(mKind(lca)) || ['mtr', 'mtable'].includes(mKind(lca))) {
+    const kids = mKids(lca), ia = kids.indexOf(pa[i]), ib = kids.indexOf(pb[i]);
+    if (ia >= 0 && ib >= 0) return kids.slice(Math.min(ia, ib), Math.max(ia, ib) + 1);
+  }
+  return [lca];
+}
+/* widen: the smallest enclosing piece that is visibly bigger than the current pick */
+function mWiden() {
+  if (!MSEL) return;
+  const r0 = mselRect(); let g = MSEL.nodes.length > 1 ? MSEL.nodes[0].parentElement.closest(MNODE) : MSEL.nodes[0].parentElement.closest(MNODE);
+  while (g && MSEL.box.contains(g)) {
+    const r = g.getBoundingClientRect();
+    if (mKind(g) !== 'math' && (r.width > r0.width + 1 || r.height > r0.height + 1)) break;
+    if (mKind(g) === 'math') break;
+    g = g.parentElement.closest(MNODE);
+  }
+  if (g && MSEL.box.contains(g)) mselSet(MSEL.box, [g]);
+}
+const mBoxOf = t => {
+  const box = t.closest && t.closest('mjx-container');
+  if (!box || !box.dataset.tex || t.closest('a, button, summary, label, .ask-ui, .xcard, .toc-side')) return null;
+  const v = currentView && document.getElementById(currentView);
+  return v && v.contains(box) ? box : null;
+};
+let mDrag = null;
+document.addEventListener('pointerdown', e => {
+  if (e.button !== 0) return;
+  const box = mBoxOf(e.target);
+  if (!box) { if (MSEL && !e.target.closest('.ask-chip, .ask-panel, #ask-btn')) mselClear(); return; }
+  const leaf = mLeafAt(e.clientX, e.clientY, box); if (!leaf) return;
+  if (e.pointerType === 'touch') { mDrag = { box, a: leaf, x: e.clientX, y: e.clientY, touch: true, moved: false }; return; }
+  e.preventDefault();
+  const s = window.getSelection(); if (s) s.removeAllRanges();
+  const again = MSEL && MSEL.box === box && MSEL.nodes.some(n => n === leaf || n.contains(leaf));
+  mDrag = { box, a: leaf, x: e.clientX, y: e.clientY, again, moved: false };
+}, true);
+document.addEventListener('pointermove', e => {
+  if (!mDrag) return;
+  if (Math.hypot(e.clientX - mDrag.x, e.clientY - mDrag.y) > 4) mDrag.moved = true;
+  if (mDrag.touch || !mDrag.moved) return;
+  const b = mLeafAt(e.clientX, e.clientY, mDrag.box); if (b) mselSet(mDrag.box, mSpan(mDrag.a, b, mDrag.box));
+});
+document.addEventListener('pointerup', () => {
+  const d = mDrag; mDrag = null; if (!d || (d.touch && d.moved)) return;
+  if (d.moved) return;
+  if (d.again || (d.touch && MSEL && MSEL.box === d.box && MSEL.nodes.some(n => n === d.a || n.contains(d.a)))) mWiden();
+  else mselSet(d.box, [d.a]);
+});
+document.addEventListener('keydown', e => {
+  if (!MSEL) return;
+  if (e.key === 'Escape') { mselClear(); askChip.hidden = true; }
+  else if (e.altKey && e.key === 'ArrowUp') { e.preventDefault(); mWiden(); }
+});
+window.addEventListener('resize', () => MSEL && requestAnimationFrame(mselDraw));
+if (window.ResizeObserver) new ResizeObserver(() => MSEL && mselDraw()).observe(document.querySelector('.page') || document.body);
+function askTarget() {
+  if (MSEL && document.contains(MSEL.box)) { const r = document.createRange(); r.selectNode(MSEL.box); return { range: r, sel: mselText(), pick: mselTex() }; }
+  const r = askSelRange(); return r ? { range: r } : null;
+}
 
 /* ---------- the conversation ---------- */
 const ASK_RULES = 'You are helping David, a third-year Oxford Mathematics and Computer Science student, while he reads his illustrated study notes (built from his lecturers’ notes). ' +
@@ -328,3 +494,4 @@ function askRender(el, raw, final) {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && !ASKP.hidden && document.activeElement && ASKP.contains(document.activeElement)) askClose();
 });
+window.__askDebug = { mselTex: () => mselTex(), ctx: () => ASK.ctx };
