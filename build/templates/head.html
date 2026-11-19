@@ -667,7 +667,7 @@ details.hint[open] { padding-left: .8rem; border-left: 1.5px solid var(--ochre-w
 .pin-side { position: absolute; top: -.72rem; right: .6rem; z-index: 2; font-family: var(--mono); font-size: .66rem; color: var(--ink-soft); background: var(--paper); border: 1px solid var(--rule); border-radius: 3px; padding: .1rem .4rem; cursor: pointer; opacity: 0; transition: opacity .15s; }
 .thm:hover > .pin-side, .algo:hover > .pin-side, .pin-side:focus-visible, .pin-side[aria-pressed="true"] { opacity: 1; }
 .pin-side:hover { color: var(--blue); border-color: var(--blue); }
-.pin-side[aria-pressed="true"] { color: var(--blue); }
+.thm > .pin-side[aria-pressed="true"], .algo > .pin-side[aria-pressed="true"] { color: var(--blue); background: var(--paper); border-color: color-mix(in srgb, var(--blue) 55%, transparent); }
 @media (hover: none) { .pin-side { opacity: .75; } }
 @media (max-width: 900px) { .pin-side { display: none; } }
 @media print { .pin-side { display: none !important; } }
@@ -925,7 +925,7 @@ body.ask-open { padding-right: min(var(--askw, 420px), 100vw); }
 .ask-hdel { background: none; border: 0; color: var(--ink-soft); cursor: pointer; padding: .5rem .45rem; font-family: var(--mono); font-size: .8rem; opacity: .5; }
 .ask-hrow:hover .ask-hdel, .ask-hdel:focus-visible, .ask-hdel.sure { opacity: 1; }
 .ask-hdel.sure { color: var(--red, #b3261e); }
-.ask-head .ask-histb[aria-pressed="true"] { color: var(--ink); border-color: var(--ink-soft); }
+.ask-head .ask-histb[aria-pressed="true"] { color: var(--ink); background: transparent; border-color: var(--ink-soft); }
 .ask-log { overscroll-behavior: contain; flex: 1; overflow-y: auto; padding: .8rem .9rem 1rem; font-size: .98rem; line-height: 1.5; }
 .ask-hint, .ask-note { color: var(--ink-soft); font-size: .9rem; }
 .ask-note.err { color: var(--red); }
@@ -967,6 +967,13 @@ body.ask-open .minimap { display: none !important; }
     --pw: calc(var(--gut) + var(--col) + var(--sng) + var(--snw) + 1rem);
     --pml: calc(var(--tocw) + 1.6rem + max(0px, (var(--avail) - var(--pw)) / 2)); }
   body.ask-open.side-open .page { margin-right: 0; }
+}
+/* chat and "beside the text" open together: they share the right-hand column, the pinned results on top and the chat below,
+   so neither covers the other or the text. The chat's grip resizes both. */
+@media (min-width: 901px) {
+  body.ask-open.side-open .side-panel { width: min(var(--askw, 420px), 100vw); bottom: auto; height: calc(44vh - var(--topbar-h, 2.6rem)); z-index: 61; box-shadow: none; border-bottom: 1.3px solid var(--ink-soft); }
+  body.ask-open.side-open .side-panel > .ask-grip { display: none; }
+  body.ask-open.side-open .ask-panel { top: 44vh; border-top: 1px solid var(--rule); }
 }
 .ask-grip { position: absolute; left: -5px; top: 0; bottom: 0; width: 10px; cursor: col-resize; z-index: 2; touch-action: none; }
 .ask-grip::after { content: ""; position: absolute; left: 4px; top: 50%; width: 2px; height: 2.6rem; margin-top: -1.3rem; border-radius: 2px; background: var(--rule); transition: background .15s; }
