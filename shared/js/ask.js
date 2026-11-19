@@ -396,7 +396,14 @@ window.addEventListener('scroll', () => { if (MSEL) mselChip(); else if (!askChi
    drag across symbols to pick everything between them, click the pick again (or press Alt+↑) to widen it
    to the enclosing piece. The pick is sent to Claude as LaTeX, together with the whole formula. */
 let MSEL = null;  /* { box: mjx-container, nodes: [g…] } */
-const mselHi = document.createElement('div'); mselHi.className = 'msel-hi ask-ui'; mselHi.hidden = true; document.body.appendChild(mselHi);
+/* highlight boxes live inside the formula they mark, so they move with it when the text reflows (a panel opening, a resize) */
+function mHi(box, r, cls) {
+  const b = box.getClientRects()[0] || box.getBoundingClientRect();
+  const d = document.createElement('span'); d.className = 'msel-hi ask-ui ' + cls;
+  Object.assign(d.style, { left: (r.left - b.left - 2) + 'px', top: (r.top - b.top - 2) + 'px', width: (r.width + 4) + 'px', height: (r.height + 4) + 'px' });
+  box.appendChild(d);
+}
+const mHiClear = cls => document.querySelectorAll('.msel-hi.' + cls).forEach(x => x.remove());
 const MNODE = 'g[data-mml-node]';
 const M_SKIP = /^(math|mrow|TeXAtom|mstyle|mpadded|semantics|mtd|inferred)$/;
 const mKind = g => g.getAttribute('data-mml-node');
@@ -462,9 +469,7 @@ function mselRect() {
 }
 function mselDraw() {
   if (!MSEL || !document.contains(MSEL.box)) { mselClear(); return; }
-  const r = mselRect();
-  Object.assign(mselHi.style, { left: (r.left + scrollX - 2) + 'px', top: (r.top + scrollY - 2) + 'px', width: (r.width + 4) + 'px', height: (r.height + 4) + 'px' });
-  mselHi.hidden = false; mselChip();
+  mHiClear('msel-main'); mHi(MSEL.box, mselRect(), 'msel-main'); mselChip();
 }
 function mselChip() {
   if (!MSEL) return;
@@ -475,7 +480,7 @@ function mselChip() {
   askChip.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.right - w / 2)) + 'px';
   askChip.style.top = Math.min(innerHeight - 44, r.bottom + 8) + 'px';
 }
-function mselClear() { MSEL = null; mselHi.hidden = true; }
+function mselClear() { MSEL = null; mHiClear('msel-main'); }
 function mselSet(box, nodes) { MSEL = { box, nodes }; mselDraw(); }
 /* the leaf under a point, if it lies in this formula */
 function mLeafAt(x, y, box) {
@@ -595,16 +600,13 @@ function mPart(g, leaf, part) {
 }
 function edgeNodes(e) { const root = e.box.querySelector('g[data-mml-node="math"]'); return root ? mPart(root, e.leaf, e.part) : []; }
 function edgeTex(e) { return edgeNodes(e).map(mLin).join(' ').replace(/ +/g, ' ').trim(); }
-const edgeHi = document.createElement('div'); edgeHi.className = 'ask-ui'; document.body.appendChild(edgeHi);
 function edgeDraw() {
-  edgeHi.innerHTML = '';
+  mHiClear('msel-edge');
   [EDGE.start, EDGE.end].forEach(e => {
     if (!e || !document.contains(e.box)) return;
     edgeNodes(e).forEach(g => {
       const r = g.getBoundingClientRect(); if (!r.width && !r.height) return;
-      const d = document.createElement('div'); d.className = 'msel-hi msel-edge';
-      Object.assign(d.style, { left: (r.left + scrollX - 1) + 'px', top: (r.top + scrollY - 2) + 'px', width: (r.width + 2) + 'px', height: (r.height + 4) + 'px' });
-      edgeHi.appendChild(d);
+      mHi(e.box, r, 'msel-edge');
     });
   });
 }

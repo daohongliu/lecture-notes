@@ -466,8 +466,14 @@ function placeCmap() {
   cmap.classList.toggle('floating', !docked);
   if (docked) { cmap.style.left = (page.right + 8) + 'px'; cmap.style.width = Math.min(300, free) + 'px'; }
   else { cmap.style.left = ''; cmap.style.width = ''; }
+  /* the drawing is laid out for one width: redraw when the space beside the text changes (a panel opened or resized) */
+  if (!cmap.hidden && !cmBuilding && cmap.clientWidth && Math.abs(cmap.clientWidth - cmBuiltW) > 2) { clearTimeout(cmRebuildT); cmRebuildT = setTimeout(buildCmap, 30); }
 }
+let cmBuiltW = 0, cmBuilding = false, cmRebuildT = 0;
 function buildCmap() {
+  cmBuilding = true; try { buildCmapInner(); } finally { cmBuilding = false; cmBuiltW = cmap.hidden ? 0 : cmap.clientWidth; }
+}
+function buildCmapInner() {
   CM = null; cmapBody.innerHTML = '';
   const v = currentView && document.getElementById(currentView);
   const data = v && v.querySelector('script.mindmap-data');

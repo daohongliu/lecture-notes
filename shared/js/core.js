@@ -300,7 +300,7 @@ function labelOf(t) {
 function scrub(n) {
   n.removeAttribute('id');
   $$('[id]', n).forEach(x => x.removeAttribute('id'));
-  $$('.sn-ref, .sn-toggle, .sidenote, .pg, .qed, .pin-side, script', n).forEach(x => x.remove());
+  $$('.sn-ref, .sn-toggle, .sidenote, .pg, .qed, .pin-side, .msel-hi, script', n).forEach(x => x.remove());
   $$('[tabindex]', n).forEach(x => x.removeAttribute('tabindex'));
   n.classList.remove('flash');
 }

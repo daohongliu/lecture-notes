@@ -976,9 +976,10 @@ body.ask-resizing { cursor: col-resize; user-select: none; }
 .side-panel > .ask-grip { position: fixed; left: auto; right: calc(min(var(--sidew, 30rem), 92vw) - 5px); top: calc(var(--topbar-h, 2.6rem) + env(safe-area-inset-top, 0px)); bottom: 0; }
 @media (max-width: 900px) { .ask-grip { display: none; } }
 /* a piece of a formula picked for asking */
-.msel-hi { position: absolute; z-index: 20; pointer-events: none; border-radius: 3px; background: color-mix(in srgb, var(--blue) 16%, transparent); outline: 1.5px solid color-mix(in srgb, var(--blue) 60%, transparent); }
+.msel-hi { position: absolute; display: block; z-index: 1; pointer-events: none; border-radius: 3px; background: color-mix(in srgb, var(--blue) 16%, transparent); outline: 1.5px solid color-mix(in srgb, var(--blue) 60%, transparent); }
 .view mjx-container[data-tex] svg { cursor: text; }
 mjx-container mjx-assistive-mml { display: none !important; }
+mjx-container[data-tex] { position: relative; }
 mjx-container.mjx-insel > svg { background: color-mix(in srgb, var(--blue) 22%, transparent); border-radius: 2px; box-shadow: 0 0 0 1px color-mix(in srgb, var(--blue) 22%, transparent); }
 @media print { .ask-panel, .ask-chip, .msel-hi { display: none !important; } }
 
