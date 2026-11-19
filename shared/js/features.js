@@ -450,11 +450,13 @@ document.body.appendChild(cmap); document.body.appendChild(cmapBtn);
 let CM = null, cmOpen = false;
 function chNum(id) { const m = /(?:^|-)(?:r|s|h|fig|alg|ch|eq)(\d+)/.exec(id.replace(/^(clt|it|gt)-/, '')); return m ? +m[1] : null; }
 function wrapText(t, w, px) { const words = t.split(' '), lines = []; let cur = ''; const cw = px * .5; words.forEach(x => { const nx = cur ? cur + ' ' + x : x; if (nx.length * cw > w && cur) { lines.push(cur); cur = x; } else cur = nx; }); if (cur) lines.push(cur); return lines; }
+const CMAP_ON = false;
 function placeCmap() {
   const v = currentView && document.getElementById(currentView);
   const data = v && v.querySelector('script.mindmap-data');
   const wide = window.innerWidth >= 1300 && document.body.classList.contains('has-toc');
-  if (!data || !wide) { cmap.hidden = true; cmapBtn.hidden = true; return; }
+  /* chapter maps are switched off (David asked for them to go); flip CMAP_ON to bring them back */
+  if (!CMAP_ON || !data || !wide) { cmap.hidden = true; cmapBtn.hidden = true; document.body.classList.remove('cmap-docked'); return; }
   const page = $('.page').getBoundingClientRect(), mmr = mm.getBoundingClientRect();
   let edge = mmr.left || window.innerWidth;
   document.querySelectorAll('.side-panel:not([hidden]), .ask-panel:not([hidden]), .notes-drawer:not([hidden])').forEach(el => { const l = el.getBoundingClientRect().left; if (l > 0) edge = Math.min(edge, l); });

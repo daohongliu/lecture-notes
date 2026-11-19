@@ -71,6 +71,7 @@ Everything ships as ONE artifact (both courses), notes stored in the artifact's 
       mToNative) / EDGE.end (pointer over a formula during a native drag, edgeTrack) hold {box, leaf, prefix|suffix}; mPart picks
       the pieces, drawn as .msel-edge overlays; askTarget stretches the range over those formulas and askTex writes only the part.
       mLeafChars recovers \mathcal/\mathbb/\mathbf from the glyph's font, and multi-letter operators become \limsup etc.
+- [x] Chapter maps switched off at David's request (CMAP_ON = false in features.js; data still built).
 - [x] Minimap click jumps the window to sit centred under the pointer (mmScrollForSlider), then drags, as in VS Code.
 - [x] Every .thm[id]/.algo[id] gets a "put beside" button (addPinButtons in features.js; shows on hover, toggles, keeps the result in place on screen; hidden ≤900px).
 - [x] All right-hand panels resizable via panelGrip() in ask.js (Ask: --askw, "beside the text": --sidew, both in localStorage).
