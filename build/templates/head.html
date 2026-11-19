@@ -903,7 +903,7 @@ svg .gt-val tspan { paint-order: stroke; stroke: var(--paper); stroke-width: 3px
 @media (max-width: 560px) { table.pm td { min-width: 3.4rem; } table.pm.pm-edit td { min-width: 3.9rem; } table.pm.pm-edit input { width: 2.4rem; } }
 
 /* ---------- Ask Claude panel ---------- */
-.ask-panel { position: fixed; top: 0; right: 0; bottom: 0; width: min(var(--askw, 420px), 100vw); z-index: 60; background: var(--paper); border-left: 1px solid var(--rule); box-shadow: -8px 0 30px rgba(0,0,0,.08); display: flex; flex-direction: column; font-family: var(--serif); }
+.ask-panel { overscroll-behavior: contain; position: fixed; top: 0; right: 0; bottom: 0; width: min(var(--askw, 420px), 100vw); z-index: 60; background: var(--paper); border-left: 1px solid var(--rule); box-shadow: -8px 0 30px rgba(0,0,0,.08); display: flex; flex-direction: column; font-family: var(--serif); }
 .ask-panel[hidden] { display: none; }
 body.ask-open { padding-right: min(var(--askw, 420px), 100vw); }
 @media (max-width: 900px) { body.ask-open { padding-right: 0; } .ask-panel { top: auto; height: 62vh; width: 100vw; border-left: none; border-top: 1px solid var(--rule); box-shadow: 0 -8px 30px rgba(0,0,0,.12); } }
@@ -915,7 +915,7 @@ body.ask-open { padding-right: min(var(--askw, 420px), 100vw); }
 .ask-hist[hidden], .ask-log[hidden], .ask-form[hidden] { display: none; }
 .ask-hist-top { padding: .6rem .9rem; border-bottom: 1px solid var(--rule); }
 .ask-hist-q { width: 100%; box-sizing: border-box; font: inherit; font-size: .9rem; padding: .35rem .5rem; border: 1px solid var(--rule); border-radius: 4px; background: var(--paper); color: var(--ink); }
-.ask-hist-list { flex: 1; overflow-y: auto; padding: .3rem .5rem 1rem; }
+.ask-hist-list { overscroll-behavior: contain; flex: 1; overflow-y: auto; padding: .3rem .5rem 1rem; }
 .ask-hist-list .ask-note { padding: .6rem .4rem; }
 .ask-hrow { display: flex; align-items: flex-start; gap: .3rem; border-radius: 5px; }
 .ask-hrow:hover, .ask-hrow.cur { background: color-mix(in srgb, var(--ink) 6%, transparent); }
@@ -926,7 +926,7 @@ body.ask-open { padding-right: min(var(--askw, 420px), 100vw); }
 .ask-hrow:hover .ask-hdel, .ask-hdel:focus-visible, .ask-hdel.sure { opacity: 1; }
 .ask-hdel.sure { color: var(--red, #b3261e); }
 .ask-head .ask-histb[aria-pressed="true"] { color: var(--ink); border-color: var(--ink-soft); }
-.ask-log { flex: 1; overflow-y: auto; padding: .8rem .9rem 1rem; font-size: .98rem; line-height: 1.5; }
+.ask-log { overscroll-behavior: contain; flex: 1; overflow-y: auto; padding: .8rem .9rem 1rem; font-size: .98rem; line-height: 1.5; }
 .ask-hint, .ask-note { color: var(--ink-soft); font-size: .9rem; }
 .ask-note.err { color: var(--red); }
 .ask-msg { margin: .2rem 0 .9rem; }

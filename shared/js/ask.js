@@ -335,6 +335,20 @@ async function histOpen(id) {
   askLog.scrollTop = askLog.scrollHeight;
 }
 histBtn.addEventListener('click', () => histShow(histPanel.hidden));
+/* scrolling inside the panel never scrolls the page: the wheel moves the nearest scrollable box under the pointer,
+   and stops at its ends instead of passing on to the page (also when the box has nothing to scroll) */
+ASKP.addEventListener('wheel', e => {
+  let el = e.target.nodeType === 1 ? e.target : e.target.parentElement;
+  for (; el && el !== ASKP; el = el.parentElement) {
+    const cs = getComputedStyle(el), dy = e.deltaY;
+    if (/(auto|scroll)/.test(cs.overflowY) && el.scrollHeight > el.clientHeight + 1) {
+      const atTop = el.scrollTop <= 0, atEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 1;
+      if ((dy < 0 && atTop) || (dy > 0 && atEnd)) e.preventDefault();
+      return;
+    }
+  }
+  e.preventDefault();
+}, { passive: false });
 histQ.addEventListener('input', histRenderList);
 histQ.addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); histShow(false); } });
 /* model and effort: Opus 5.5 at medium effort unless changed; the choice is remembered in this browser */
