@@ -662,6 +662,15 @@ details.hint[open] { padding-left: .8rem; border-left: 1.5px solid var(--ochre-w
 .thm .pg { left: calc(-1 * var(--gut) - 1.05rem - 3px); }
 .sub-block .thm .pg { left: calc(-1 * var(--gut) - 1.15rem - 1.05rem - 3px); }
 .xcard .thm, .side-ib .thm { padding: .4rem .7rem; }
+/* "put beside" on every result: quiet until you point at the result */
+.algo { position: relative; }
+.pin-side { position: absolute; top: -.72rem; right: .6rem; z-index: 2; font-family: var(--mono); font-size: .66rem; color: var(--ink-soft); background: var(--paper); border: 1px solid var(--rule); border-radius: 3px; padding: .1rem .4rem; cursor: pointer; opacity: 0; transition: opacity .15s; }
+.thm:hover > .pin-side, .algo:hover > .pin-side, .pin-side:focus-visible, .pin-side[aria-pressed="true"] { opacity: 1; }
+.pin-side:hover { color: var(--blue); border-color: var(--blue); }
+.pin-side[aria-pressed="true"] { color: var(--blue); }
+@media (hover: none) { .pin-side { opacity: .75; } }
+@media (max-width: 900px) { .pin-side { display: none; } }
+@media print { .pin-side { display: none !important; } }
 
 /* a proof hangs off the result it proves: indented, ruled, opened by "Proof." and closed by ∎ */
 .proof { margin: .1rem 0 1.8rem 1.1rem; padding: .55rem .9rem .5rem 1rem; border-left: 1.5px solid color-mix(in srgb, var(--blue) 55%, transparent); position: relative; }

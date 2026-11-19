@@ -72,6 +72,7 @@ Everything ships as ONE artifact (both courses), notes stored in the artifact's 
       the pieces, drawn as .msel-edge overlays; askTarget stretches the range over those formulas and askTex writes only the part.
       mLeafChars recovers \mathcal/\mathbb/\mathbf from the glyph's font, and multi-letter operators become \limsup etc.
 - [x] Minimap click jumps the window to sit centred under the pointer (mmScrollForSlider), then drags, as in VS Code.
+- [x] Every .thm[id]/.algo[id] gets a "put beside" button (addPinButtons in features.js; shows on hover, toggles, keeps the result in place on screen; hidden ≤900px).
 - [x] All right-hand panels resizable via panelGrip() in ask.js (Ask: --askw, "beside the text": --sidew, both in localStorage).
 - [x] Minimap works like VS Code: fixed scale (sy = max(sx·1.15, 0.055)), so the viewport window is a constant size; short
       chapters give a short map, long ones slide under the strip proportionally; dragging the window follows the pointer.

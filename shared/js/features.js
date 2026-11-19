@@ -267,7 +267,30 @@ sideHead.appendChild(sideClose); side.appendChild(sideHead);
 const sideBody = h('div', 'side-body'); side.appendChild(sideBody);
 document.body.appendChild(side);
 sideClose.addEventListener('click', () => { sideBody.innerHTML = ''; syncSide(); });
-function syncSide() { side.hidden = !sideBody.children.length; document.body.classList.toggle('side-open', !side.hidden); }
+function syncSide() {
+  side.hidden = !sideBody.children.length; document.body.classList.toggle('side-open', !side.hidden);
+  $$('.pin-side').forEach(b => { const on = !!sideBody.querySelector('[data-for="' + b.dataset.for + '"]'); b.setAttribute('aria-pressed', String(on)); b.textContent = on ? 'beside ✓' : 'put beside'; });
+}
+/* every numbered result gets a button that pins it (with its proof) in the panel beside the text */
+function addPinButtons(v) {
+  if (!v) return;
+  $$('.thm[id], .algo[id]', v).forEach(t => {
+    if (t.querySelector(':scope > .pin-side') || t.closest('.side-panel, .xcard')) return;
+    const b = h('button', 'pin-side ask-ui', 'put beside'); b.type = 'button'; b.dataset.for = t.id;
+    b.title = 'Keep ' + labelOf(t) + ' open beside the text while you read on'; b.setAttribute('aria-pressed', 'false');
+    b.addEventListener('click', e => {
+      e.stopPropagation();
+      const top = t.getBoundingClientRect().top;
+      if (sideBody.querySelector('[data-for="' + t.id + '"]')) { sideBody.querySelector('[data-for="' + t.id + '"]').remove(); syncSide(); }
+      else openBeside(t.id);
+      /* the text column narrows or widens: keep this result where it was on screen */
+      const fix = () => { const d = t.getBoundingClientRect().top - top; if (Math.abs(d) > 1) window.scrollBy(0, d); };
+      fix(); requestAnimationFrame(() => { if (typeof fixWide === 'function') fixWide([v]); fix(); });
+    });
+    t.appendChild(b);
+  });
+  syncSide();
+}
 function openBeside(id) {
   const t = document.getElementById(id); if (!t) return;
   const old = sideBody.querySelector('[data-for="' + id + '"]'); if (old) old.remove();
@@ -307,7 +330,8 @@ showView = function (id) {
   buildToc(v);
   walkStrip();
   if (v && v.classList.contains('course-home')) markRead(v);
-  r.then(() => { updateToc(); });
+  addPinButtons(v);
+  r.then(() => { updateToc(); addPinButtons(v); });
   return r;
 };
 function setTopH() { const t = $('.topbar'); if (t) document.documentElement.style.setProperty('--topbar-h', t.offsetHeight + 'px'); }
