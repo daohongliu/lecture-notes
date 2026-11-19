@@ -21,6 +21,7 @@ function askTex(root, range) {
     if (n.nodeType !== 1) return;
     const el = n;
     if (el.matches('mjx-container')) {
+      if (askEdgeTex && askEdgeTex.has(el)) { const pt = askEdgeTex.get(el); out += el.dataset.disp ? '\n$$' + pt + '$$\n' : '$' + pt + '$'; return; }
       const tex = el.dataset.tex;
       if (tex != null) out += el.dataset.disp ? '\n$$' + tex.trim() + '$$\n' : '$' + tex.trim() + '$';
       return;
@@ -220,11 +221,12 @@ function askSelRange() {
 let askInSel = [];
 function askMarkSel() {
   askInSel.forEach(x => x.classList.remove('mjx-insel')); askInSel = [];
-  const s = window.getSelection(); if (!s || s.isCollapsed || !s.rangeCount) return;
+  const s = window.getSelection(); if (!s || s.isCollapsed || !s.rangeCount) { if (!mDrag) { EDGE.start = EDGE.end = null; } edgeDraw(); return; }
   const r = s.getRangeAt(0), root = r.commonAncestorContainer.nodeType === 1 ? r.commonAncestorContainer : r.commonAncestorContainer.parentElement;
   if (!root || root.closest('.ask-panel')) return;
   const own = root.closest('mjx-container'); const list = own ? [own] : Array.from(root.querySelectorAll('mjx-container'));
-  list.forEach(m => { if (r.intersectsNode(m)) { m.classList.add('mjx-insel'); askInSel.push(m); } });
+  list.forEach(m => { if (r.intersectsNode(m) && !edgeOf(m)) { m.classList.add('mjx-insel'); askInSel.push(m); } });
+  edgeDraw();
 }
 document.addEventListener('selectionchange', () => requestAnimationFrame(askMarkSel));
 let askSelT = null;
@@ -262,9 +264,18 @@ function mLeafChars(g) {
   let t = '';
   g.querySelectorAll('use[data-c], path[data-c], text').forEach(u => {
     if (u.closest(MNODE) !== g && !['mi', 'mo', 'mn', 'mtext', 'ms'].includes(mKind(g))) return;
-    if (u.tagName === 'text') t += u.textContent; else t += String.fromCodePoint(parseInt(u.getAttribute('data-c'), 16));
+    if (u.tagName === 'text') { t += u.textContent.normalize('NFKC'); return; }
+    const cp = parseInt(u.getAttribute('data-c'), 16), raw = String.fromCodePoint(cp), ch = raw.normalize('NFKC');
+    if (/^[A-Za-z]$/.test(ch) && raw !== ch) {
+      const st = /[ℂℍℕℙℚℝℤ]/.test(raw) || (cp >= 0x1D538 && cp <= 0x1D56B) ? 'mathbb' : /[ℬℰℱℋℐℒℳℛ]/.test(raw) || (cp >= 0x1D49C && cp <= 0x1D4CF) ? 'mathcal' : (cp >= 0x1D400 && cp <= 0x1D433) ? 'mathbf' : '';
+      if (st) { t += '\\' + st + '{' + ch + '}'; return; }
+    }
+    /* the font tells \mathcal F from F: hrefs look like #MJX-TEX-C-46 */
+    const fv = ((u.getAttribute('href') || u.getAttribute('xlink:href') || '').match(/-TEX-([A-Z]+)-[0-9A-F]+$/) || [])[1];
+    const cmd = /^[A-Za-z]$/.test(ch) && { C: 'mathcal', SC: 'mathcal', A: 'mathbb', FR: 'mathfrak', BFR: 'mathfrak', B: 'mathbf', SS: 'mathsf', T: 'mathtt' }[fv];
+    t += cmd ? '\\' + cmd + '{' + ch + '}' : ch;
   });
-  return t.normalize('NFKC').replace(/\u2061/g, '');
+  return t.replace(/\u2061/g, '');
 }
 const M_TEX = { '∞': '\\infty', '≤': '\\le', '≥': '\\ge', '≠': '\\ne', '∈': '\\in', '∉': '\\notin', '⊆': '\\subseteq', '⊂': '\\subset', '∪': '\\cup', '∩': '\\cap', '⋃': '\\bigcup', '⋂': '\\bigcap',
   '∑': '\\sum', '∏': '\\prod', '∫': '\\int', '→': '\\to', '⇒': '\\Rightarrow', '⟹': '\\implies', '⟺': '\\iff', '↦': '\\mapsto', '×': '\\times', '·': '\\cdot', '⋅': '\\cdot', '∘': '\\circ', '∖': '\\setminus',
@@ -275,7 +286,11 @@ const mTexChars = t => Array.from(t).map(c => M_TEX[c] ? M_TEX[c] + ' ' : c).joi
 const mKids = g => Array.from(g.children).filter(c => c.matches(MNODE));
 function mLin(g) {
   const k = mKind(g), K = mKids(g), L = x => x ? mLin(x) : '', B = x => { const t = L(x).trim(); return t.length === 1 ? t : '{' + t + '}'; };
-  if (['mi', 'mo', 'mn', 'ms'].includes(k)) return mTexChars(mLeafChars(g));
+  if (['mi', 'mo', 'mn', 'ms'].includes(k)) {
+    const c = mLeafChars(g), w = c.replace(/\s+/g, '');
+    if (k !== 'mn' && /^[A-Za-z]{2,}$/.test(w)) return /^(lim|limsup|liminf|sup|inf|max|min|log|ln|exp|sin|cos|tan|det|dim|ker|deg|gcd|arg|Pr)$/.test(w) ? '\\' + w + ' ' : '\\operatorname{' + w + '}';
+    return mTexChars(c);
+  }
   if (k === 'mtext') return '\\text{' + mLeafChars(g) + '}';
   if (k === 'mspace') return ' ';
   if (k === 'mphantom') return '';
@@ -390,6 +405,8 @@ function mToNative(e) {
   const r = document.createRange(); r.selectNode(box);
   const after = r.comparePoint(c.node, c.off) >= 0;
   if (MSEL) mselClear();
+  /* the formula the drag started in is only partly selected: from the start symbol onwards, or up to it */
+  EDGE.start = { box, leaf: mDrag.a, part: after ? 'suffix' : 'prefix' };
   window.getSelection().setBaseAndExtent(par, after ? i : i + 1, c.node, c.off);
   mDrag.native = true; return true;
 }
@@ -399,7 +416,7 @@ document.addEventListener('pointermove', e => {
   if (!mDrag) return;
   if (Math.hypot(e.clientX - mDrag.x, e.clientY - mDrag.y) > 4) mDrag.moved = true;
   if (mDrag.touch || !mDrag.moved) return;
-  if (mDrag.native) { mToNative(e); return; }
+  if (mDrag.native) { mToNative(e); edgeTrack(e); return; }
   const r = mDrag.box.getBoundingClientRect(), out = e.clientX < r.left - 6 || e.clientX > r.right + 6 || e.clientY < r.top - 6 || e.clientY > r.bottom + 6;
   if (out && mToNative(e)) return;
   const b = mLeafAt(e.clientX, e.clientY, mDrag.box); if (b) mselSet(mDrag.box, mSpan(mDrag.a, b, mDrag.box));
@@ -417,9 +434,71 @@ document.addEventListener('keydown', e => {
 });
 window.addEventListener('resize', () => MSEL && requestAnimationFrame(mselDraw));
 if (window.ResizeObserver) new ResizeObserver(() => MSEL && mselDraw()).observe(document.querySelector('.page') || document.body);
+/* ---------- selections that start or end partway through a formula ----------
+   The browser can only put a selection's ends between formulas, so when a drag starts inside a formula or ends
+   over one, we remember the symbol under the pointer and treat that formula as selected only up to (or from) it. */
+const EDGE = { start: null, end: null };
+const edgeOf = box => (EDGE.start && EDGE.start.box === box && EDGE.start) || (EDGE.end && EDGE.end.box === box && EDGE.end) || null;
+const mRowLike = g => M_SKIP.test(mKind(g)) || ['mtr', 'mtable'].includes(mKind(g));
+const M_SCRIPT = /^(msub|msup|msubsup|munder|mover|munderover)$/;
+/* the pieces of g from its start up to and including leaf (prefix), or from leaf to its end (suffix) */
+function mPart(g, leaf, part) {
+  if (g === leaf) return [g];
+  const kids = mKids(g), bi = kids.findIndex(k => k === leaf || k.contains(leaf));
+  if (bi < 0) return [];
+  if (mRowLike(g)) {
+    const inner = mPart(kids[bi], leaf, part);
+    return part === 'prefix' ? kids.slice(0, bi).concat(inner) : inner.concat(kids.slice(bi + 1));
+  }
+  if (M_SCRIPT.test(mKind(g)) && bi === 0 && part === 'prefix') return mPart(kids[0], leaf, part);
+  return [g];
+}
+function edgeNodes(e) { const root = e.box.querySelector('g[data-mml-node="math"]'); return root ? mPart(root, e.leaf, e.part) : []; }
+function edgeTex(e) { return edgeNodes(e).map(mLin).join(' ').replace(/ +/g, ' ').trim(); }
+const edgeHi = document.createElement('div'); edgeHi.className = 'ask-ui'; document.body.appendChild(edgeHi);
+function edgeDraw() {
+  edgeHi.innerHTML = '';
+  [EDGE.start, EDGE.end].forEach(e => {
+    if (!e || !document.contains(e.box)) return;
+    edgeNodes(e).forEach(g => {
+      const r = g.getBoundingClientRect(); if (!r.width && !r.height) return;
+      const d = document.createElement('div'); d.className = 'msel-hi msel-edge';
+      Object.assign(d.style, { left: (r.left + scrollX - 1) + 'px', top: (r.top + scrollY - 2) + 'px', width: (r.width + 2) + 'px', height: (r.height + 4) + 'px' });
+      edgeHi.appendChild(d);
+    });
+  });
+}
+/* while the browser drags an ordinary selection, watch for the pointer entering a formula */
+document.addEventListener('pointermove', e => { if (!mDrag && (e.buttons & 1) && e.pointerType !== 'touch') edgeTrack(e); });
+function edgeTrack(e) {
+  const s = window.getSelection(); if (!s || !s.rangeCount || !s.anchorNode) return;
+  const box = mBoxOf(e.target) || (() => { const el = document.elementFromPoint(e.clientX, e.clientY); return el && mBoxOf(el); })();
+  if (!box || box.contains(s.anchorNode) || (EDGE.start && EDGE.start.box === box)) { if (EDGE.end) { EDGE.end = null; edgeDraw(); askMarkSel(); } return; }
+  const leaf = mLeafAt(e.clientX, e.clientY, box); if (!leaf) return;
+  const r = document.createRange(); r.selectNode(box);
+  const fwd = r.comparePoint(s.anchorNode, s.anchorOffset) < 0;
+  EDGE.end = { box, leaf, part: fwd ? 'prefix' : 'suffix' };
+  askMarkSel();
+}
+document.addEventListener('pointerdown', e => { if (!e.target.closest || !e.target.closest('.ask-chip, .ask-panel, #ask-btn')) { EDGE.end = null; if (!mBoxOf(e.target)) EDGE.start = null; edgeDraw(); } }, true);
+window.addEventListener('resize', () => requestAnimationFrame(edgeDraw));
+if (window.ResizeObserver) new ResizeObserver(() => edgeDraw()).observe(document.querySelector('.page') || document.body);
+let askEdgeTex = null;  /* box -> partial TeX, read by askTex while a selection is being packed */
 function askTarget() {
   if (MSEL && document.contains(MSEL.box)) { const r = document.createRange(); r.selectNode(MSEL.box); return { range: r, sel: mselText(), pick: mselTex() }; }
-  const r = askSelRange(); return r ? { range: r } : null;
+  const r0 = askSelRange(); if (!r0) return null;
+  const edges = [EDGE.start, EDGE.end].filter(e => e && document.contains(e.box));
+  if (!edges.length) return { range: r0 };
+  /* stretch the range over the partly selected formulas, and write each of those as just its selected part */
+  const r = r0.cloneRange();
+  edges.forEach(e => { if (e.part === 'prefix') { if (r.comparePoint(e.box, 0) >= 0) r.setEndAfter(e.box); } else if (r.comparePoint(e.box, 0) <= 0) r.setStartBefore(e.box); });
+  askEdgeTex = new Map(edges.map(e => [e.box, edgeTex(e)]));
+  const root = r.commonAncestorContainer.nodeType === 1 ? r.commonAncestorContainer : r.commonAncestorContainer.parentElement;
+  let sel = askTex(root, r);
+  askEdgeTex = null;
+  sel += '\n(Where the highlight starts or ends inside a formula, only the highlighted part of it is given, written back as LaTeX' +
+    edges.map(e => '; the whole formula there is $' + (e.box.dataset.tex || '').trim() + '$').join('') + '.)';
+  return { range: r, sel };
 }
 
 /* ---------- the conversation ---------- */
