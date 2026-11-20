@@ -455,16 +455,44 @@ function wrapText(t, w, px) { const words = t.split(' '), lines = []; let cur = 
 function setSbw() { const w = Math.max(0, window.innerWidth - document.documentElement.clientWidth); document.documentElement.style.setProperty('--sbw', w + 'px'); }
 window.addEventListener('resize', setSbw); setSbw();
 if (window.ResizeObserver) new ResizeObserver(setSbw).observe(document.body);
-/* margin notes keep their own column only when the text can still be comfortably wide beside it */
+/* Layout of the text beside the contents list, and what a right-hand panel (chat or "beside the text") does to it.
+   The text is laid out as if no panel were open. An open panel first covers empty space: the spare margin, then the
+   margin-note column (notes then open in place instead). Only when it would reach the text does the text move left
+   into spare space on that side, and only after that does the column get narrower. */
+const LAY_VARS = ['--col', '--pw', '--pml', '--snw', '--sng'];
 function placeNotes() {
-  const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16, W = innerWidth;
-  const askP = document.querySelector('.ask-panel');
-  const right = document.body.classList.contains('ask-open') && askP ? askP.offsetWidth : 4.75 * rem;
-  const avail = document.documentElement.clientWidth - 17.5 * rem - 1.6 * rem - right;
+  /* change classes only when they differ: classList writes always notify the observer below, even when nothing changes */
+  const cls = (c, on) => { if (document.body.classList.contains(c) !== on) document.body.classList.toggle(c, on); };
+  const root = document.documentElement, body = document.body;
+  const rem = parseFloat(getComputedStyle(root).fontSize) || 16, W = innerWidth, CW = root.clientWidth;
   const v = typeof currentView !== 'undefined' && currentView && document.getElementById(currentView);
   const hasNotes = !!(v && v.querySelector('.sidenote'));
-  const tight = W >= 1300 && (!hasNotes || document.body.classList.contains('side-open') || avail - 6.2 * rem - 1 * rem - 15.6 * rem < 44 * rem);
-  if (document.body.classList.contains('sn-inline') !== tight) document.body.classList.toggle('sn-inline', tight);
+  const askOpen = body.classList.contains('ask-open'), sideOpen = body.classList.contains('side-open');
+  const panelEl = askOpen ? document.querySelector('.ask-panel') : sideOpen ? document.querySelector('.side-panel') : null;
+  const A = panelEl ? panelEl.offsetWidth : 0;
+  const clearVars = () => { LAY_VARS.forEach(k => body.style.removeProperty(k)); cls('panel-fit', false); };
+  if (W < 1300 || !body.classList.contains('has-toc')) { clearVars(); cls('sn-inline', false); return; }
+  const R = x => x * rem, TOC = R(17.5) + R(1.6), GUT = R(6.2), NOTES = R(15.6), PADR = 16;
+  /* the layout with no panel open (the minimap strip on the right) */
+  const avail0 = CW - TOC - R(4.75);
+  const notes0 = hasNotes && avail0 - GUT - NOTES - R(1) >= R(44);
+  const col0 = Math.max(R(36), Math.min(R(56), avail0 - GUT - (notes0 ? NOTES : 0) - R(1)));
+  const pw0 = GUT + col0 + (notes0 ? NOTES : 0) + R(1);
+  const pml0 = TOC + Math.max(0, (avail0 - pw0) / 2);
+  if (!A) { clearVars(); cls('sn-inline', !notes0); return; }
+  /* a panel is open: its left edge, less a little breathing room */
+  const L = CW - A - R(1);
+  let notes = notes0, col = col0, pml = pml0;
+  if (notes && pml + GUT + col + NOTES > L) notes = false;
+  const need = pml + GUT + col + PADR - L;
+  if (need > 0) {
+    const shift = Math.min(need, pml - TOC); pml -= shift;
+    col = Math.max(R(30), col - (need - shift));
+  }
+  const pw = GUT + col + (notes ? NOTES : 0) + PADR;
+  cls('panel-fit', true); cls('sn-inline', !notes);
+  body.style.setProperty('--col', col + 'px'); body.style.setProperty('--pw', pw + 'px'); body.style.setProperty('--pml', pml + 'px');
+  body.style.setProperty('--snw', notes ? R(13) + 'px' : '0px'); body.style.setProperty('--sng', notes ? R(2.6) + 'px' : '0px');
 }
 window.addEventListener('resize', placeNotes);
 new MutationObserver(() => placeNotes()).observe(document.body, { attributes: true, attributeFilter: ['class'] });

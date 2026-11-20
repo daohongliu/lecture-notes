@@ -983,6 +983,12 @@ body.ask-open .minimap { display: none !important; }
   body.sn-inline .sn-toggle:checked + .sidenote { display: block; margin: .6rem 0 .8rem; padding: .1rem 0 .1rem .9rem; border-left: 1.5px solid var(--rule); }
   body.sn-inline .sn-ref { cursor: pointer; }
 }
+/* a panel is open: placeNotes() has worked out where the text goes (body.panel-fit, with --col/--pml/--pw set on body) */
+@media (min-width: 1300px) {
+  body.panel-fit .page { margin-left: var(--pml) !important; margin-right: 0 !important; }
+  body.panel-fit .toc-side { left: max(10px, calc(var(--pml) - var(--tocw) - 1.2rem)) !important; }
+  body.panel-fit.side-open:not(.sn-inline) .sidenote { display: block; }
+}
 /* chat and "beside the text" open together: they share the right-hand column, the pinned results on top and the chat below,
    so neither covers the other or the text. The chat's grip resizes both. */
 @media (min-width: 901px) {
