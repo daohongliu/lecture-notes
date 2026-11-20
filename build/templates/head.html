@@ -521,7 +521,16 @@ details.pause summary::before { flex: none; }
   .toc-side { width: var(--tocw); }
   body.has-toc .page { margin-left: var(--pml); }
   body.has-toc .toc-side { left: max(10px, calc(var(--pml) - var(--tocw) - 1.2rem)); }
+  /* folding the contents away */
+  :root.toc-folded { --tocw: 0px; }
+  .toc-folded .toc-side { display: none !important; }
+  .toc-fold { float: right; margin: .1rem 0 .3rem .5rem; font-family: var(--mono); font-size: .66rem; color: var(--ink-soft); background: transparent; border: 1px solid var(--rule); border-radius: 3px; padding: .1rem .4rem; cursor: pointer; }
+  .toc-fold:hover, .toc-unfold:hover { color: var(--ink); border-color: var(--ink-soft); }
+  .toc-folded body.has-toc .toc-unfold { display: block; }
 }
+.toc-fold, .toc-unfold { display: none; }
+@media (min-width: 1300px) { .toc-fold { display: inline-block; } }
+.toc-unfold { position: fixed; z-index: 30; left: max(10px, env(safe-area-inset-left, 0px)); top: calc(var(--topbar-h, 2.6rem) + .9rem + env(safe-area-inset-top, 0px)); font-family: var(--mono); font-size: .7rem; color: var(--ink-soft); background: var(--paper); border: 1px solid var(--rule); border-radius: 3px; padding: .2rem .5rem; cursor: pointer; }
 
 /* side panel and notes drawer */
 .xacts { display: inline-flex; gap: .7rem; align-items: baseline; }

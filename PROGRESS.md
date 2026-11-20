@@ -71,6 +71,7 @@ Everything ships as ONE artifact (both courses), notes stored in the artifact's 
       mToNative) / EDGE.end (pointer over a formula during a native drag, edgeTrack) hold {box, leaf, prefix|suffix}; mPart picks
       the pieces, drawn as .msel-edge overlays; askTarget stretches the range over those formulas and askTex writes only the part.
       mLeafChars recovers \mathcal/\mathbb/\mathbf from the glyph's font, and multi-letter operators become \limsup etc.
+- [x] Contents column can be folded (≥1300px): "‹ hide" in its header, "contents ›" tab to bring it back, \ toggles; html.toc-folded sets --tocw:0; remembered (partb-toc-folded).
 - [x] With a chat/beside panel open, placeNotes() (features.js) re-centres the text in the space left of the panel at its usual
       width; the notes column is dropped first (notes go inline); the text narrows only when the panel really needs the room. Sets body.panel-fit with inline --col/--pw/--pml. NB classList writes always fire MutationObserver: change classes only on difference.
 - [x] Wider text: --col max 56rem (was 50). The margin-note column is reserved only when the chapter has notes and there's room for

@@ -122,6 +122,24 @@ const tocSide = h('nav', 'toc-side'); tocSide.setAttribute('aria-label', 'Conten
 const tocBtn = h('button', 'toc-btn', '§ contents'); tocBtn.type = 'button'; tocBtn.hidden = true; tocBtn.setAttribute('aria-expanded', 'false');
 document.body.appendChild(tocSide); document.body.appendChild(tocBtn);
 let TS = null;
+/* the contents column on wide screens can be folded away; the text then centres in the whole width. Remembered. */
+const tocUnfold = h('button', 'toc-unfold', 'contents ›'); tocUnfold.type = 'button'; tocUnfold.title = 'Show the contents (\\)'; tocUnfold.setAttribute('aria-label', 'Show the contents list');
+document.body.appendChild(tocUnfold);
+function setTocFold(on, quiet) {
+  const keep = !quiet && typeof askKeepPlace === 'function';
+  const apply = () => { document.documentElement.classList.toggle('toc-folded', on); try { localStorage.setItem('partb-toc-folded', on ? '1' : ''); } catch (_) {} if (typeof placeNotes === 'function') placeNotes(); };
+  if (keep) askKeepPlace(null, apply); else apply();
+  const v = currentView && document.getElementById(currentView);
+  requestAnimationFrame(() => { if (v && typeof fixWide === 'function') fixWide([v]); if (typeof scheduleMinimap === 'function') scheduleMinimap(60); });
+  if (!quiet) (on ? tocUnfold : tocSide.querySelector('.toc-fold') || tocUnfold).focus({ preventScroll: true });
+}
+tocUnfold.addEventListener('click', () => setTocFold(false));
+try { if (localStorage.getItem('partb-toc-folded') === '1') setTocFold(true, true); } catch (_) {}
+document.addEventListener('keydown', e => {
+  if (e.key !== '\\' || e.metaKey || e.ctrlKey || e.altKey || innerWidth < 1300 || !document.body.classList.contains('has-toc')) return;
+  const t = e.target; if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+  e.preventDefault(); setTocFold(!document.documentElement.classList.contains('toc-folded'));
+});
 const READ = LS.get('pbs-read', {});
 function plainHeading(hd) {
   return Array.from(hd.childNodes).filter(n => !(n.classList && (n.classList.contains('pg') || n.classList.contains('sec')))).map(n => n.textContent).join('').trim();
@@ -138,7 +156,9 @@ function buildToc(v) {
   const tt = h('a', 'toc-title'); tt.href = '#' + v.id; tt.textContent = (eb ? eb.textContent + ' · ' : '') + (t ? t.textContent : '');
   const meta = h('div', 'toc-meta');
   const prog = h('div', 'toc-prog'); prog.appendChild(h('i'));
-  head.appendChild(tt); head.appendChild(meta); head.appendChild(prog); tocSide.appendChild(head);
+  const fold = h('button', 'toc-fold', '‹ hide'); fold.type = 'button'; fold.title = 'Hide the contents (\\)'; fold.setAttribute('aria-label', 'Hide the contents list');
+  fold.addEventListener('click', () => setTocFold(true));
+  head.appendChild(fold); head.appendChild(tt); head.appendChild(meta); head.appendChild(prog); tocSide.appendChild(head);
   const ul = h('ul', 'toc-l');
   const secs = [];
   const isSheet = v.classList.contains('sheet');
@@ -471,7 +491,7 @@ function placeNotes() {
   const A = panelEl ? panelEl.offsetWidth : 0;
   const clearVars = () => { LAY_VARS.forEach(k => body.style.removeProperty(k)); cls('panel-fit', false); };
   if (W < 1300 || !body.classList.contains('has-toc')) { clearVars(); cls('sn-inline', false); return; }
-  const R = x => x * rem, TOC = R(17.5) + R(1.6), GUT = R(6.2), NOTES = R(15.6), PADR = 16;
+  const R = x => x * rem, TOC = (root.classList.contains('toc-folded') ? 0 : R(17.5)) + R(1.6), GUT = R(6.2), NOTES = R(15.6), PADR = 16;
   /* the layout with no panel open (the minimap strip on the right) */
   const avail0 = CW - TOC - R(4.75);
   const notes0 = hasNotes && avail0 - GUT - NOTES - R(1) >= R(44);
