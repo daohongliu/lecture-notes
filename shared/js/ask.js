@@ -89,7 +89,7 @@ ASKP.innerHTML = '<div class="ask-head"><span class="ask-title">Ask Claude</span
   '<div class="ask-log" aria-live="polite"><p class="ask-hint">Highlight anything on the page and press <b>Ask</b>, or just type. Inside a formula, click a symbol or drag across symbols to pick part of it; click the pick again to widen it. Claude sees the passage you are reading, the section around it, and your highlight.</p></div>' +
   '<div class="ask-hist" hidden><div class="ask-hist-top"><input type="search" class="ask-hist-q" placeholder="Search earlier chats…" aria-label="Search earlier chats"></div><div class="ask-hist-list" role="list"></div></div>' +
   '<div class="ask-ctx" hidden><div class="ask-ctx-l"></div><button type="button" class="ask-ctx-x" title="Don’t attach this">×</button></div>' +
-  '<form class="ask-form"><textarea rows="3" placeholder="Ask about this…" aria-label="Your question"></textarea><div class="ask-row"><select class="ask-model" aria-label="Model" title="Model"><option value="claude-opus-5-5">Opus 5.5</option><option value="claude-sonnet-5-5">Sonnet 5.5</option><option value="claude-haiku-5-5">Haiku 5.5</option><option value="claude-fable-5-1">Fable 5.1</option></select><select class="ask-effort" aria-label="Effort" title="Effort: how long Claude thinks before answering"><option value="low">low effort</option><option value="medium">medium effort</option><option value="high">high effort</option></select><span class="ask-sp"></span><button type="button" class="ask-mic" hidden aria-pressed="false" title="Dictate your question (Claude’s speech-to-text)" aria-label="Dictate"><svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><rect x="5.5" y="1.5" width="5" height="8.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M3 7.5a5 5 0 0 0 10 0M8 12.5v2.2M5.6 14.7h4.8" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><span class="ask-mic-l">dictate</span></button><button type="button" class="ask-stop" hidden>stop</button><button type="submit" class="ask-send">ask</button></div></form>';
+  '<form class="ask-form"><textarea rows="3" placeholder="Ask about this…" aria-label="Your question"></textarea><div class="ask-row"><select class="ask-model" aria-label="Model" title="Model"><option value="claude-opus-5-5">Opus 5.5</option><option value="claude-sonnet-5-5">Sonnet 5.5</option><option value="claude-haiku-5-5">Haiku 5.5</option><option value="claude-fable-5-1">Fable 5.1</option></select><select class="ask-effort" aria-label="Effort" title="Effort: how long Claude thinks before answering"><option value="low">low effort</option><option value="medium">medium effort</option><option value="high">high effort</option></select><span class="ask-sp"></span><button type="button" class="ask-mic" hidden aria-pressed="false" title="Dictate your question (⌘D / Ctrl+D)" aria-label="Dictate"><svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><rect x="5.5" y="1.5" width="5" height="8.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M3 7.5a5 5 0 0 0 10 0M8 12.5v2.2M5.6 14.7h4.8" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><span class="ask-mic-l">dictate</span></button><button type="button" class="ask-stop" hidden>stop</button><button type="submit" class="ask-send">ask</button></div></form>';
 document.body.appendChild(ASKP);
 const askLog = $('.ask-log', ASKP), askTa = $('textarea', ASKP), askCtxBox = $('.ask-ctx', ASKP);
 const askChip = document.createElement('button');
@@ -403,8 +403,13 @@ micBtn.addEventListener('click', () => {
     else if (c && c !== 'stopped' && c !== 'dismissed') askNote('Dictation couldn’t start (' + (e.message || c) + ').', 'err');
   });
 });
-/* Ctrl/⌘ + Shift + Space toggles dictation while the panel is open */
-document.addEventListener('keydown', e => { if (!ASKP.hidden && !micBtn.hidden && e.code === 'Space' && e.shiftKey && (e.ctrlKey || e.metaKey)) { e.preventDefault(); micBtn.click(); } });
+/* ⌘D (Ctrl+D elsewhere) toggles dictation, opening the panel if needed; it replaces the browser's bookmark shortcut on this page */
+document.addEventListener('keydown', e => {
+  if (!(e.metaKey || e.ctrlKey) || e.shiftKey || e.altKey || e.code !== 'KeyD' || !DICT.api || micBtn.hidden) return;
+  e.preventDefault();
+  if (ASKP.hidden) { const t = askTarget(); askOpen(t && t.range, t); }
+  micBtn.click();
+}, true);
 
 /* the floating chip next to a selection */
 function askSelRange() {
