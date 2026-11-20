@@ -361,40 +361,56 @@ $('.ask-model', ASKP).addEventListener('change', e => { ASK.model = e.target.val
 $('.ask-effort', ASKP).addEventListener('change', e => { ASK.effort = e.target.value; try { localStorage.setItem('partb-ask-effort', ASK.effort); } catch (_) {} });
 $('.ask-stop', ASKP).addEventListener('click', () => ASK.ctl && ASK.ctl.abort());
 askTa.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('.ask-form', ASKP).requestSubmit(); } if (e.key === 'Escape') askClose(); });
-$('.ask-form', ASKP).addEventListener('submit', e => { e.preventDefault(); if (DICT.api && DICT.api.active()) DICT.api.stop(); askSend(); });
+$('.ask-form', ASKP).addEventListener('submit', e => { e.preventDefault(); dictStop(true); askSend(); });
 
 /* ---------- dictation ----------
    Claude's own speech-to-text (the same service as dictation in the Claude apps). The platform holds the microphone and
    hands the page only words. Offered where the platform allows it (Chrome-family browsers, the Claude desktop app's main
    window); elsewhere the button stays hidden. */
-const DICT = { api: null, base: '', partial: false };
+const DICT = { api: null, base: '', partial: false, drop: false };
 const micBtn = $('.ask-mic', ASKP);
+/* The speech service settles the last phrase a moment after you stop. So that stopping feels instant, the button
+   goes back to "dictate" at once and the live guess stays in the box; the settled words replace it when they arrive.
+   Sending while dictating sends what is in the box straight away and ignores words that arrive after. */
+function micLabel(state) {
+  const on = state === 'starting' || state === 'listening';
+  micBtn.setAttribute('aria-pressed', String(on)); micBtn.classList.toggle('live', state === 'listening');
+  $('.ask-mic-l', micBtn).textContent = state === 'starting' ? 'starting…' : state === 'listening' ? 'listening' : 'dictate';
+}
+function dictStop(send) {
+  if (!DICT.api || !DICT.api.active()) return;
+  if (send) { DICT.drop = true; DICT.partial = false; DICT.base = askTa.value; }
+  micLabel('idle');
+  DICT.api.stop().catch(() => {});
+}
 (async () => {
   try { if (window.claude && typeof window.claude.use === 'function') DICT.api = await window.claude.use('dictation'); } catch (_) {}
   if (!DICT.api) return;
   micBtn.hidden = false;
-  const put = () => { askTa.value = DICT.text; askTa.scrollTop = askTa.scrollHeight; };
+  const put = t => { askTa.value = t; askTa.scrollTop = askTa.scrollHeight; };
   DICT.api.onPartial(({ text }) => {
+    if (DICT.drop) return;
     if (!DICT.partial) { DICT.base = askTa.value; DICT.partial = true; }
-    if (!text) { DICT.partial = false; askTa.value = DICT.base; return; }
-    DICT.text = DICT.base + (DICT.base && !/\s$/.test(DICT.base) && !/^\s/.test(text) ? ' ' : '') + text; put();
+    if (!text) return;   /* the phrase has settled: onFinal will replace the guess */
+    put(DICT.base + (DICT.base && !/\s$/.test(DICT.base) && !/^\s/.test(text) ? ' ' : '') + text);
   });
   DICT.api.onFinal(({ text }) => {
+    if (DICT.drop) return;
     const base = DICT.partial ? DICT.base : askTa.value; DICT.partial = false;
-    DICT.text = base ? base + text : text.replace(/^\s+/, ''); put(); DICT.base = askTa.value;
+    put(base ? base + text : text.replace(/^\s+/, '')); DICT.base = askTa.value;
   });
   DICT.api.onState(({ state, reason }) => {
-    const on = state !== 'idle';
-    micBtn.setAttribute('aria-pressed', String(on)); micBtn.classList.toggle('live', state === 'listening');
-    $('.ask-mic-l', micBtn).textContent = state === 'starting' ? 'starting…' : state === 'listening' ? 'listening' : state === 'finishing' ? 'finishing…' : 'dictate';
-    if (!on && DICT.partial) { DICT.partial = false; askTa.value = DICT.base; }
-    if (!on && reason === 'unavailable') micBtn.hidden = true;
-    if (!on && (reason === 'rate_limited' || reason === 'upstream_error')) askNote('Dictation stopped (' + (reason === 'rate_limited' ? 'too many at once; try again in a moment' : 'the microphone or speech service failed') + ').', 'err');
+    if (state === 'finishing') return;   /* already shown as stopped */
+    if (state === 'idle') { DICT.drop = false; DICT.partial = false; }
+    micLabel(state);
+    if (state !== 'idle') return;
+    if (reason === 'unavailable') micBtn.hidden = true;
+    if (reason === 'rate_limited' || reason === 'upstream_error') askNote('Dictation stopped (' + (reason === 'rate_limited' ? 'too many at once; try again in a moment' : 'the microphone or speech service failed') + ').', 'err');
   });
 })();
 micBtn.addEventListener('click', () => {
   if (!DICT.api) return;
-  if (DICT.api.active()) { DICT.api.stop(); return; }
+  if (DICT.api.active() && micBtn.getAttribute('aria-pressed') === 'true') { dictStop(false); return; }
   /* start() has to be called straight from the click, before anything is awaited */
   DICT.api.start().then(() => askTa.focus()).catch(e => {
     const c = e && e.code;
