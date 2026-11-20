@@ -456,9 +456,8 @@ function setSbw() { const w = Math.max(0, window.innerWidth - document.documentE
 window.addEventListener('resize', setSbw); setSbw();
 if (window.ResizeObserver) new ResizeObserver(setSbw).observe(document.body);
 /* Layout of the text beside the contents list, and what a right-hand panel (chat or "beside the text") does to it.
-   The text is laid out as if no panel were open. An open panel first covers empty space: the spare margin, then the
-   margin-note column (notes then open in place instead). Only when it would reach the text does the text move left
-   into spare space on that side, and only after that does the column get narrower. */
+   With a panel open the text moves to sit centred in the space left of it, at its usual width; the margin-note column
+   is dropped first (notes then open in place), and the text gets narrower only when the panel really needs that room. */
 const LAY_VARS = ['--col', '--pw', '--pml', '--snw', '--sng'];
 function placeNotes() {
   /* change classes only when they differ: classList writes always notify the observer below, even when nothing changes */
@@ -482,13 +481,13 @@ function placeNotes() {
   if (!A) { clearVars(); cls('sn-inline', !notes0); return; }
   /* a panel is open: its left edge, less a little breathing room */
   const L = CW - A - R(1);
-  let notes = notes0, col = col0, pml = pml0;
-  if (notes && pml + GUT + col + NOTES > L) notes = false;
-  const need = pml + GUT + col + PADR - L;
-  if (need > 0) {
-    const shift = Math.min(need, pml - TOC); pml -= shift;
-    col = Math.max(R(30), col - (need - shift));
-  }
+  /* the text keeps its width and is re-centred in the space left of the panel; the notes column goes first,
+     and the text narrows only when even that is not enough room */
+  const room = L - TOC;
+  let notes = notes0 && room >= GUT + col0 + NOTES + PADR;
+  let col = Math.max(R(30), Math.min(col0, room - GUT - PADR));
+  const pwNow = GUT + col + (notes ? NOTES : 0) + PADR;
+  let pml = TOC + Math.max(0, (room - pwNow) / 2);
   const pw = GUT + col + (notes ? NOTES : 0) + PADR;
   cls('panel-fit', true); cls('sn-inline', !notes);
   body.style.setProperty('--col', col + 'px'); body.style.setProperty('--pw', pw + 'px'); body.style.setProperty('--pml', pml + 'px');

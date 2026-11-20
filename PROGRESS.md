@@ -71,9 +71,8 @@ Everything ships as ONE artifact (both courses), notes stored in the artifact's 
       mToNative) / EDGE.end (pointer over a formula during a native drag, edgeTrack) hold {box, leaf, prefix|suffix}; mPart picks
       the pieces, drawn as .msel-edge overlays; askTarget stretches the range over those formulas and askTex writes only the part.
       mLeafChars recovers \mathcal/\mathbb/\mathbf from the glyph's font, and multi-letter operators become \limsup etc.
-- [x] Panels cover empty space first: placeNotes() (features.js) lays the text out as if no panel were open; an open chat/beside
-      panel first covers the spare margin and the notes column (notes go inline), then the text shifts left into spare space, and only
-      then narrows. Sets body.panel-fit with inline --col/--pw/--pml. NB classList writes always fire MutationObserver: change classes only on difference.
+- [x] With a chat/beside panel open, placeNotes() (features.js) re-centres the text in the space left of the panel at its usual
+      width; the notes column is dropped first (notes go inline); the text narrows only when the panel really needs the room. Sets body.panel-fit with inline --col/--pw/--pml. NB classList writes always fire MutationObserver: change classes only on difference.
 - [x] Wider text: --col max 56rem (was 50). The margin-note column is reserved only when the chapter has notes and there's room for
       a 44rem column beside it; otherwise body.sn-inline (placeNotes in features.js) gives the space to the text and notes open in place.
 - [x] Fixed: [[...]] margin notes in CLT/IT/GT were never converted (28 showed as literal brackets); compile_body now turns them into <sn>.
