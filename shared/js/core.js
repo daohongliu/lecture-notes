@@ -175,7 +175,7 @@ function hist(values, lo, hi, bins) {
   function show(t) {
     cur = t; tip.textContent = t.getAttribute('data-tip'); tip.classList.add('on');
     const r = t.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
-    let x = r.left + r.width / 2 - tw / 2; x = Math.max(16, Math.min(x, window.innerWidth - tw - 16));
+    let x = r.left + r.width / 2 - tw / 2; x = Math.max(16, Math.min(x, (typeof popRight === 'function' ? popRight() : window.innerWidth) - tw - 16));
     let y = r.bottom + 8; if (y + th > window.innerHeight - 8) y = r.top - th - 8;
     tip.style.left = x + 'px'; tip.style.top = y + 'px';
   }
@@ -332,9 +332,17 @@ function buildCard(a) {
   requestAnimationFrame(() => card.classList.add('on'));
   return true;
 }
+/* the right edge popups must stay left of: the window, or an open chat / beside-the-text panel */
+function popRight() {
+  let R = document.documentElement.clientWidth;
+  if (window.innerWidth > 900) document.querySelectorAll('.ask-panel:not([hidden]), .side-panel:not([hidden])').forEach(p => { const l = p.getBoundingClientRect().left; if (l > 200) R = Math.min(R, l); });
+  return R;
+}
 function place(a) {
+  const R = popRight();
+  card.style.maxWidth = Math.max(260, R - 32) + 'px';
   const r = a.getBoundingClientRect(), cw = card.offsetWidth, ch = card.offsetHeight;
-  let x = r.left; x = Math.max(16, Math.min(x, window.innerWidth - cw - 16));
+  let x = r.left; x = Math.max(16, Math.min(x, R - cw - 16));
   let y = r.bottom + 8; if (y + ch > window.innerHeight - 10 && r.top - ch - 8 > 10) y = r.top - ch - 8;
   if (y + ch > window.innerHeight - 10) y = Math.max(10, window.innerHeight - ch - 10);
   card.style.left = x + 'px'; card.style.top = y + 'px';

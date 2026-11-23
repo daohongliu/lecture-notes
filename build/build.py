@@ -512,8 +512,12 @@ def main():
     hrefs = set(re.findall(r'href="#([^"]+)"', out))
     missing = sorted(h for h in hrefs if h not in ids)
     OUT.parent.mkdir(exist_ok=True); OUT.write_text(out)
-    art = pathlib.Path('/tmp/claude-0/-home-claude/f6af321d-3ed9-56ac-b644-c9c5c337ae44/scratchpad/pmm/measure-spaces.html')
-    if art.parent.exists(): art.write_text(out)
+    # dist/artifact.html: the full document published to claude.ai (the artifact skeleton around the page)
+    SKEL = ('<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover">'
+            '<style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}'
+            'html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}'
+            'img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>\n')
+    (OUT.parent / 'artifact.html').write_text(SKEL + out + '\n</body></html>\n')
     print(f'wrote {OUT} ({len(out)//1024} KB)')
     if dup: print('DUPLICATE IDS:', dup[:20])
     if missing: print('MISSING TARGETS:', missing[:30])
