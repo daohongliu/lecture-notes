@@ -3,3 +3,4 @@ dist/
 .DS_Store
 # The department's PDFs stay out of the repository.
 *.pdf
+local/data/

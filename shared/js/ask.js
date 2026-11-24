@@ -2,8 +2,41 @@
 /* ---------- Ask Claude: a side panel that sees the selection and its context ---------- */
 const ASK = { sample: undefined, turns: [], msgs: [], chatId: null, chatCreated: 0, ctx: null, ctl: null, busy: false, model: 'claude-opus-5-5', effort: 'medium' };
 let askSampleP = null;
+/* Two ways to reach Claude: inside Claude (claude.ai or the Claude app) the page's own `sample` capability;
+   run locally (`npm start`), the small server in local/server.mjs, which uses the Claude Agent SDK and your Claude login. */
+const ASK_LOCAL = !(window.claude && typeof window.claude.use === 'function') && /^https?:$/.test(location.protocol) && /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+let askLocalP = null;
+function askLocalUp() {
+  if (!askLocalP) askLocalP = ASK_LOCAL ? fetch('/api/health', { cache: 'no-store' }).then(r => r.ok).catch(() => false) : Promise.resolve(false);
+  return askLocalP;
+}
+async function localSample(input, o) {
+  o = o || {};
+  let r;
+  try { r = await fetch('/api/ask', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ turns: input, model: o.model, effort: o.effort }), signal: o.signal }); }
+  catch (e) { if (o.signal && o.signal.aborted) throw { code: 'cancelled' }; throw { code: 'upstream_error', message: 'The local server isn’t answering. Is `npm start` still running?' }; }
+  if (!r.ok || !r.body) throw { code: 'upstream_error', message: 'The local server refused the question (' + r.status + ').' };
+  const rd = r.body.getReader(), dec = new TextDecoder();
+  let buf = '', text = '', done = null;
+  try {
+    for (;;) {
+      const { value, done: end } = await rd.read(); if (end) break;
+      buf += dec.decode(value, { stream: true });
+      let i; while ((i = buf.indexOf('\n')) >= 0) {
+        const line = buf.slice(0, i); buf = buf.slice(i + 1); if (!line.trim()) continue;
+        const ev = JSON.parse(line);
+        if (ev.t === 'delta') { text += ev.text; if (o.onText) o.onText({ text, delta: ev.text }); }
+        else if (ev.t === 'done') done = ev;
+        else if (ev.t === 'error') throw { code: ev.code, message: ev.message, text };
+      }
+    }
+  } catch (e) { if (o.signal && o.signal.aborted) throw { code: 'cancelled', text }; throw e; }
+  if (!done) throw { code: 'upstream_error', message: 'The answer was cut off.', text };
+  return { text: done.text || text, truncated: !!done.truncated, modelApplied: o.model };
+}
 function askSample() {
-  if (!askSampleP) askSampleP = (window.claude && typeof window.claude.use === 'function') ? window.claude.use('sample').catch(() => null) : Promise.resolve(null);
+  if (!askSampleP) askSampleP = (window.claude && typeof window.claude.use === 'function') ? window.claude.use('sample').catch(() => null)
+    : askLocalUp().then(up => up ? localSample : null);
   return askSampleP;
 }
 
@@ -216,7 +249,7 @@ const HIST_LS = 'partb-ask-chats';
 function histInit() {
   if (!HIST.ready) HIST.ready = (async () => {
     try {
-      if (!window.claude || typeof window.claude.use !== 'function') return;
+      if (!window.claude || typeof window.claude.use !== 'function') { HIST.local = await askLocalUp(); return; }
       const [db, u] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
       const uid = u ? await u.id() : null;
       if (db && uid) { HIST.db = db; HIST.uid = uid; }
@@ -233,6 +266,7 @@ function lsWrite(o) {
 }
 async function histList() {
   await histInit();
+  if (HIST.local) { try { const r = await fetch('/api/chats', { cache: 'no-store' }); if (r.ok) return await r.json(); } catch (_) {} }
   if (HIST.db) {
     try { const snap = await histRoot().collection('chats').orderBy('updated', 'desc').limit(200).get(); return snap.docs.map(d => Object.assign({ id: d.id }, d.data())); }
     catch (_) {}
@@ -241,6 +275,7 @@ async function histList() {
 }
 async function histGet(id) {
   await histInit();
+  if (HIST.local) { try { const r = await fetch('/api/chats/' + id, { cache: 'no-store' }); if (r.ok) return await r.json(); } catch (_) {} }
   if (HIST.db) { try { const d = await histRoot().collection('bodies').doc(id).get(); if (d.exists) return d.data(); } catch (_) {} }
   const o = lsRead(); return o[id] ? o[id].body : null;
 }
@@ -264,6 +299,7 @@ function histSave() {
   HIST.cache = null;
   HIST.chain = HIST.chain.then(async () => {
     await histInit();
+    if (HIST.local) { try { const r = await fetch('/api/chats/' + id, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ meta, body }) }); if (r.ok) return; } catch (_) {} }
     if (HIST.db) {
       try { await histRoot().collection('bodies').doc(id).set(body); await histRoot().collection('chats').doc(id).set(meta); return; }
       catch (e) { if (e && e.code === 'quota_exceeded') askNote('History is full: delete some old chats to keep saving new ones.', 'err'); }
@@ -275,6 +311,7 @@ function histDelete(id) {
   HIST.cache = null;
   HIST.chain = HIST.chain.then(async () => {
     await histInit();
+    if (HIST.local) { try { await fetch('/api/chats/' + id, { method: 'DELETE' }); } catch (_) {} }
     if (HIST.db) { try { await histRoot().collection('chats').doc(id).delete(); await histRoot().collection('bodies').doc(id).delete(); } catch (_) {} }
     const o = lsRead(); if (o[id]) { delete o[id]; lsWrite(o); }
   });
@@ -756,7 +793,7 @@ const ASK_ERR = {
 async function askSend() {
   const q = askTa.value.trim(); if (!q || ASK.busy) return;
   const sample = await askSample();
-  if (!sample) { askNote('Asking Claude only works when this page is opened in Claude (claude.ai or the Claude app).', 'err'); return; }
+  if (!sample) { askNote('Asking Claude works when this page is opened in Claude (claude.ai or the Claude app), or run locally with `npm start` in the lecture-notes folder.', 'err'); return; }
   const c = ASK.ctx;
   askTa.value = '';
   const hint = $('.ask-hint', askLog); if (hint) hint.remove();
@@ -786,7 +823,7 @@ async function askSend() {
     if (e && e.text) { raw = e.text; askRender(out, raw, true); ASK.turns.push({ role: 'assistant', content: raw }); ASK.msgs.push({ role: 'assistant', text: raw }); histSave(); }
     else out.remove();
     if (code === 'refused') out.remove();
-    if (code !== 'cancelled') askNote(ASK_ERR[code] || ASK_ERR.upstream_error, 'err');
+    if (code !== 'cancelled') askNote(ASK_ERR[code] || (e && e.message) || ASK_ERR.upstream_error, 'err');
     if (!(e && e.text)) { ASK.turns.pop(); ASK.msgs.pop(); }
   } finally {
     ASK.busy = false; ASK.ctl = null; $('.ask-stop', ASKP).hidden = true; $('.ask-send', ASKP).disabled = false;

@@ -71,6 +71,7 @@ Everything ships as ONE artifact (both courses), notes stored in the artifact's 
       mToNative) / EDGE.end (pointer over a formula during a native drag, edgeTrack) hold {box, leaf, prefix|suffix}; mPart picks
       the pieces, drawn as .msel-edge overlays; askTarget stretches the range over those formulas and askTex writes only the part.
       mLeafChars recovers \mathcal/\mathbb/\mathbf from the glyph's font, and multi-letter operators become \limsup etc.
+- [x] Local mode: `npm start` serves dist/artifact.html from local/server.mjs; Ask Claude goes to /api/ask (Claude Agent SDK, Claude login, no tools, settingSources [], API key env stripped), history to /api/chats (local/data/chats). ask.js picks the backend: window.claude sample, else localhost /api/health.
 - [x] Hover cards and tooltips stay left of an open chat/beside panel (popRight in core.js).
 - [x] Publishing now via the claude-artifacts tools: build writes dist/artifact.html (full document with the artifact skeleton); publish_files it as index.html to slug 3e0f24a6-e6f9-4d2b-9c87-3292d8cc09a5 (read=public: pass shared_live).
 - [x] Contents column can be folded (≥1300px): "‹ hide" in its header, "contents ›" tab to bring it back, \ toggles; html.toc-folded sets --tocw:0; remembered (partb-toc-folded).
