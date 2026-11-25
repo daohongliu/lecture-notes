@@ -285,7 +285,7 @@ function histBody() {
   let n = 0;
   while (JSON.stringify(body).length > 200000 && n < body.turns.length - 2) {
     const t = body.turns[n];
-    if (t.role === 'user' && t.content.length > 600) body.turns[n] = { role: 'user', content: '(context omitted)\nHIS QUESTION:\n' + (t.content.split('HIS QUESTION:\n').pop() || '') };
+    if (t.role === 'user' && t.content.length > 600) body.turns[n] = { role: 'user', content: '(context omitted)\nTHE QUESTION:\n' + (t.content.split(/(?:HIS|THE) QUESTION:\n/).pop() || '') };
     n++;
   }
   return body;
@@ -574,7 +574,7 @@ function mselTex() {
 }
 function mselText() {
   const t = mselTex(), full = (MSEL.box.dataset.tex || '').trim();
-  return 'the part ' + '$' + t + '$' + (full ? ' of the formula $' + full + '$' : '') + ' (this is the part he picked out of the rendered formula; written back as LaTeX, so the notation may differ slightly from the source)';
+  return 'the part ' + '$' + t + '$' + (full ? ' of the formula $' + full + '$' : '') + ' (this is the part they picked out of the rendered formula; written back as LaTeX, so the notation may differ slightly from the source)';
 }
 function mselRect() {
   let L = 1e9, T = 1e9, R = -1e9, Bm = -1e9;
@@ -759,20 +759,20 @@ function askTarget() {
 }
 
 /* ---------- the conversation ---------- */
-const ASK_RULES = 'You are helping David, a third-year Oxford Mathematics and Computer Science student, while he reads his illustrated study notes (built from his lecturers’ notes). ' +
-  'Each message from him comes with the passage he is looking at, the text around it in the notes, and possibly the exact text he highlighted, with maths written in LaTeX. ' +
-  'Answer his question about that material. Explain in plain language and step by step; justify every step and say where a trick comes from; use the notation and the result numbers of the notes; ' +
-  'do not rely on later chapters without saying so. Be concise: answer what he asked, usually in a few short paragraphs, not an essay. If he highlighted something, focus on it. ' +
-  'If the passage is a problem-sheet question, do not solve it outright: give hints, explain the ideas, or check his reasoning. If you notice an error in the notes, say so plainly. ' +
+const ASK_RULES = 'You are helping a student while they read these illustrated study notes (built from their Oxford lecturers’ notes). ' +
+  'Each message from them comes with the passage they are looking at, the text around it in the notes, and possibly the exact text they highlighted, with maths written in LaTeX. ' +
+  'Answer their question about that material. Explain in plain language and step by step; justify every step and say where a trick comes from; use the notation and the result numbers of the notes; ' +
+  'do not rely on later chapters without saying so. Be concise: answer what they asked, usually in a few short paragraphs, not an essay. If they highlighted something, focus on it. ' +
+  'If the passage is a problem-sheet question, do not solve it outright: give hints, explain the ideas, or check their reasoning. If you notice an error in the notes, say so plainly. ' +
   'Format maths with $...$ inline and $$...$$ on its own line for display (never \\( \\) or \\[ \\]). You may use **bold**, short bulleted lists and short headings; no tables.';
 function askPack(c, q) {
   if (!c) return q;
   let s = 'WHERE: ' + c.where + '\n';
   if (c.before) s += '\nTEXT JUST BEFORE THE PASSAGE:\n' + c.before + '\n';
-  if (c.unit) s += '\nTHE PASSAGE HE IS LOOKING AT:\n' + c.unit + '\n';
+  if (c.unit) s += '\nTHE PASSAGE BEING READ:\n' + c.unit + '\n';
   if (c.after) s += '\nTEXT JUST AFTER:\n' + c.after + '\n';
-  if (c.sel) s += '\nHE HIGHLIGHTED:\n«' + askClip(c.sel, 3000) + '»\n';
-  return s + '\nHIS QUESTION:\n' + q;
+  if (c.sel) s += '\nHIGHLIGHTED:\n«' + askClip(c.sel, 3000) + '»\n';
+  return s + '\nTHE QUESTION:\n' + q;
 }
 function askBubble(role, text) {
   const d = document.createElement('div'); d.className = 'ask-msg ask-' + role;

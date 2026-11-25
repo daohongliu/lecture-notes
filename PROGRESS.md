@@ -1,8 +1,8 @@
 # Progress / handoff
 
-Branch `illustrated` replaces the earlier explainer build with the illustrated version David preferred
+Branch `illustrated` replaces the earlier explainer build with the illustrated version the owner preferred
 (published so far as a claude.ai artifact: https://claude.ai/artifact/8fUSQZVyo5a4ii591VfEvY).
-The spec David wants is in his message of 2026-11-04 (left TOC, section estimates, named exercises,
+The spec is from the owner's request of 2026-11-04 (left TOC, section estimates, named exercises,
 problem sheets with "now do question N" prompts, open-beside panel, private notes, LLM guidance,
 per-course style variation, three.js where apt). Scope agreed: PMM Chapters 0–5 only (skip 6–7 for now),
 Computational Learning Theory Chapters 1–5 (up to and including cryptographic hardness).
@@ -82,7 +82,7 @@ Everything ships as ONE artifact (both courses), notes stored in the artifact's 
       a 44rem column beside it; otherwise body.sn-inline (placeNotes in features.js) gives the space to the text and notes open in place.
 - [x] Fixed: [[...]] margin notes in CLT/IT/GT were never converted (28 showed as literal brackets); compile_body now turns them into <sn>.
 - [x] Chat + "beside" open together (≥901px): they stack in the right column (beside on top, 44vh; chat below); the chat grip resizes both.
-- [x] Chapter maps switched off at David's request (CMAP_ON = false in features.js; data still built).
+- [x] Chapter maps switched off on request (CMAP_ON = false in features.js; data still built).
 - [x] Minimap click jumps the window to sit centred under the pointer (mmScrollForSlider), then drags, as in VS Code.
 - [x] Every .thm[id]/.algo[id] gets a "put beside" button (addPinButtons in features.js; shows on hover, toggles, keeps the result in place on screen; hidden ≤900px).
 - [x] All right-hand panels resizable via panelGrip() in ask.js (Ask: --askw, "beside the text": --sidew, both in localStorage).
@@ -100,10 +100,10 @@ Everything ships as ONE artifact (both courses), notes stored in the artifact's 
 ## Testing
 `node <scratchpad>/t3.js "" view1,view2 [notes]` (run from the scratchpad dir) screenshots desk 1440 and phone 390.
 
-- [x] Removed: private notes (features.js, topbar button, hub text) and the flashcard button, at David's request. Artifact capabilities cleared to {}.
+- [x] Removed: private notes (features.js, topbar button, hub text) and the flashcard button, on request. Artifact capabilities cleared to {}.
 
 - [x] Information Theory (B8.4) added as a third course: courses/it (prefix `it-`), Introduction + Chapters 1–3 and Sheets 1–2
-      (sources on David's Desktop: Part B/Information Theory). 12 interactive figures (js/ch0–3.js, shared helpers in js/a-common.js:
+      (sources: the Information Theory lecture notes). 12 interactive figures (js/ch0–3.js, shared helpers in js/a-common.js:
       entropy, Huffman, binomial logs), 4 chapter maps, mulberry/saffron colour scheme, 'bits' header strip.
       Corrections vs the notes flagged in sidenotes: Remark 2.13 nats/bits; Theorem 3.4 epsilon_1 term.
       Not done: Chapters 4–5 (channel coding). Sheet data files (letter counts, IMC.csv) are not included.

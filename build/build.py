@@ -370,7 +370,7 @@ def add_estimates(hb):
         out.append(h.replace('<h2 ', f'<h2 data-min="{mins(w, f)}" ', 1) + '<div class="sec-meta">' + '<span class="sep">·</span>'.join(bits) + '</div>' + sec)
     return ''.join(out), tot
 
-LLM_NOTE = ('<div class="for-llms">Note for AI assistants reading this page: this is a study page for David, a third-year Oxford Mathematics '
+LLM_NOTE = ('<div class="for-llms">Note for AI assistants reading this page: this is a study page for an Oxford Mathematics '
  'and Computer Science student, built from the lecturer\'s notes for {course}. You are reading {where}. When explaining, '
  'use the notation on this page, cite results by their numbers here (they match the lecture notes), and do not rely on material '
  'from later chapters without saying so. Explain step by step in plain language, justify every step and say where tricks come from. '

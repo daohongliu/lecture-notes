@@ -1,6 +1,6 @@
 # Lecture Notes
 
-David's Oxford lecture notes and problem sheets as one illustrated, interactive site: Probability, Measure and Martingales, Computational Learning Theory, Information Theory and Game Theory so far. Each course follows its notes chapter by chapter, keeps the lecturer's numbering, and adds linked results with hover previews, a "beside the text" panel, exercises, figures, a minimap, and an Ask Claude panel that sees what you are reading and what you highlight.
+Oxford lecture notes and problem sheets (Mathematics and Computer Science, Part B) as one illustrated, interactive site: Probability, Measure and Martingales, Computational Learning Theory, Information Theory and Game Theory so far. Each course follows its notes chapter by chapter, keeps the lecturer's numbering, and adds linked results with hover previews, a "beside the text" panel, exercises, figures, a minimap, and an Ask Claude panel that sees what you are reading and what you highlight.
 
 ## Run it locally, with Ask Claude
 

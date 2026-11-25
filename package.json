@@ -2,7 +2,7 @@
   "name": "lecture-notes",
   "private": true,
   "type": "module",
-  "description": "David's lecture notes: build, and run locally with Ask Claude through the Claude Agent SDK",
+  "description": "Oxford lecture notes as an interactive site: build, and run locally with Ask Claude through the Claude Agent SDK",
   "scripts": {
     "build": "python3 build/build.py",
     "start": "python3 build/build.py && node local/server.mjs",

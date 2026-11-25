@@ -521,7 +521,7 @@ function placeCmap() {
   const v = currentView && document.getElementById(currentView);
   const data = v && v.querySelector('script.mindmap-data');
   const wide = window.innerWidth >= 1300 && document.body.classList.contains('has-toc');
-  /* chapter maps are switched off (David asked for them to go); flip CMAP_ON to bring them back */
+  /* chapter maps are switched off (on request); flip CMAP_ON to bring them back */
   if (!CMAP_ON || !data || !wide) { cmap.hidden = true; cmapBtn.hidden = true; document.body.classList.remove('cmap-docked'); return; }
   const page = $('.page').getBoundingClientRect(), mmr = mm.getBoundingClientRect();
   let edge = mmr.left || window.innerWidth;
