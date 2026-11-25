@@ -45,7 +45,7 @@ export function makeAuth(dataDir) {
   }
 
   const page = (msg, name = '') => `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Sign in · Lecture Notes</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,700;1,400&family=Recursive:wght@400;600&display=swap" rel="stylesheet">
+<title>Sign in · Lecture Notes</title><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%235a3a5e'/%3E%3Cpath d='M32 19c-5-4-12-5-19-4v29c7-1 14 0 19 4z' fill='%23f3efe8'/%3E%3Cpath d='M32 19c5-4 12-5 19-4v29c-7-1-14 0-19 4z' fill='%23e4dccf'/%3E%3Cpath d='M41 15.6v13l3.5-2.6 3.5 2.6V15.2c-2.4-.1-4.7.1-7 .4z' fill='%23c9962e'/%3E%3Cpath d='M17 23c4-.5 8 0 11 1.6M17 28.5c4-.5 8 0 11 1.6M17 34c4-.5 8 0 11 1.6' stroke='%235a3a5e' stroke-width='1.6' stroke-linecap='round' fill='none' opacity='.45'/%3E%3C/svg%3E"><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,700;1,400&family=Recursive:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{color-scheme:light dark;--bg:light-dark(#f3efe8,#1b1916);--ink:light-dark(#2a2420,#ece6dc);--soft:light-dark(#7a6e66,#a89d93);--rule:light-dark(#d6cdc1,#3a3530);--blue:light-dark(#5a3a5e,#c7a6cc);--card:light-dark(#fbf8f3,#23201c)}
 *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--bg);color:var(--ink);font:17px/1.5 Alegreya,Georgia,serif;padding:16px}
