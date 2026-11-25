@@ -18,6 +18,21 @@ Ask Claude goes through `local/server.mjs`, which uses the Claude Agent SDK sign
 
 The server listens on localhost only. Anthropic's terms allow your Claude login for your own ordinary use of Claude Code and the Agent SDK; don't give other people access to this server.
 
+## Hosting it on a server
+
+`local/server.mjs` can sit behind a reverse proxy at any path (the page addresses its API relative to itself), e.g. Caddy:
+
+```
+redir /lecture-notes /lecture-notes/
+handle_path /lecture-notes/* {
+	reverse_proxy 127.0.0.1:4173 {
+		flush_interval -1
+	}
+}
+```
+
+Ask Claude then runs on the server's Claude login, so put the site behind authentication (e.g. `basic_auth`) and keep it to your own use.
+
 ## Build only
 
 ```bash

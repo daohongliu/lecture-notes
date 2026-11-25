@@ -3,17 +3,18 @@
 const ASK = { sample: undefined, turns: [], msgs: [], chatId: null, chatCreated: 0, ctx: null, ctl: null, busy: false, model: 'claude-opus-5-5', effort: 'medium' };
 let askSampleP = null;
 /* Two ways to reach Claude: inside Claude (claude.ai or the Claude app) the page's own `sample` capability;
-   run locally (`npm start`), the small server in local/server.mjs, which uses the Claude Agent SDK and your Claude login. */
-const ASK_LOCAL = !(window.claude && typeof window.claude.use === 'function') && /^https?:$/.test(location.protocol) && /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+   served by local/server.mjs (`npm start`, or behind a reverse proxy at any path), that server, which uses the Claude Agent SDK
+   and your Claude login. The API is addressed relative to the page, and used only if it answers api/health. */
+const ASK_LOCAL = !(window.claude && typeof window.claude.use === 'function') && /^https?:$/.test(location.protocol);
 let askLocalP = null;
 function askLocalUp() {
-  if (!askLocalP) askLocalP = ASK_LOCAL ? fetch('/api/health', { cache: 'no-store' }).then(r => r.ok).catch(() => false) : Promise.resolve(false);
+  if (!askLocalP) askLocalP = ASK_LOCAL ? fetch('api/health', { cache: 'no-store' }).then(r => r.ok).catch(() => false) : Promise.resolve(false);
   return askLocalP;
 }
 async function localSample(input, o) {
   o = o || {};
   let r;
-  try { r = await fetch('/api/ask', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ turns: input, model: o.model, effort: o.effort }), signal: o.signal }); }
+  try { r = await fetch('api/ask', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ turns: input, model: o.model, effort: o.effort }), signal: o.signal }); }
   catch (e) { if (o.signal && o.signal.aborted) throw { code: 'cancelled' }; throw { code: 'upstream_error', message: 'The local server isn’t answering. Is `npm start` still running?' }; }
   if (!r.ok || !r.body) throw { code: 'upstream_error', message: 'The local server refused the question (' + r.status + ').' };
   const rd = r.body.getReader(), dec = new TextDecoder();
@@ -266,7 +267,7 @@ function lsWrite(o) {
 }
 async function histList() {
   await histInit();
-  if (HIST.local) { try { const r = await fetch('/api/chats', { cache: 'no-store' }); if (r.ok) return await r.json(); } catch (_) {} }
+  if (HIST.local) { try { const r = await fetch('api/chats', { cache: 'no-store' }); if (r.ok) return await r.json(); } catch (_) {} }
   if (HIST.db) {
     try { const snap = await histRoot().collection('chats').orderBy('updated', 'desc').limit(200).get(); return snap.docs.map(d => Object.assign({ id: d.id }, d.data())); }
     catch (_) {}
@@ -275,7 +276,7 @@ async function histList() {
 }
 async function histGet(id) {
   await histInit();
-  if (HIST.local) { try { const r = await fetch('/api/chats/' + id, { cache: 'no-store' }); if (r.ok) return await r.json(); } catch (_) {} }
+  if (HIST.local) { try { const r = await fetch('api/chats/' + id, { cache: 'no-store' }); if (r.ok) return await r.json(); } catch (_) {} }
   if (HIST.db) { try { const d = await histRoot().collection('bodies').doc(id).get(); if (d.exists) return d.data(); } catch (_) {} }
   const o = lsRead(); return o[id] ? o[id].body : null;
 }
@@ -299,7 +300,7 @@ function histSave() {
   HIST.cache = null;
   HIST.chain = HIST.chain.then(async () => {
     await histInit();
-    if (HIST.local) { try { const r = await fetch('/api/chats/' + id, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ meta, body }) }); if (r.ok) return; } catch (_) {} }
+    if (HIST.local) { try { const r = await fetch('api/chats/' + id, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ meta, body }) }); if (r.ok) return; } catch (_) {} }
     if (HIST.db) {
       try { await histRoot().collection('bodies').doc(id).set(body); await histRoot().collection('chats').doc(id).set(meta); return; }
       catch (e) { if (e && e.code === 'quota_exceeded') askNote('History is full: delete some old chats to keep saving new ones.', 'err'); }
@@ -311,7 +312,7 @@ function histDelete(id) {
   HIST.cache = null;
   HIST.chain = HIST.chain.then(async () => {
     await histInit();
-    if (HIST.local) { try { await fetch('/api/chats/' + id, { method: 'DELETE' }); } catch (_) {} }
+    if (HIST.local) { try { await fetch('api/chats/' + id, { method: 'DELETE' }); } catch (_) {} }
     if (HIST.db) { try { await histRoot().collection('chats').doc(id).delete(); await histRoot().collection('bodies').doc(id).delete(); } catch (_) {} }
     const o = lsRead(); if (o[id]) { delete o[id]; lsWrite(o); }
   });
