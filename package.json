@@ -8,7 +8,8 @@
     "start": "python3 build/build.py && node local/server.mjs",
     "serve": "node local/server.mjs",
     "login": "node local/claude.mjs auth login",
-    "status": "node local/claude.mjs auth status"
+    "status": "node local/claude.mjs auth status",
+    "set-password": "node local/set-password.mjs"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "0.3.331"

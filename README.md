@@ -31,7 +31,13 @@ handle_path /lecture-notes/* {
 }
 ```
 
-Ask Claude then runs on the server's Claude login, so put the site behind authentication (e.g. `basic_auth`) and keep it to your own use.
+Ask Claude then runs on the server's Claude login, so turn on sign-in and keep it to your own use:
+
+```bash
+npm run set-password -- <username>   # prompts for the password; restart the server afterwards
+```
+
+With `local/data/auth.json` present the server shows a sign-in page, keeps you signed in for 30 days with a session cookie, and adds a **log out** button to the top bar (which ends that session on the server). Five wrong passwords from one address lock it out for a minute at a time. Running it again changes the password and signs out every session.
 
 ## Build only
 

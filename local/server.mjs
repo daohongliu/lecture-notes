@@ -6,6 +6,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { query } from '@anthropic-ai/claude-agent-sdk';
+import { makeAuth } from './auth.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PAGE = path.join(ROOT, 'dist', 'artifact.html');
@@ -14,6 +15,8 @@ const PORT = Number(process.env.PORT) || 4173;
 const MODELS = new Set(['claude-opus-5-5', 'claude-sonnet-5-5', 'claude-haiku-5-5', 'claude-fable-5-1']);
 const EFFORTS = new Set(['low', 'medium', 'high']);
 fs.mkdirSync(DATA, { recursive: true });
+/* sign-in: only when local/data/auth.json exists (npm run set-password -- <username>) */
+const AUTH = makeAuth(path.join(ROOT, 'local', 'data'));
 
 /* The Agent SDK runs Claude Code underneath. These settings make it a plain question-and-answer call:
    no tools, one turn, none of your Claude Code settings or CLAUDE.md files, nothing saved as a session,
@@ -93,7 +96,8 @@ async function chats(req, res, id) {
 http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, 'http://localhost');
-    if (url.pathname === '/api/health') { res.writeHead(200, { 'content-type': 'application/json' }); res.end('{"ok":true,"backend":"agent-sdk"}'); return; }
+    if (AUTH && await AUTH.gate(req, res, url)) return;
+    if (url.pathname === '/api/health') { res.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' }); res.end(JSON.stringify({ ok: true, backend: 'agent-sdk', auth: !!AUTH, user: AUTH ? AUTH.user(req) : null })); return; }
     if (url.pathname === '/api/ask' && req.method === 'POST') return await ask(req, res);
     const m = url.pathname.match(/^\/api\/chats(?:\/([^/]+))?$/);
     if (m) return await chats(req, res, m[1]);
@@ -103,4 +107,4 @@ http.createServer(async (req, res) => {
     }
     res.writeHead(404).end();
   } catch (e) { try { res.writeHead(500).end(String(e && e.message)); } catch {} }
-}).listen(PORT, '127.0.0.1', () => console.log(`Lecture Notes: http://localhost:${PORT}`));
+}).listen(PORT, '127.0.0.1', () => console.log(`Lecture Notes: http://localhost:${PORT}` + (AUTH ? ' (sign-in on)' : '')));

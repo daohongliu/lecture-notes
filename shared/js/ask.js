@@ -8,9 +8,18 @@ let askSampleP = null;
 const ASK_LOCAL = !(window.claude && typeof window.claude.use === 'function') && /^https?:$/.test(location.protocol);
 let askLocalP = null;
 function askLocalUp() {
-  if (!askLocalP) askLocalP = ASK_LOCAL ? fetch('api/health', { cache: 'no-store' }).then(r => r.ok).catch(() => false) : Promise.resolve(false);
+  if (!askLocalP) askLocalP = ASK_LOCAL ? fetch('api/health', { cache: 'no-store' }).then(r => r.ok ? r.json().catch(() => ({})) : null).then(h => { if (h && h.auth) askLogoutBtn(h.user); return !!h; }).catch(() => false) : Promise.resolve(false);
   return askLocalP;
 }
+/* when the server asks for sign-in, the top bar gets a "log out" button */
+function askLogoutBtn(user) {
+  const tools = document.querySelector('.topbar .tools'); if (!tools || document.getElementById('logout-btn')) return;
+  const f = document.createElement('form'); f.method = 'post'; f.action = 'logout'; f.className = 'logout-form';
+  const b = document.createElement('button'); b.type = 'submit'; b.id = 'logout-btn'; b.className = 'tool-btn'; b.textContent = 'log out';
+  b.title = user ? 'Signed in as ' + user : 'Sign out';
+  f.appendChild(b); tools.appendChild(f);
+}
+askLocalUp();
 async function localSample(input, o) {
   o = o || {};
   let r;
